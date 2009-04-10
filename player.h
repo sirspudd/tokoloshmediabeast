@@ -31,6 +31,7 @@ public:
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
     void setSkin(const QString &path);
+    void showEvent(QShowEvent *e);
 private:
     enum ButtonType {
         Previous = 0,

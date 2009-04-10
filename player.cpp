@@ -33,6 +33,10 @@ void Button::paintEvent(QPaintEvent *)
     if (!d.pixmaps[i].isNull()) {
         QPainter p(this);
         p.drawPixmap(rect(), d.pixmaps[i], d.sourceRects[i]);
+    } else {
+        QPainter p(this);
+        p.drawRect(rect().adjusted(0, 0, -1, -1));
+        p.drawText(rect(), Qt::AlignCenter, objectName());
     }
 }
 
@@ -50,10 +54,12 @@ void Button::setPixmap(int idx, const QPixmap &pixmap, const QRect &source)
 Player::Player(QWidget *parent)
     : QWidget(parent)
 {
+    setFixedSize(275, 116);
     d.tokolosh = 0;
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
+    setFocus();
     struct {
         QString name;
         const char *member;
@@ -110,3 +116,9 @@ void Player::setSkin(const QString &path)
     QStringList entryList = QDir(path).entryList();
 }
 
+void Player::showEvent(QShowEvent *e)
+{
+    activateWindow();
+    raise();
+    QWidget::showEvent(e);
+}
