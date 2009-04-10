@@ -94,7 +94,7 @@ void Player::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
     p.fillRect(rect(), Qt::blue);
-    p.drawPixmap(e->rect(), d.background, e->rect()); // background brush instead?
+    p.drawPixmap(e->rect(), d.main, e->rect()); // main brush instead?
 }
 
 void Player::mousePressEvent(QMouseEvent *e)
@@ -111,9 +111,45 @@ void Player::mouseMoveEvent(QMouseEvent *e)
     }
 }
 
-void Player::setSkin(const QString &path)
+static QPixmap findPixmap(const QString &dir, const QStringList &list, const char *buttonName)
 {
-    QStringList entryList = QDir(path).entryList();
+    static const QList<QByteArray> formats = QImageReader::supportedImageFormats();
+    QRegExp rx(QString("%1\\.(.*)$").arg(buttonName));
+    rx.setCaseSensitivity(Qt::CaseInsensitive);
+    const int index = list.indexOf(rx);
+    if (index != -1 && formats.contains(rx.cap(1).toLower().toLocal8Bit())) { // toLatin1()?
+        QPixmap pix(QString("%1/%2").arg(dir).arg(list.at(index)));
+        if (pix.isNull()) {
+            qWarning("Can't load image '%s'", qPrintable(QString("%1/%2").arg(dir).arg(list.at(index))));
+        }
+        return pix;
+    } else {
+        qWarning("Can't find image '%s'", qPrintable(QString("%1/%2.*").arg(dir).arg(buttonName)));
+    }
+    return QPixmap();
+}
+
+bool Player::setSkin(const QString &path)
+{
+    const QDir dir(path);
+    if (!dir.exists()) {
+        qWarning("%s doesn't seem to exist", qPrintable(path));
+        return false;
+    }
+
+    const QStringList files = dir.entryList();
+    if (files.isEmpty()) {
+        qWarning("No files here %s", qPrintable(dir.absolutePath()));
+        return false;
+    }
+    QPixmap main = ::findPixmap(dir.absolutePath(), files, "main");
+    if (main.isNull())
+        return false;
+    d.main = main;
+
+//     QString main = ::findPixmap(files, "main");
+//     qDebug() << main;
+//     exit(0);
 }
 
 void Player::showEvent(QShowEvent *e)

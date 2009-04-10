@@ -30,7 +30,7 @@ public:
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
-    void setSkin(const QString &path);
+    bool setSkin(const QString &path);
     void showEvent(QShowEvent *e);
 private:
     enum ButtonType {
@@ -49,7 +49,7 @@ private:
 
     struct Private {
         Button *buttons[ButtonCount];
-        QPixmap background;
+        QPixmap main;
         TokoloshInterface *tokolosh;
         QPoint dragOffset;
     } d;
