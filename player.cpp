@@ -1,27 +1,27 @@
-#include "skin.h"
+#include "player.h"
 
-SkinButton::SkinButton(QWidget *parent)
+Button::Button(QWidget *parent)
     : QAbstractButton(parent)
 {
 }
 
-void SkinButton::setNormalPixmap(const QPixmap &pixmap, const QRect &source)
+void Button::setNormalPixmap(const QPixmap &pixmap, const QRect &source)
 {
     setPixmap(Normal, pixmap, source);
 }
 
-void SkinButton::setDownPixmap(const QPixmap &pixmap, const QRect &source)
+void Button::setDownPixmap(const QPixmap &pixmap, const QRect &source)
 {
     setPixmap(Down, pixmap, source);
 }
 
-void SkinButton::setHoverPixmap(const QPixmap &pixmap, const QRect &source)
+void Button::setHoverPixmap(const QPixmap &pixmap, const QRect &source)
 {
     setAttribute(Qt::WA_Hover, !pixmap.isNull());
     setPixmap(Hover, pixmap, source);
 }
 
-void SkinButton::paintEvent(QPaintEvent *)
+void Button::paintEvent(QPaintEvent *)
 {
     // ### use paintEvent->rect() ?
     int i = Normal;
@@ -36,7 +36,7 @@ void SkinButton::paintEvent(QPaintEvent *)
     }
 }
 
-void SkinButton::setPixmap(int idx, const QPixmap &pixmap, const QRect &source)
+void Button::setPixmap(int idx, const QPixmap &pixmap, const QRect &source)
 {
     for (int i=0; i<3; ++i) {
         if (idx != i && !d.pixmaps[i].isNull() && d.sourceRects[i].size() != source.size()) {
@@ -76,7 +76,7 @@ Player::Player(QWidget *parent)
 
     for (int i=0; buttonInfo[i].member; ++i) {
         Q_ASSERT(i < ButtonCount);
-        d.buttons[i] = new SkinButton(this);
+        d.buttons[i] = new Button(this);
         d.buttons[i]->setGeometry(buttonInfo[i].rect);
         d.buttons[i]->setObjectName(buttonInfo[i].name);
         d.buttons[i]->setToolTip(buttonInfo[i].tooltip);
@@ -110,10 +110,3 @@ void Player::setSkin(const QString &path)
     QStringList entryList = QDir(path).entryList();
 }
 
-int main(int argc, char **argv)
-{
-    QApplication a(argc, argv);
-    Player w;
-    w.show();
-    return a.exec();
-}

@@ -8,8 +8,8 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-HEADERS += skin.h tokolosh_interface.h
-SOURCES += skin.cpp tokolosh_interface.cpp
+HEADERS += player.h tokolosh_interface.h
+SOURCES += player.cpp tokolosh_interface.cpp main.cpp
 CONFIG += qdbus
 
 linux {

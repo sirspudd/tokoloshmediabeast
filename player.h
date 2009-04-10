@@ -1,15 +1,14 @@
-#ifndef SKIN_H
-#define SKIN_H
+#ifndef PLAYER_H
+#define PLAYER_H
 
 #include <QtGui>
-class SkinPrivate;
 class TokoloshInterface;
 
-class SkinButton : public QAbstractButton
+class Button : public QAbstractButton
 {
     Q_OBJECT
 public:
-    SkinButton(QWidget *parent = 0);
+    Button(QWidget *parent = 0);
     void setNormalPixmap(const QPixmap &pixmap, const QRect &source);
     void setDownPixmap(const QPixmap &pixmap, const QRect &source);
     void setHoverPixmap(const QPixmap &pixmap, const QRect &source);
@@ -33,7 +32,7 @@ public:
     void mouseMoveEvent(QMouseEvent *e);
     void setSkin(const QString &path);
 private:
-    enum Button {
+    enum ButtonType {
         Previous = 0,
         Play,
         Pause,
@@ -48,12 +47,11 @@ private:
     };
 
     struct Private {
-        SkinButton *buttons[ButtonCount];
+        Button *buttons[ButtonCount];
         QPixmap background;
         TokoloshInterface *tokolosh;
         QPoint dragOffset;
     } d;
 };
-
 
 #endif
