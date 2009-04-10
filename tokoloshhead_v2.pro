@@ -29,3 +29,4 @@ linux {
     MOC_DIR = .moc
     UI_DIR = .ui
 }
+CONFIG -= app_bundle
