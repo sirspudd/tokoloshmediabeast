@@ -7,6 +7,8 @@ class Settings
 public:
     static template <class T>  T value(const QString &key)
     {
+        // check QApplication args first (maybe even store it if it
+        // finds -store there. Pretty cool huh?
         if (
 
 
