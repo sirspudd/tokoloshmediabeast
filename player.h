@@ -6,13 +6,31 @@ class TokoloshInterface;
 
 class SubPixmap : public QPixmap
 {
+public:
+    SubPixmap() {}
     SubPixmap(const QString &path, const QRect &sub)
         : QPixmap(path), subRect(sub)
-    {}
+    {
+        if (sub.isEmpty()
+            sub = rect();
+    }
+
+    SubPixmap(const QPixmap &pix, const QRect &sub)
+        : QPixmap(pix), subRect(sub)
+    {
+        if (sub.isEmpty()
+            sub = rect();
+    }
+
     void render(QPainter *p, const QPoint &pos)
     {
         p->drawPixmap(pos, *this, subRect);
     }
+    void render(QPainter *p, const QRect &rect)
+    {
+        p->drawPixmap(rect, *this, subRect);
+    }
+
 private:
     QRect subRect;
 };
@@ -29,10 +47,7 @@ private:
            Checked = 0x2,
            NumStates = 4
     };
-    struct Private {
-        QPixmap pixmaps[NumStates];
-        QRect sourceRects[NumStates];
-    } d;
+    SubPixmap pixmaps[NumStates];
     friend class Player;
 };
 
@@ -62,12 +77,22 @@ private:
         ButtonCount
     };
 
+    enum ElementType {
+        Stereo,
+        Mono,
+        ElementCount
+    };
+
+    struct Element {
+        SubPixmap pixmap;
+        QRect geometry;
+    };
+
     struct Private {
+        SubPixmap main;
         Button *buttons[ButtonCount];
-        QPixmap main;
-        QRect mono, stereo;
         enum ChannelMode { Stereo, Mono } channelMode;
-        QPixmap monoStereo;
+        Element elements[ElementCount];
         TokoloshInterface *tokolosh;
         QPoint dragOffset;
     } d;

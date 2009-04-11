@@ -10,11 +10,11 @@ void Button::paintEvent(QPaintEvent *)
 {
     // ### use paintEvent->rect() ?
     int i = isChecked() ? Checked : Normal;
-    if (isDown() && !d.pixmaps[i | Pressed].isNull())
+    if (isDown() && !pixmaps[i | Pressed].isNull())
         i |= Pressed;
-    if (!d.pixmaps[i].isNull()) {
+    if (!pixmaps[i].isNull()) {
         QPainter p(this);
-        p.drawPixmap(QPoint(0, 0), d.pixmaps[i], d.sourceRects[i]);
+        pixmaps[i].render(&p, QPoint(0, 0));
     }
 }
 
@@ -122,94 +122,69 @@ bool Player::setSkin(const QString &path)
     struct {
         const char *name;
         const QRect rect;
-        QPixmap *pixmap;
-        QRect *sourceRect;
+        SubPixmap *pixmap;
     } const buttons[] = {
         { "main", QRect(), &d.main, 0 },
 
         { "cbuttons", QRect(0, 0, 22, 18),
-          &d.buttons[Previous]->d.pixmaps[Button::Normal],
-          &d.buttons[Previous]->d.sourceRects[Button::Normal] },
+          &d.buttons[Previous]->pixmaps[Button::Normal] },
         { "cbuttons", QRect(0, 18, 22, 18),
-          &d.buttons[Previous]->d.pixmaps[Button::Pressed],
-          &d.buttons[Previous]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Previous]->pixmaps[Button::Pressed] },
 
         { "cbuttons", QRect(22, 0, 22, 18),
-          &d.buttons[Play]->d.pixmaps[Button::Normal],
-          &d.buttons[Play]->d.sourceRects[Button::Normal] },
+          &d.buttons[Play]->pixmaps[Button::Normal] },
         { "cbuttons", QRect(22, 18, 22, 18),
-          &d.buttons[Play]->d.pixmaps[Button::Pressed],
-          &d.buttons[Play]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Play]->pixmaps[Button::Pressed] },
 
         { "cbuttons", QRect(44, 0, 22, 18),
-          &d.buttons[Pause]->d.pixmaps[Button::Normal],
-          &d.buttons[Pause]->d.sourceRects[Button::Normal] },
+          &d.buttons[Pause]->pixmaps[Button::Normal] },
         { "cbuttons", QRect(44, 18, 22, 18),
-          &d.buttons[Pause]->d.pixmaps[Button::Pressed],
-          &d.buttons[Pause]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Pause]->pixmaps[Button::Pressed] },
 
         { "cbuttons", QRect(66, 0, 22, 18),
-          &d.buttons[Next]->d.pixmaps[Button::Normal],
-          &d.buttons[Next]->d.sourceRects[Button::Normal] },
+          &d.buttons[Next]->pixmaps[Button::Normal] },
         { "cbuttons", QRect(66, 18, 22, 18),
-          &d.buttons[Next]->d.pixmaps[Button::Pressed],
-          &d.buttons[Next]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Next]->pixmaps[Button::Pressed] },
 
         { "cbuttons", QRect(88, 0, 22, 18),
-          &d.buttons[Stop]->d.pixmaps[Button::Normal],
-          &d.buttons[Stop]->d.sourceRects[Button::Normal] },
+          &d.buttons[Stop]->pixmaps[Button::Normal] },
         { "cbuttons", QRect(88, 18, 22, 18),
-          &d.buttons[Stop]->d.pixmaps[Button::Pressed],
-          &d.buttons[Stop]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Stop]->pixmaps[Button::Pressed] },
 
         { "cbuttons", QRect(114, 0, 22, 16),
-          &d.buttons[Open]->d.pixmaps[Button::Normal],
-          &d.buttons[Open]->d.sourceRects[Button::Normal] },
+          &d.buttons[Open]->pixmaps[Button::Normal] },
         { "cbuttons", QRect(114, 16, 22, 16),
-          &d.buttons[Open]->d.pixmaps[Button::Pressed],
-          &d.buttons[Open]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Open]->pixmaps[Button::Pressed] },
 
         { "shufrep", QRect(0, 0, 43, 15),
-          &d.buttons[Repeat]->d.pixmaps[Button::Normal],
-          &d.buttons[Repeat]->d.sourceRects[Button::Normal] },
+          &d.buttons[Repeat]->pixmaps[Button::Normal] },
         { "shufrep", QRect(0, 15, 43, 15),
-          &d.buttons[Repeat]->d.pixmaps[Button::Pressed],
-          &d.buttons[Repeat]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Repeat]->pixmaps[Button::Pressed] },
         { "shufrep", QRect(0, 30, 43, 15),
-          &d.buttons[Repeat]->d.pixmaps[Button::Checked],
-          &d.buttons[Repeat]->d.sourceRects[Button::Checked] },
+          &d.buttons[Repeat]->pixmaps[Button::Checked] },
         { "shufrep", QRect(0, 45, 43, 15),
-          &d.buttons[Repeat]->d.pixmaps[Button::Checked|Button::Pressed],
-          &d.buttons[Repeat]->d.sourceRects[Button::Checked|Button::Pressed] },
+          &d.buttons[Repeat]->pixmaps[Button::Checked|Button::Pressed] },
 
         { "shufrep", QRect(28, 0, 43, 15),
-          &d.buttons[Shuffle]->d.pixmaps[Button::Normal],
-          &d.buttons[Shuffle]->d.sourceRects[Button::Normal] },
+          &d.buttons[Shuffle]->pixmaps[Button::Normal] },
         { "shufrep", QRect(28, 15, 43, 15),
-          &d.buttons[Shuffle]->d.pixmaps[Button::Pressed],
-          &d.buttons[Shuffle]->d.sourceRects[Button::Pressed] },
+          &d.buttons[Shuffle]->pixmaps[Button::Pressed] },
         { "shufrep", QRect(28, 30, 43, 15),
-          &d.buttons[Shuffle]->d.pixmaps[Button::Checked],
-          &d.buttons[Shuffle]->d.sourceRects[Button::Checked] },
+          &d.buttons[Shuffle]->pixmaps[Button::Checked] },
         { "shufrep", QRect(28, 45, 43, 15),
-          &d.buttons[Shuffle]->d.pixmaps[Button::Checked|Button::Pressed],
-          &d.buttons[Shuffle]->d.sourceRects[Button::Checked|Button::Pressed] },
+          &d.buttons[Shuffle]->pixmaps[Button::Checked|Button::Pressed] },
 
         { "shufrep", QRect(0, 61, 23, 13),
-          &d.buttons[Equalizer]->d.pixmaps[Button::Normal],
-          &d.buttons[Equalizer]->d.sourceRects[Button::Normal] },
+          &d.buttons[Equalizer]->pixmaps[Button::Normal] },
         { "shufrep", QRect(0, 73, 23, 13),
-          &d.buttons[Equalizer]->d.pixmaps[Button::Checked],
-          &d.buttons[Equalizer]->d.sourceRects[Button::Checked] },
+          &d.buttons[Equalizer]->pixmaps[Button::Checked] },
 
         { "shufrep", QRect(23, 61, 23, 13),
-          &d.buttons[Playlist]->d.pixmaps[Button::Normal],
-          &d.buttons[Playlist]->d.sourceRects[Button::Normal] },
+          &d.buttons[Playlist]->pixmaps[Button::Normal] },
         { "shufrep", QRect(23, 73, 23, 13),
-          &d.buttons[Playlist]->d.pixmaps[Button::Checked],
-          &d.buttons[Playlist]->d.sourceRects[Button::Checked] },
+          &d.buttons[Playlist]->pixmaps[Button::Checked] },
 
-        { 0, QRect(), 0, 0 }
+        { 0, QRect(), 0 }
     };
     QHash<const char *, QPixmap> pixmaps;
     for (int i=0; buttons[i].name; ++i) {
