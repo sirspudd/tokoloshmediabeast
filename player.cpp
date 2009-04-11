@@ -21,6 +21,7 @@ void Button::paintEvent(QPaintEvent *)
 Player::Player(QWidget *parent)
     : QWidget(parent)
 {
+    d.channelMode = Private::Stereo;
     setFixedSize(275, 116);
     d.tokolosh = 0;
     if (!Config::isEnabled("titlebar", false))
@@ -66,6 +67,11 @@ void Player::paintEvent(QPaintEvent *e)
     QPainter p(this);
     p.fillRect(rect(), Qt::blue);
     p.drawPixmap(e->rect(), d.main, e->rect()); // main brush instead?
+//     if (d.channelMode == Private::Stereo) {
+//         p.drawPixmap(d.stereo,
+//     } else {
+
+//     }
 }
 
 void Player::mousePressEvent(QMouseEvent *e)
@@ -155,6 +161,13 @@ bool Player::setSkin(const QString &path)
         { "cbuttons", QRect(88, 18, 22, 18),
           &d.buttons[Stop]->d.pixmaps[Button::Pressed],
           &d.buttons[Stop]->d.sourceRects[Button::Pressed] },
+
+        { "cbuttons", QRect(114, 0, 22, 16),
+          &d.buttons[Open]->d.pixmaps[Button::Normal],
+          &d.buttons[Open]->d.sourceRects[Button::Normal] },
+        { "cbuttons", QRect(114, 16, 22, 16),
+          &d.buttons[Open]->d.pixmaps[Button::Pressed],
+          &d.buttons[Open]->d.sourceRects[Button::Pressed] },
 
         { "shufrep", QRect(0, 0, 43, 15),
           &d.buttons[Repeat]->d.pixmaps[Button::Normal],

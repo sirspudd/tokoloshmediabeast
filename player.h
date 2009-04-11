@@ -4,6 +4,19 @@
 #include <QtGui>
 class TokoloshInterface;
 
+class SubPixmap : public QPixmap
+{
+    SubPixmap(const QString &path, const QRect &sub)
+        : QPixmap(path), subRect(sub)
+    {}
+    void render(QPainter *p, const QPoint &pos)
+    {
+        p->drawPixmap(pos, *this, subRect);
+    }
+private:
+    QRect subRect;
+};
+
 class Button : public QAbstractButton
 {
     Q_OBJECT
@@ -52,6 +65,9 @@ private:
     struct Private {
         Button *buttons[ButtonCount];
         QPixmap main;
+        QRect mono, stereo;
+        enum ChannelMode { Stereo, Mono } channelMode;
+        QPixmap monoStereo;
         TokoloshInterface *tokolosh;
         QPoint dragOffset;
     } d;
