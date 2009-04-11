@@ -21,6 +21,28 @@ struct RenderObject
     QRect targetRect, sourceRect;
 };
 
+class TextObject
+{
+public:
+    TextObject()
+    {}
+
+    void render(QPainter *p, const QPoint &pos, const QString &string)
+    {
+        QPoint pp = pos;
+        for (int i=0; i<string.size(); ++i) {
+            const QRect r = sourceRects.value(string.at(i));
+            Q_ASSERT(!r.isNull());
+            p->drawPixmap(pp, pixmap, r);
+            pp += QPoint(r.width(), r.height());
+        }
+    }
+
+    QPixmap pixmap;
+    QMap<QChar, QRect> sourceRects;
+};
+
+
 class Button : public QAbstractButton
 {
     Q_OBJECT
@@ -76,6 +98,7 @@ private:
         enum ChannelMode { Stereo, Mono } channelMode;
         RenderObject elements[ElementCount];
         TokoloshInterface *tokolosh;
+        TextObject numbers, numbersEx;
         QPoint dragOffset;
     } d;
 };

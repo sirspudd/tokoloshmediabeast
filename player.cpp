@@ -46,8 +46,8 @@ Player::Player(QWidget *parent)
         { tr("OpenSkin"), SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
         { tr("Shuffle"), SLOT(shuffle()), tr("Shuffle"), QRect(164, 86, 43, 15), true },
         { tr("Repeat"), SLOT(repeat()), tr("Repeat"), QRect(209, 86, 43, 15), true },
-        { tr("Equalizer"), SLOT(equalizer()), tr("Equalizer"), QRect(219, 60, 23, 13), true },
-        { tr("Playlist"), SLOT(playlist()), tr("Playlist"), QRect(242, 60, 23, 13), true },
+        { tr("Equalizer"), SLOT(equalizer()), tr("Equalizer"), QRect(218, 57, 23, 13), true },
+        { tr("Playlist"), SLOT(playlist()), tr("Playlist"), QRect(242, 57, 23, 13), true },
         { QString(), 0, QString(), QRect(), 0 }
     };
 
@@ -159,23 +159,54 @@ bool Player::setSkin(const QString &path)
     };
     QHash<const char *, QPixmap> pixmaps;
     for (int i=0; buttons[i].name; ++i) {
+        QPixmap pixmap;
         if (!pixmaps.contains(buttons[i].name)) {
-            const QPixmap pixmap = ::findPixmap(dir.absolutePath(), files, buttons[i].name);
+            pixmap = ::findPixmap(dir.absolutePath(), files, buttons[i].name);
             if (pixmap.isNull()) {
                 qWarning("Skin invalid. Can't find %s in %s", buttons[i].name, qPrintable(dir.absolutePath()));
+                // ### need to roll back
                 return false;
             }
             pixmaps[buttons[i].name] = pixmap;
+        } else {
+            pixmap = pixmaps.value(buttons[i].name);
         }
-    }
-
-    for (int i=0; buttons[i].name; ++i) {
         Q_ASSERT(buttons[i].renderObject);
-        Q_ASSERT(pixmaps.contains(buttons[i].name));
-        buttons[i].renderObject->pixmap = pixmaps.value(buttons[i].name);
+        buttons[i].renderObject->pixmap = pixmap;
         buttons[i].renderObject->sourceRect = buttons[i].sourceRect;
         buttons[i].renderObject->targetRect = buttons[i].targetRect;
     }
+
+    struct {
+        const char *name;
+        const char *letters;
+        const QSize letterSize; // do I need offset
+        TextObject *textObject;
+    } const textObjects[] = {
+        { "numbers", "0123456789", QSize(9, 13), &d.numbers },
+        { "nums_ex", "0123456789_-", QSize(9, 13), &d.numbers },
+        { 0, 0, QSize(), 0 }
+    };
+
+    for (int i=0; textObjects[i].name; ++i) {
+        TextObject *textObject = textObjects[i].textObject;
+        textObject->pixmap = ::findPixmap(dir.absolutePath(), files, textObjects[i].name);
+        if (textObject->pixmap.isNull()) {
+            qWarning("Skin invalid. Can't find %s in %s", textObjects[i].name, qPrintable(dir.absolutePath()));
+            // ### need to roll back
+            return false;
+        }
+        QRect sourceRect(QPoint(0, 0), textObjects[i].letterSize);
+        for (int j=0; textObjects[i].letters[j]; ++j) {
+            if (textObjects[i].letters[j] == '\n') {
+                sourceRect.moveTopLeft(QPoint(0, sourceRect.y() + sourceRect.height()));
+            } else {
+                textObject->sourceRects[QLatin1Char(textObjects[i].letters[j])] = sourceRect;
+                sourceRect.moveTopLeft(QPoint(sourceRect.x() + sourceRect.width(), sourceRect.y()));
+            }
+        }
+    }
+    // ### a lot of this stuff should be in Player::Player()
     return true;
 }
 
