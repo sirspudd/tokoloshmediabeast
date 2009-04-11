@@ -66,9 +66,8 @@ void Player::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     d.main.render(&p);
-    d.numbers.render(&p, QPoint(10, 10), "143245");
-    d.text.render(&p, QPoint(150, 25), "THIS IS COOL");
-
+//     d.numbers.render(&p, QPoint(10, 10), "143245");
+//     d.text.render(&p, QPoint(150, 25), "THIS IS COOL");
 }
 
 void Player::mousePressEvent(QMouseEvent *e)
