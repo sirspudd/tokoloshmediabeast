@@ -20,6 +20,7 @@ private:
         QPixmap pixmaps[3];
         QRect sourceRects[3];
     } d;
+    friend class Player;
 };
 
 class Player : public QWidget
