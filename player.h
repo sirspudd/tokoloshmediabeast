@@ -4,35 +4,21 @@
 #include <QtGui>
 class TokoloshInterface;
 
-class SubPixmap : public QPixmap
+struct RenderObject
 {
-public:
-    SubPixmap() {}
-    SubPixmap(const QString &path, const QRect &sub)
-        : QPixmap(path), subRect(sub)
+    RenderObject() {}
+    RenderObject(const QRect &tr, const QPixmap &pix, const QRect &sr)
+        : pixmap(pix), targetRect(tr), sourceRect(sr)
+    {}
+    void render(QPainter *p) // ### pass in clip?
     {
-        if (sub.isEmpty()
-            sub = rect();
+        const QRect sr = sourceRect.isNull() ? pixmap.rect() : sourceRect;
+        const QRect tr = targetRect.isNull() ? QRect(QPoint(), sr.size()) : targetRect;
+        p->drawPixmap(tr, pixmap, sr);
     }
 
-    SubPixmap(const QPixmap &pix, const QRect &sub)
-        : QPixmap(pix), subRect(sub)
-    {
-        if (sub.isEmpty()
-            sub = rect();
-    }
-
-    void render(QPainter *p, const QPoint &pos)
-    {
-        p->drawPixmap(pos, *this, subRect);
-    }
-    void render(QPainter *p, const QRect &rect)
-    {
-        p->drawPixmap(rect, *this, subRect);
-    }
-
-private:
-    QRect subRect;
+    QPixmap pixmap;
+    QRect targetRect, sourceRect;
 };
 
 class Button : public QAbstractButton
@@ -47,7 +33,7 @@ private:
            Checked = 0x2,
            NumStates = 4
     };
-    SubPixmap pixmaps[NumStates];
+    RenderObject pixmaps[NumStates];
     friend class Player;
 };
 
@@ -83,16 +69,12 @@ private:
         ElementCount
     };
 
-    struct Element {
-        SubPixmap pixmap;
-        QRect geometry;
-    };
 
     struct Private {
-        SubPixmap main;
+        RenderObject main;
         Button *buttons[ButtonCount];
         enum ChannelMode { Stereo, Mono } channelMode;
-        Element elements[ElementCount];
+        RenderObject elements[ElementCount];
         TokoloshInterface *tokolosh;
         QPoint dragOffset;
     } d;
