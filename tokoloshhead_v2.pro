@@ -3,13 +3,13 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
+TARGET =
 DEPENDPATH += .
 INCLUDEPATH += /Users/anders/tokolosh/tokoloshhead_v2/. .
 
 # Input
-HEADERS += player.h tokolosh_interface.h
-SOURCES += main.cpp player.cpp tokolosh_interface.cpp
+HEADERS += player.h tokolosh_interface.h config.h
+SOURCES += main.cpp player.cpp tokolosh_interface.cpp config.cpp
 CONFIG += qdbus debug
 unix {
     MOC_DIR=.moc

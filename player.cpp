@@ -1,4 +1,5 @@
 #include "player.h"
+#include "config.h"
 
 Button::Button(QWidget *parent)
     : QAbstractButton(parent)
@@ -56,7 +57,8 @@ Player::Player(QWidget *parent)
 {
     setFixedSize(275, 116);
     d.tokolosh = 0;
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+    if (!Config::isEnabled("titlebar", false))
+        setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
     setFocus();
@@ -150,6 +152,7 @@ bool Player::setSkin(const QString &path)
 //     QString main = ::findPixmap(files, "main");
 //     qDebug() << main;
 //     exit(0);
+    return true;
 }
 
 void Player::showEvent(QShowEvent *e)
