@@ -66,6 +66,9 @@ void Player::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     d.main.render(&p);
+    d.numbers.render(&p, QPoint(10, 10), "143245");
+    d.text.render(&p, QPoint(150, 25), "THIS IS COOL");
+
 }
 
 void Player::mousePressEvent(QMouseEvent *e)
@@ -184,7 +187,16 @@ bool Player::setSkin(const QString &path)
         TextObject *textObject;
     } const textObjects[] = {
         { "numbers", "0123456789", QSize(9, 13), &d.numbers },
-        { "nums_ex", "0123456789_-", QSize(9, 13), &d.numbers },
+        { "nums_ex", "0123456789 -", QSize(9, 13), &d.numbers },
+        // ### is this @ larger than other stuff?
+        // could make the last one on each line larger or something?
+        // maybe a nasty hack like if char == '@'
+        // what is this .. character and the one after the dollar?
+        { "text",
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ\"@\n"
+          "0123456789._:()-'!_+\\/[]^&%,=$#\n"
+          "...?. ",
+          QSize(5, 9), &d.text },
         { 0, 0, QSize(), 0 }
     };
 
@@ -202,6 +214,8 @@ bool Player::setSkin(const QString &path)
                 sourceRect.moveTopLeft(QPoint(0, sourceRect.y() + sourceRect.height()));
             } else {
                 textObject->sourceRects[QLatin1Char(textObjects[i].letters[j])] = sourceRect;
+//                 qDebug() << "setting" << textObjects[i].letters[j]
+//                          << "to" << sourceRect.size();
                 sourceRect.moveTopLeft(QPoint(sourceRect.x() + sourceRect.width(), sourceRect.y()));
             }
         }

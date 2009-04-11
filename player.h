@@ -32,14 +32,19 @@ public:
         QPoint pp = pos;
         for (int i=0; i<string.size(); ++i) {
             const QRect r = sourceRects.value(string.at(i));
+            if (r.isNull()) {
+                qDebug() << string << string.at(i);
+            }
             Q_ASSERT(!r.isNull());
             p->drawPixmap(pp, pixmap, r);
-            pp += QPoint(r.width(), r.height());
+            pixmap.copy(r).save(string.at(i) + QLatin1String(".png"), "PNG");
+            qDebug() << string.at(i) << r;
+            pp += QPoint(r.width(), 0);
         }
     }
 
     QPixmap pixmap;
-    QMap<QChar, QRect> sourceRects;
+    QHash<QChar, QRect> sourceRects;
 };
 
 
@@ -98,7 +103,7 @@ private:
         enum ChannelMode { Stereo, Mono } channelMode;
         RenderObject elements[ElementCount];
         TokoloshInterface *tokolosh;
-        TextObject numbers, numbersEx;
+        TextObject numbers, numbersEx, text;
         QPoint dragOffset;
     } d;
 };
