@@ -45,8 +45,8 @@ Player::Player(QWidget *parent)
         { tr("OpenSkin"), SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
         { tr("Shuffle"), SLOT(shuffle()), tr("Shuffle"), QRect(164, 86, 43, 15), true },
         { tr("Repeat"), SLOT(repeat()), tr("Repeat"), QRect(209, 86, 43, 15), true },
-        { tr("Equalizer"), SLOT(equalizer()), tr("Equalizer"), QRect(219, 57, 23, 13), true },
-        { tr("Playlist"), SLOT(playlist()), tr("Playlist"), QRect(242, 57, 23, 13), true },
+        { tr("Equalizer"), SLOT(equalizer()), tr("Equalizer"), QRect(219, 60, 23, 13), true },
+        { tr("Playlist"), SLOT(playlist()), tr("Playlist"), QRect(242, 60, 23, 13), true },
         { QString(), 0, QString(), QRect(), 0 }
     };
 
@@ -181,6 +181,20 @@ bool Player::setSkin(const QString &path)
         { "shufrep", QRect(28, 45, 43, 15),
           &d.buttons[Shuffle]->d.pixmaps[Button::Checked|Button::Pressed],
           &d.buttons[Shuffle]->d.sourceRects[Button::Checked|Button::Pressed] },
+
+        { "shufrep", QRect(0, 61, 23, 13),
+          &d.buttons[Equalizer]->d.pixmaps[Button::Normal],
+          &d.buttons[Equalizer]->d.sourceRects[Button::Normal] },
+        { "shufrep", QRect(0, 73, 23, 13),
+          &d.buttons[Equalizer]->d.pixmaps[Button::Checked],
+          &d.buttons[Equalizer]->d.sourceRects[Button::Checked] },
+
+        { "shufrep", QRect(23, 61, 23, 13),
+          &d.buttons[Playlist]->d.pixmaps[Button::Normal],
+          &d.buttons[Playlist]->d.sourceRects[Button::Normal] },
+        { "shufrep", QRect(23, 73, 23, 13),
+          &d.buttons[Playlist]->d.pixmaps[Button::Checked],
+          &d.buttons[Playlist]->d.sourceRects[Button::Checked] },
 
         { 0, QRect(), 0, 0 }
     };
