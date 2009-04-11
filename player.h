@@ -9,16 +9,16 @@ class Button : public QAbstractButton
     Q_OBJECT
 public:
     Button(QWidget *parent = 0);
-    void setNormalPixmap(const QPixmap &pixmap, const QRect &source);
-    void setDownPixmap(const QPixmap &pixmap, const QRect &source);
-    void setHoverPixmap(const QPixmap &pixmap, const QRect &source);
     void paintEvent(QPaintEvent *e);
 private:
-    enum { Normal, Down, Hover };
-    void setPixmap(int i, const QPixmap &pixmap, const QRect &source);
+    enum { Normal = 0x0,
+           Pressed = 0x1,
+           Checked = 0x2,
+           NumStates = 4
+    };
     struct Private {
-        QPixmap pixmaps[3];
-        QRect sourceRects[3];
+        QPixmap pixmaps[NumStates];
+        QRect sourceRects[NumStates];
     } d;
     friend class Player;
 };
@@ -44,6 +44,7 @@ private:
         OpenSkin,
         Shuffle,
         Repeat,
+        Equalizer,
         Playlist,
         ButtonCount
     };

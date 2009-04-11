@@ -6,51 +6,16 @@ Button::Button(QWidget *parent)
 {
 }
 
-void Button::setNormalPixmap(const QPixmap &pixmap, const QRect &source)
-{
-    setPixmap(Normal, pixmap, source);
-}
-
-void Button::setDownPixmap(const QPixmap &pixmap, const QRect &source)
-{
-    setPixmap(Down, pixmap, source);
-}
-
-void Button::setHoverPixmap(const QPixmap &pixmap, const QRect &source)
-{
-    setAttribute(Qt::WA_Hover, !pixmap.isNull());
-    setPixmap(Hover, pixmap, source);
-}
-
 void Button::paintEvent(QPaintEvent *)
 {
     // ### use paintEvent->rect() ?
-    int i = Normal;
-    if (isDown()) {
-        i = Down;
-    } else if (underMouse() && testAttribute(Qt::WA_Hover)) {
-        i = Hover;
-    }
+    int i = isChecked() ? Checked : Normal;
+    if (isDown() && !d.pixmaps[i | Pressed].isNull())
+        i |= Pressed;
     if (!d.pixmaps[i].isNull()) {
         QPainter p(this);
-        p.drawPixmap(rect(), d.pixmaps[i], d.sourceRects[i]);
-    } else {
-//        QPainter p(this);
-//        p.fillRect(rect(), isDown() ? Qt::blue : Qt::red);
-//         p.drawRect(rect().adjusted(0, 0, -1, -1));
-//         p.drawText(rect(), Qt::AlignCenter, objectName());
+        p.drawPixmap(QPoint(0, 0), d.pixmaps[i], d.sourceRects[i]);
     }
-}
-
-void Button::setPixmap(int idx, const QPixmap &pixmap, const QRect &source)
-{
-    for (int i=0; i<3; ++i) {
-        if (idx != i && !d.pixmaps[i].isNull() && d.sourceRects[i].size() != source.size()) {
-            qWarning() << "Button pixmaps must all be the same size" << source << i << d.sourceRects[i];
-        }
-    }
-    d.pixmaps[idx] = pixmap;
-    d.sourceRects[idx] = source;
 }
 
 Player::Player(QWidget *parent)
@@ -64,23 +29,25 @@ Player::Player(QWidget *parent)
     setAttribute(Qt::WA_NoSystemBackground);
     setFocus();
     struct {
-        QString name;
+        const QString name;
         const char *member;
-        QString tooltip;
-        QRect rect;
-    } buttonInfo[] = {
+        const QString tooltip;
+        const QRect rect;
+        const bool checkable;
+    } const buttonInfo[] = {
         // prev, pause, pause, stop, next
-        { tr("Previous"), SLOT(previous()), tr("Previous"), QRect(16, 86, 22, 18) },
-        { tr("Play"), SLOT(play()), tr("Play"), QRect(38, 86, 22, 18) },
-        { tr("Pause"), SLOT(pause()), tr("Pause"), QRect(60, 86, 22, 18) },
-        { tr("Stop"), SLOT(stop()), tr("Stop"), QRect(82, 86, 22, 18) },
-        { tr("Next"), SLOT(next()), tr("Next"), QRect(104, 86, 22, 18) },
-//         { tr("Open"), SLOT(open()), tr("Open"), QRect(82, 86, 22, 18) },
-//         { tr("OpenSkin"), SLOT(openSkin()), tr("OpenSkin"), QRect(82, 86, 22, 18) },
-//         { tr("Shuffle"), SLOT(shuffle()), tr("Shuffle"), QRect(82, 86, 22, 18) },
-//         { tr("Repeat"), SLOT(repeat()), tr("Repeat"), QRect(82, 86, 22, 18) },
-//         { tr("Playlist"), SLOT(playlist()), tr("Playlist"), QRect(82, 86, 22, 18) },
-        { QString(), 0, QString(), QRect() }
+        { tr("Previous"), SLOT(previous()), tr("Previous"), QRect(16, 86, 22, 18), false },
+        { tr("Play"), SLOT(play()), tr("Play"), QRect(38, 86, 22, 18), false },
+        { tr("Pause"), SLOT(pause()), tr("Pause"), QRect(60, 86, 22, 18), false },
+        { tr("Stop"), SLOT(stop()), tr("Stop"), QRect(82, 86, 22, 18), false },
+        { tr("Next"), SLOT(next()), tr("Next"), QRect(104, 86, 22, 18), false },
+        { tr("Open"), SLOT(open()), tr("Open"), QRect(136, 87, 22, 16), false },
+        { tr("OpenSkin"), SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
+        { tr("Shuffle"), SLOT(shuffle()), tr("Shuffle"), QRect(164, 86, 43, 15), true },
+        { tr("Repeat"), SLOT(repeat()), tr("Repeat"), QRect(209, 86, 43, 15), true },
+        { tr("Equalizer"), SLOT(equalizer()), tr("Equalizer"), QRect(219, 57, 23, 13), true },
+        { tr("Playlist"), SLOT(playlist()), tr("Playlist"), QRect(242, 57, 23, 13), true },
+        { QString(), 0, QString(), QRect(), 0 }
     };
 
     for (int i=0; buttonInfo[i].member; ++i) {
@@ -89,6 +56,7 @@ Player::Player(QWidget *parent)
         d.buttons[i]->setGeometry(buttonInfo[i].rect);
         d.buttons[i]->setObjectName(buttonInfo[i].name);
         d.buttons[i]->setToolTip(buttonInfo[i].tooltip);
+        d.buttons[i]->setCheckable(buttonInfo[i].checkable);
         // connect to tokoloshinterface stuff
     }
 }
@@ -152,16 +120,68 @@ bool Player::setSkin(const QString &path)
         QRect *sourceRect;
     } const buttons[] = {
         { "main", QRect(), &d.main, 0 },
+
         { "cbuttons", QRect(0, 0, 22, 18),
-          &d.buttons[Previous]->d.pixmaps[0], &d.buttons[Previous]->d.sourceRects[0] },
+          &d.buttons[Previous]->d.pixmaps[Button::Normal],
+          &d.buttons[Previous]->d.sourceRects[Button::Normal] },
+        { "cbuttons", QRect(0, 18, 22, 18),
+          &d.buttons[Previous]->d.pixmaps[Button::Pressed],
+          &d.buttons[Previous]->d.sourceRects[Button::Pressed] },
+
         { "cbuttons", QRect(22, 0, 22, 18),
-          &d.buttons[Play]->d.pixmaps[0], &d.buttons[Play]->d.sourceRects[0] },
+          &d.buttons[Play]->d.pixmaps[Button::Normal],
+          &d.buttons[Play]->d.sourceRects[Button::Normal] },
+        { "cbuttons", QRect(22, 18, 22, 18),
+          &d.buttons[Play]->d.pixmaps[Button::Pressed],
+          &d.buttons[Play]->d.sourceRects[Button::Pressed] },
+
         { "cbuttons", QRect(44, 0, 22, 18),
-          &d.buttons[Pause]->d.pixmaps[0], &d.buttons[Pause]->d.sourceRects[0] },
+          &d.buttons[Pause]->d.pixmaps[Button::Normal],
+          &d.buttons[Pause]->d.sourceRects[Button::Normal] },
+        { "cbuttons", QRect(44, 18, 22, 18),
+          &d.buttons[Pause]->d.pixmaps[Button::Pressed],
+          &d.buttons[Pause]->d.sourceRects[Button::Pressed] },
+
         { "cbuttons", QRect(66, 0, 22, 18),
-          &d.buttons[Next]->d.pixmaps[0], &d.buttons[Next]->d.sourceRects[0] },
+          &d.buttons[Next]->d.pixmaps[Button::Normal],
+          &d.buttons[Next]->d.sourceRects[Button::Normal] },
+        { "cbuttons", QRect(66, 18, 22, 18),
+          &d.buttons[Next]->d.pixmaps[Button::Pressed],
+          &d.buttons[Next]->d.sourceRects[Button::Pressed] },
+
         { "cbuttons", QRect(88, 0, 22, 18),
-          &d.buttons[Stop]->d.pixmaps[0], &d.buttons[Stop]->d.sourceRects[0] },
+          &d.buttons[Stop]->d.pixmaps[Button::Normal],
+          &d.buttons[Stop]->d.sourceRects[Button::Normal] },
+        { "cbuttons", QRect(88, 18, 22, 18),
+          &d.buttons[Stop]->d.pixmaps[Button::Pressed],
+          &d.buttons[Stop]->d.sourceRects[Button::Pressed] },
+
+        { "shufrep", QRect(0, 0, 43, 15),
+          &d.buttons[Repeat]->d.pixmaps[Button::Normal],
+          &d.buttons[Repeat]->d.sourceRects[Button::Normal] },
+        { "shufrep", QRect(0, 15, 43, 15),
+          &d.buttons[Repeat]->d.pixmaps[Button::Pressed],
+          &d.buttons[Repeat]->d.sourceRects[Button::Pressed] },
+        { "shufrep", QRect(0, 30, 43, 15),
+          &d.buttons[Repeat]->d.pixmaps[Button::Checked],
+          &d.buttons[Repeat]->d.sourceRects[Button::Checked] },
+        { "shufrep", QRect(0, 45, 43, 15),
+          &d.buttons[Repeat]->d.pixmaps[Button::Checked|Button::Pressed],
+          &d.buttons[Repeat]->d.sourceRects[Button::Checked|Button::Pressed] },
+
+        { "shufrep", QRect(28, 0, 43, 15),
+          &d.buttons[Shuffle]->d.pixmaps[Button::Normal],
+          &d.buttons[Shuffle]->d.sourceRects[Button::Normal] },
+        { "shufrep", QRect(28, 15, 43, 15),
+          &d.buttons[Shuffle]->d.pixmaps[Button::Pressed],
+          &d.buttons[Shuffle]->d.sourceRects[Button::Pressed] },
+        { "shufrep", QRect(28, 30, 43, 15),
+          &d.buttons[Shuffle]->d.pixmaps[Button::Checked],
+          &d.buttons[Shuffle]->d.sourceRects[Button::Checked] },
+        { "shufrep", QRect(28, 45, 43, 15),
+          &d.buttons[Shuffle]->d.pixmaps[Button::Checked|Button::Pressed],
+          &d.buttons[Shuffle]->d.sourceRects[Button::Checked|Button::Pressed] },
+
         { 0, QRect(), 0, 0 }
     };
     QHash<const char *, QPixmap> pixmaps;
@@ -189,9 +209,9 @@ bool Player::setSkin(const QString &path)
     return true;
 }
 
-void Player::showEvent(QShowEvent *e)
-{
-    activateWindow();
-    raise();
-    QWidget::showEvent(e);
-}
+    void Player::showEvent(QShowEvent *e)
+    {
+        activateWindow();
+        raise();
+        QWidget::showEvent(e);
+    }
