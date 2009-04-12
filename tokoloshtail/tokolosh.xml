@@ -1,0 +1,65 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/com/TokoloshXineBackend/MediaPlayer">
+    <interface name="com.TokoloshXineBackend.TokoloshMediaPlayer">
+        <method name="play"/>
+        <method name="stop"/>
+        <method name="prev"/>
+        <method name="next"/>
+        <method name="pause"/>
+        <method name="clearLibraryPaths"/>
+        <method name="repopulateLibrary"/>
+        <method name="toggleMute"/>
+        <method name="toggleShuffle"/>
+        <method name="toggleRepeat"/>
+        <method name="syncClients"/>
+        <method name="dumpFiles"/>
+        <signal name="crashed"/>
+        <method name="shuffle">
+            <arg name="enabled" type="b" direction="out"/>
+        </method>
+        <method name="repeat">
+            <arg name="enabled" type="b" direction="out"/>
+        </method>
+        <method name="volume">
+            <arg name="volume" type="i" direction="out"/>
+        </method>
+        <method name="setVolume">
+            <arg name="volume" type="i" direction="in"/>
+        </method>
+        <method name="load">
+            <arg name="path" type="s" direction="in"/>
+        </method>
+        <signal name="trackChanged">
+            <arg name="path" type="s" direction="out"/>
+        </method>
+        <method name="libraryPaths">
+            <arg name="pathList" type="v" direction="out"/>
+        </method>
+        <method name="addLibraryPath">
+            <arg name="path" type="s" direction="in"/>
+        </method>
+        <method name="removeLibraryPath">
+            <arg name="path" type="s" direction="in"/>
+        </method>
+        <method name="libraryContents">
+            <arg name="fileList" type="v" direction="out"/>
+        </method>
+        <method name="playlistWindow">
+            <arg name="windowSize" type="i" direction="in"/>
+            <arg name="trackList" type="v" direction="out"/>
+        </method>
+        <method name="speed">
+            <arg name="speed" type="i" direction="out"/>
+        </method>
+        <method name="setSpeed">
+            <arg name="speed" type="i" direction="in"/>
+        </method>
+        <method name="loadMediaLibrary">
+            <arg name="libPath" type="s" direction="in"/>
+        </method>
+        <method name="saveMediaLibrary">
+            <arg name="libPath" type="s" direction="in"/>
+        </method>
+    </interface>
+</node>
