@@ -1,4 +1,0 @@
-template = SUBDIRS
-
-SUBDIRS += tokoloshhead \
-	   tokoloshtail
