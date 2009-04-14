@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
 
-SUBDIRS += tokoloshhead \
+SUBDIRS += tokoloshhead_v2 \
 	   tokoloshtail

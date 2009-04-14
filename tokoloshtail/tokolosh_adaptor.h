@@ -9,8 +9,8 @@
  * before re-generating it.
  */
 
-#ifndef TOKOLOSH_ADAPTOR_H_1239555810
-#define TOKOLOSH_ADAPTOR_H_1239555810
+#ifndef TOKOLOSH_ADAPTOR_H_1239680579
+#define TOKOLOSH_ADAPTOR_H_1239680579
 
 #include <QtCore/QObject>
 #include <QtDBus/QtDBus>
