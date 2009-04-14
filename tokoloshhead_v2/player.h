@@ -74,6 +74,8 @@ public:
     void mouseMoveEvent(QMouseEvent *e);
     bool setSkin(const QString &path);
     void showEvent(QShowEvent *e);
+public slots:
+    void open();
 private:
     enum ButtonType {
         Previous = 0,

@@ -34,24 +34,25 @@ Player::Player(QWidget *parent)
     setFocus();
     struct {
         const QString name;
+        QObject *receiver;
         const char *member;
         const QString tooltip;
         const QRect rect;
         const bool checkable;
     } const buttonInfo[] = {
         // prev, pause, pause, stop, next
-        { tr("Previous"), SLOT(previous()), tr("Previous"), QRect(16, 86, 22, 18), false },
-        { tr("Play"), SLOT(play()), tr("Play"), QRect(38, 86, 22, 18), false },
-        { tr("Pause"), SLOT(pause()), tr("Pause"), QRect(60, 86, 22, 18), false },
-        { tr("Stop"), SLOT(stop()), tr("Stop"), QRect(82, 86, 22, 18), false },
-        { tr("Next"), SLOT(next()), tr("Next"), QRect(104, 86, 22, 18), false },
-        { tr("Open"), SLOT(open()), tr("Open"), QRect(136, 87, 22, 16), false },
-        { tr("OpenSkin"), SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
-        { tr("Shuffle"), SLOT(shuffle()), tr("Shuffle"), QRect(164, 86, 43, 15), true },
-        { tr("Repeat"), SLOT(repeat()), tr("Repeat"), QRect(209, 86, 43, 15), true },
-        { tr("Equalizer"), SLOT(equalizer()), tr("Equalizer"), QRect(218, 57, 23, 13), true },
-        { tr("Playlist"), SLOT(playlist()), tr("Playlist"), QRect(242, 57, 23, 13), true },
-        { QString(), 0, QString(), QRect(), 0 }
+        { tr("Previous"), d.tokolosh, SLOT(prev()), tr("Previous"), QRect(16, 86, 22, 18), false },
+        { tr("Play"), d.tokolosh, SLOT(play()), tr("Play"), QRect(38, 86, 22, 18), false },
+        { tr("Pause"), d.tokolosh, SLOT(pause()), tr("Pause"), QRect(60, 86, 22, 18), false },
+        { tr("Stop"), d.tokolosh, SLOT(stop()), tr("Stop"), QRect(82, 86, 22, 18), false },
+        { tr("Next"), d.tokolosh, SLOT(next()), tr("Next"), QRect(104, 86, 22, 18), false },
+        { tr("Open"), this, SLOT(open()), tr("Open"), QRect(136, 87, 22, 16), false },
+        { tr("OpenSkin"), d.tokolosh, SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
+        { tr("Shuffle"), d.tokolosh, SLOT(toggleShuffle()), tr("Shuffle"), QRect(164, 86, 43, 15), true },
+        { tr("Repeat"), d.tokolosh, SLOT(repeat()), tr("Repeat"), QRect(209, 86, 43, 15), true },
+        { tr("Equalizer"), d.tokolosh, SLOT(equalizer()), tr("Equalizer"), QRect(218, 57, 23, 13), true },
+        { tr("Playlist"), d.tokolosh, SLOT(playlist()), tr("Playlist"), QRect(242, 57, 23, 13), true },
+        { QString(), 0, 0, QString(), QRect(), 0 }
     };
 
     for (int i=0; buttonInfo[i].member; ++i) {
@@ -61,7 +62,7 @@ Player::Player(QWidget *parent)
         d.buttons[i]->setObjectName(buttonInfo[i].name);
         d.buttons[i]->setToolTip(buttonInfo[i].tooltip);
         d.buttons[i]->setCheckable(buttonInfo[i].checkable);
-//        connect(d.buttons[i], d.tokolosh, buttonInfo[i].member);
+        connect(d.buttons[i], SIGNAL(clicked()), buttonInfo[i].receiver, buttonInfo[i].member);
     }
 }
 
@@ -231,4 +232,20 @@ void Player::showEvent(QShowEvent *e)
     activateWindow();
     raise();
     QWidget::showEvent(e);
+}
+
+void Player::open()
+{
+    const QStringList list = QFileDialog::getOpenFileNames(this, tr("Open files"),
+                                                           Config::value<QString>("lastDirectory", QDir::homePath()),
+                                                           tr("Images(*.mp3 *.ogg *.flac)"));
+    if (list.isEmpty())
+        return;
+    Config::setValue("lastDirectory", QFileInfo(list.first()).absolutePath());
+    foreach(QString path, list) {
+        d.tokolosh->load(path);
+    }
+
+    // ### need to query these extension
+
 }
