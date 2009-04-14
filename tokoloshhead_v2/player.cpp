@@ -1,5 +1,6 @@
 #include "player.h"
 #include "config.h"
+#include "tokolosh_interface.h"
 
 Button::Button(QWidget *parent)
     : QAbstractButton(parent)
@@ -23,7 +24,9 @@ Player::Player(QWidget *parent)
 {
     d.channelMode = Private::Stereo;
     setFixedSize(275, 116);
-    d.tokolosh = 0;
+    d.tokolosh = new TokoloshInterface("com.TokoloshXineBackend.TokoloshMediaPlayer", "/TokoloshMediaPlayer",
+                                       QDBusConnection::sessionBus(),
+                                       this);
     if (!Config::isEnabled("titlebar", false))
         setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_OpaquePaintEvent);
@@ -58,7 +61,7 @@ Player::Player(QWidget *parent)
         d.buttons[i]->setObjectName(buttonInfo[i].name);
         d.buttons[i]->setToolTip(buttonInfo[i].tooltip);
         d.buttons[i]->setCheckable(buttonInfo[i].checkable);
-        // connect to tokoloshinterface stuff
+//        connect(d.buttons[i], d.tokolosh, buttonInfo[i].member);
     }
 }
 

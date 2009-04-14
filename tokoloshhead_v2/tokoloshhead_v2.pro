@@ -30,3 +30,4 @@ linux {
     UI_DIR = .ui
 }
 CONFIG -= app_bundle
+QT += dbus
