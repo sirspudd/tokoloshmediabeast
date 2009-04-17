@@ -62,6 +62,7 @@ public:
     void showEvent(QShowEvent *e);
 public slots:
     void open();
+    void openSkin();
 private:
     enum ButtonType {
         Previous = 0,

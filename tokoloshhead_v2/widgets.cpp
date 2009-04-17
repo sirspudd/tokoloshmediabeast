@@ -1,4 +1,5 @@
 #include "widgets.h"
+#include "config.h"
 
 SliderStyle::SliderStyle()
     : QWindowsStyle()
@@ -58,6 +59,11 @@ void Button::paintEvent(QPaintEvent *)
     if (!pixmaps[i].pixmap.isNull()) {
         QPainter p(this);
         pixmaps[i].render(&p);
+        static const bool debugGeometry = Config::isEnabled("debuggeometry");
+        if (debugGeometry) {
+            p.setPen(Qt::white);
+            p.drawRect(0, 0, width() - 1, height() - 1);
+        }
     }
 }
 
@@ -74,12 +80,13 @@ void Slider::mousePressEvent(QMouseEvent *e)
         if (style()->subControlRect(QStyle::CC_Slider, &slider, QStyle::SC_SliderHandle, this)
             .contains(e->pos())) {
             style()->setProperty("SH_Slider_AbsoluteSetButtons", Qt::NoButton);
+            update();
         } else {
             style()->setProperty("SH_Slider_AbsoluteSetButtons", Qt::LeftButton);
         }
     }
+
     QSlider::mousePressEvent(e);
-    update();
     e->accept();
 }
 

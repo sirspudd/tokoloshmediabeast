@@ -33,9 +33,9 @@ Player::Player(QWidget *parent)
         { tr("Stop"), d.tokolosh, SLOT(stop()), tr("Stop"), QRect(82, 86, 22, 18), false },
         { tr("Next"), d.tokolosh, SLOT(next()), tr("Next"), QRect(104, 86, 22, 18), false },
         { tr("Open"), this, SLOT(open()), tr("Open"), QRect(136, 87, 22, 16), false },
-        { tr("OpenSkin"), d.tokolosh, SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
-        { tr("Shuffle"), d.tokolosh, SLOT(toggleShuffle()), tr("Shuffle"), QRect(164, 86, 43, 15), true },
-        { tr("Repeat"), d.tokolosh, SLOT(repeat()), tr("Repeat"), QRect(209, 86, 43, 15), true },
+        { tr("OpenSkin"), this, SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
+        { tr("Shuffle"), d.tokolosh, SLOT(toggleShuffle()), tr("Shuffle"), QRect(164, 86, 32, 15), true },
+        { tr("Repeat"), d.tokolosh, SLOT(repeat()), tr("Repeat"), QRect(209, 86, 32, 15), true },
         { tr("Equalizer"), d.tokolosh, SLOT(equalizer()), tr("Equalizer"), QRect(218, 57, 23, 13), true },
         { tr("Playlist"), d.tokolosh, SLOT(playlist()), tr("Playlist"), QRect(242, 57, 23, 13), true },
         { QString(), 0, 0, QString(), QRect(), 0 }
@@ -55,10 +55,11 @@ Player::Player(QWidget *parent)
     d.posBarSlider->setRange(0, 600);
     d.posBarSlider->setStyle(d.posBarStyle = new SliderStyle);
 
-    d.volumeSlider = new Slider(Qt::Horizontal, this);
-    d.volumeSlider->setGeometry(14, 72, 253, 10);
-    d.volumeSlider->setRange(0, 600);
-    d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle);
+//     d.volumeSlider = new Slider(Qt::Horizontal, this);
+//     d.volumeSlider->setGeometry(14, 72, 253, 10);
+//     d.volumeSlider->setRange(0, 600);
+//     d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle);
+    d.volumeSlider = 0;
 }
 
 void Player::paintEvent(QPaintEvent *)
@@ -160,15 +161,15 @@ bool Player::setSkin(const QString &path)
         { "cbuttons", QRect(114, 0, 22, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Normal] },
         { "cbuttons", QRect(114, 16, 22, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Pressed] },
 
-        { "shufrep", QRect(0, 0, 43, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Normal] },
-        { "shufrep", QRect(0, 15, 43, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Pressed] },
-        { "shufrep", QRect(0, 30, 43, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Checked] },
-        { "shufrep", QRect(0, 45, 43, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Checked|Button::Pressed] },
+        { "shufrep", QRect(0, 0, 32, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Normal] },
+        { "shufrep", QRect(0, 15, 32, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Pressed] },
+        { "shufrep", QRect(0, 30, 32, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Checked] },
+        { "shufrep", QRect(0, 45, 32, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Checked|Button::Pressed] },
 
-        { "shufrep", QRect(28, 0, 43, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Normal] },
-        { "shufrep", QRect(28, 15, 43, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Pressed] },
-        { "shufrep", QRect(28, 30, 43, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Checked] },
-        { "shufrep", QRect(28, 45, 43, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Checked|Button::Pressed] },
+        { "shufrep", QRect(28, 0, 32, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Normal] },
+        { "shufrep", QRect(28, 15, 32, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Pressed] },
+        { "shufrep", QRect(28, 30, 32, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Checked] },
+        { "shufrep", QRect(28, 45, 32, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Checked|Button::Pressed] },
 
         { "shufrep", QRect(0, 61, 23, 13), QRect(), &d.buttons[Equalizer]->pixmaps[Button::Normal] },
         { "shufrep", QRect(0, 73, 23, 13), QRect(), &d.buttons[Equalizer]->pixmaps[Button::Checked] },
@@ -265,4 +266,14 @@ void Player::open()
 
     // ### need to query these extensions
 
+}
+
+void Player::openSkin()
+{
+    QFileDialog fd(this);
+    fd.setFileMode(QFileDialog::DirectoryOnly);
+    fd.setDirectory(Config::value<QString>("lastSkinDirectory", QCoreApplication::applicationDirPath()));
+    if (fd.exec()) {
+        Config::setValue<QString>("lastSkinDirectory", fd.directory().absolutePath());
+    }
 }
