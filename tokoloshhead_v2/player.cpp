@@ -2,6 +2,63 @@
 #include "config.h"
 #include "tokolosh_interface.h"
 
+SliderStyle::SliderStyle()
+    : QWindowsStyle()
+{
+}
+
+void SliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
+                                     QPainter *p, const QWidget *widget) const
+{
+//     p->fillRect(opt->rect, Qt::green);
+//     QWindowsStyle::drawComplexControl(cc, opt, p, widget);
+//     return;
+    Q_ASSERT(cc == CC_Slider);
+    Q_UNUSED(cc);
+    const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(opt);
+    RenderObject *object = (slider->state & State_Sunken
+                            && slider->activeSubControls == SC_SliderHandle ? &pressed : &normal);
+    QRect &r = object->targetRect;
+    const double w = slider->rect.width() - r.width();
+    const double x = double(slider->sliderValue - slider->minimum) / double(slider->maximum - slider->minimum) * w;
+//    qDebug() << x << (x * w) << slider->sliderValue << slider->sliderPosition;
+    // ### use sliderPosition?
+//     qDebug() << slider->sliderValue << slider->sliderPosition << x << w
+//              << slider->minimum << slider->maximum
+//              << double(slider->sliderValue - slider->minimum) < double(slider->maximum - slider->minimum);
+
+    r.moveLeft(int(x));
+//    qDebug() << slider->sliderValue << r;
+    object->render(p);
+}
+
+// QRect SliderStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
+//                                   SubControl sc, const QWidget *widget) const
+// {
+
+// }
+
+
+int SliderStyle::styleHint(StyleHint stylehint, const QStyleOption *opt, const QWidget *widget,
+                           QStyleHintReturn* returnData) const
+{
+    if (stylehint == SH_Slider_AbsoluteSetButtons) {
+        return qVariantValue<int>(property("SH_Slider_AbsoluteSetButtons"));
+    } else {
+        return QWindowsStyle::styleHint(stylehint, opt, widget, returnData);
+    }
+}
+
+int SliderStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const
+{
+    switch (m) {
+    case PM_SliderLength: return normal.targetRect.width();
+//    case PM_MaximumDragDistance: return INT_MAX;
+    default: break;
+    }
+    return QWindowsStyle::pixelMetric(m, opt, widget);
+}
+
 Button::Button(QWidget *parent)
     : QAbstractButton(parent)
 {
@@ -22,9 +79,11 @@ void Button::paintEvent(QPaintEvent *)
 Player::Player(QWidget *parent)
     : QWidget(parent)
 {
+//    startTimer(100);
     d.channelMode = Private::Stereo;
     setFixedSize(275, 116);
-    d.tokolosh = new TokoloshInterface("com.TokoloshXineBackend.TokoloshMediaPlayer", "/TokoloshMediaPlayer",
+    d.tokolosh = new TokoloshInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
+                                       "/TokoloshMediaPlayer",
                                        QDBusConnection::sessionBus(),
                                        this);
     if (!Config::isEnabled("titlebar", false))
@@ -64,6 +123,10 @@ Player::Player(QWidget *parent)
         d.buttons[i]->setCheckable(buttonInfo[i].checkable);
         connect(d.buttons[i], SIGNAL(clicked()), buttonInfo[i].receiver, buttonInfo[i].member);
     }
+    d.posBarSlider = new Slider(Qt::Horizontal, this);
+    d.posBarSlider->setGeometry(14, 72, 253, 10);
+    d.posBarSlider->setRange(0, 600);
+    d.posBarSlider->setStyle(&d.posBarStyle);
 }
 
 void Player::paintEvent(QPaintEvent *)
@@ -223,6 +286,15 @@ bool Player::setSkin(const QString &path)
             }
         }
     }
+    const QPixmap sliderPixmap = ::findPixmap(dir.absolutePath(), files, "posbar");
+    if (sliderPixmap.isNull())
+        return false;
+    d.posBarStyle.normal.pixmap = sliderPixmap;
+    d.posBarStyle.normal.sourceRect = QRect(278, 0, 30, 10);
+    d.posBarStyle.normal.targetRect = QRect(0, 0, 30, 10);
+    d.posBarStyle.pressed.pixmap = sliderPixmap;
+    d.posBarStyle.pressed.sourceRect = QRect(248, 0, 30, 10);
+    d.posBarStyle.pressed.targetRect = QRect(0, 0, 30, 10);
     // ### a lot of this stuff should be in Player::Player()
     return true;
 }
@@ -238,7 +310,7 @@ void Player::open()
 {
     const QStringList list = QFileDialog::getOpenFileNames(this, tr("Open files"),
                                                            Config::value<QString>("lastDirectory", QDir::homePath()),
-                                                           tr("Images(*.mp3 *.ogg *.flac)"));
+                                                           tr("Music files(*.mp3 *.ogg *.flac)"));
     if (list.isEmpty())
         return;
     Config::setValue("lastDirectory", QFileInfo(list.first()).absolutePath());
@@ -248,4 +320,38 @@ void Player::open()
 
     // ### need to query these extension
 
+}
+
+
+void Player::timerEvent(QTimerEvent *e)
+{
+//     qDebug() << d.posBarSlider->value() << d.posBarSlider->minimum() << d.posBarSlider->maximum();
+//     d.posBarSlider->setValue((d.posBarSlider->value() + 1) % d.posBarSlider->maximum());
+//     qDebug() << d.posBarSlider->value();
+}
+
+void Slider::mousePressEvent(QMouseEvent *e)
+{
+    if (e->button() == Qt::LeftButton) {
+        QStyleOptionSlider slider;
+        initStyleOption(&slider);
+        if (style()->subControlRect(QStyle::CC_Slider, &slider, QStyle::SC_SliderHandle, this)
+            .contains(e->pos())) {
+            style()->setProperty("SH_Slider_AbsoluteSetButtons", Qt::NoButton);
+        } else {
+            style()->setProperty("SH_Slider_AbsoluteSetButtons", Qt::LeftButton);
+        }
+    }
+    QSlider::mousePressEvent(e);
+    e->accept();
+}
+
+void Slider::mouseMoveEvent(QMouseEvent *e)
+{
+    const QRect r = rect();
+    QMouseEvent me(e->type(), QPoint(qBound(r.left(), e->x(), r.right()),
+                                     qBound(r.top(), e->y(), r.bottom())),
+                   e->button(), e->buttons(), e->modifiers());
+    QSlider::mouseMoveEvent(&me); // don't want to snap back
+    e->accept();
 }

@@ -47,6 +47,30 @@ public:
     QHash<QChar, QRect> sourceRects;
 };
 
+class SliderStyle : public QWindowsStyle
+{
+public:
+    SliderStyle();
+    virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
+                                    const QWidget *widget = 0) const;
+//     virtual QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
+//                                  SubControl sc, const QWidget *widget = 0) const;
+    virtual int pixelMetric(PixelMetric m, const QStyleOption *opt = 0, const QWidget *widget = 0) const;
+    virtual int styleHint(StyleHint stylehint, const QStyleOption *opt = 0,
+                          const QWidget *widget = 0, QStyleHintReturn* returnData = 0) const;
+private:
+    friend class Player;
+    mutable RenderObject normal, pressed;
+};
+
+class Slider : public QSlider
+{
+public:
+    Slider(Qt::Orientation o, QWidget *parent) : QSlider(o, parent) {}
+    void mousePressEvent(QMouseEvent *e);
+    void mouseMoveEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *e) { QSlider::mouseReleaseEvent(e); e->accept(); }
+};
 
 class Button : public QAbstractButton
 {
@@ -74,6 +98,7 @@ public:
     void mouseMoveEvent(QMouseEvent *e);
     bool setSkin(const QString &path);
     void showEvent(QShowEvent *e);
+    void timerEvent(QTimerEvent *e);
 public slots:
     void open();
 private:
@@ -98,7 +123,6 @@ private:
         ElementCount
     };
 
-
     struct Private {
         RenderObject main;
         Button *buttons[ButtonCount];
@@ -107,6 +131,8 @@ private:
         TokoloshInterface *tokolosh;
         TextObject numbers, numbersEx, text;
         QPoint dragOffset;
+        QSlider *posBarSlider;
+        SliderStyle posBarStyle; // does this get deleted by someone else?
     } d;
 };
 
