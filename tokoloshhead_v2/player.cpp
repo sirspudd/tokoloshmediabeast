@@ -6,7 +6,7 @@
 Player::Player(QWidget *parent)
     : QWidget(parent)
 {
-//    startTimer(100);
+    setContextMenuPolicy(Qt::ActionsContextMenu);
     d.channelMode = Private::Stereo;
     setFixedSize(275, 116);
     d.tokolosh = new TokoloshInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
@@ -18,38 +18,93 @@ Player::Player(QWidget *parent)
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
     setFocus();
+    const char *separator = "";
     struct {
-        const QString name;
+        const char *name;
         QObject *receiver;
         const char *member;
         const QString tooltip;
         const QRect rect;
         const bool checkable;
+        const QKeySequence shortcut;
     } const buttonInfo[] = {
         // prev, pause, pause, stop, next
-        { tr("Previous"), d.tokolosh, SLOT(prev()), tr("Previous"), QRect(16, 86, 22, 18), false },
-        { tr("Play"), d.tokolosh, SLOT(play()), tr("Play"), QRect(38, 86, 22, 18), false },
-        { tr("Pause"), d.tokolosh, SLOT(pause()), tr("Pause"), QRect(60, 86, 22, 18), false },
-        { tr("Stop"), d.tokolosh, SLOT(stop()), tr("Stop"), QRect(82, 86, 22, 18), false },
-        { tr("Next"), d.tokolosh, SLOT(next()), tr("Next"), QRect(104, 86, 22, 18), false },
-        { tr("Open"), this, SLOT(open()), tr("Open"), QRect(136, 87, 22, 16), false },
-        { tr("OpenSkin"), this, SLOT(openSkin()), tr("OpenSkin"), QRect(246, 84, 30, 20), false },
-        { tr("Shuffle"), d.tokolosh, SLOT(toggleShuffle()), tr("Shuffle"), QRect(164, 86, 32, 15), true },
-        { tr("Repeat"), d.tokolosh, SLOT(repeat()), tr("Repeat"), QRect(209, 86, 32, 15), true },
-        { tr("Equalizer"), d.tokolosh, SLOT(equalizer()), tr("Equalizer"), QRect(218, 57, 23, 13), true },
-        { tr("Playlist"), d.tokolosh, SLOT(playlist()), tr("Playlist"), QRect(242, 57, 23, 13), true },
-        { QString(), 0, 0, QString(), QRect(), 0 }
+        { "Previous", d.tokolosh, SLOT(prev()), tr("Previous"),
+          QRect(16, 86, 22, 18), false, Qt::Key_Z },
+        { "Play", d.tokolosh, SLOT(play()), tr("Play"),
+          QRect(38, 86, 22, 18), false, Qt::Key_X },
+        { "Pause", d.tokolosh, SLOT(pause()), tr("Pause"),
+          QRect(60, 86, 22, 18), false, Qt::Key_C },
+        { "Stop", d.tokolosh, SLOT(stop()), tr("Stop"),
+          QRect(82, 86, 22, 18), false, Qt::Key_V },
+        { "Next", d.tokolosh, SLOT(next()), tr("Next"),
+          QRect(104, 86, 22, 18), false, Qt::Key_B },
+        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
+        { "Open", this, SLOT(open()), tr("Open"), QRect(136, 87, 22, 16),
+          false, QKeySequence::Open },
+        { "OpenSkin", this, SLOT(openSkin()), tr("OpenSkin"),
+          QRect(246, 84, 30, 20), false, Qt::ControlModifier + Qt::Key_S },
+        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
+        { "Shuffle", d.tokolosh, SLOT(toggleShuffle()), tr("Shuffle"),
+          QRect(164, 86, 32, 15), true, Qt::Key_Z }, // is there a shortcut for this one?
+        { "Repeat", d.tokolosh, SLOT(repeat()), tr("Repeat"),
+          QRect(209, 86, 32, 15), true, Qt::Key_R }, // is there a shortcut for this one?
+        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
+        { "Equalizer", d.tokolosh, SLOT(equalizer()), tr("Equalizer"),
+          QRect(218, 57, 23, 13), true, Qt::Key_E },
+        { "Playlist", d.tokolosh, SLOT(playlist()), tr("Playlist"),
+          QRect(242, 57, 23, 13), true, Qt::Key_P },
+        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
+        { 0, 0, 0, QString(), QRect(), false, QKeySequence() }
     };
 
+    int index = 0;
     for (int i=0; buttonInfo[i].member; ++i) {
-        Q_ASSERT(i < ButtonCount);
-        d.buttons[i] = new Button(this);
-        d.buttons[i]->setGeometry(buttonInfo[i].rect);
-        d.buttons[i]->setObjectName(buttonInfo[i].name);
-        d.buttons[i]->setToolTip(buttonInfo[i].tooltip);
-        d.buttons[i]->setCheckable(buttonInfo[i].checkable);
-        connect(d.buttons[i], SIGNAL(clicked()), buttonInfo[i].receiver, buttonInfo[i].member);
+        if (buttonInfo[i].member == separator) {
+            QAction *sep = new QAction(this);
+            sep->setSeparator(true);
+            addAction(sep);
+            continue;
+        }
+        Q_ASSERT(index < ButtonCount);
+        d.buttons[index] = new Button(this);
+        d.buttons[index]->setGeometry(buttonInfo[i].rect);
+        d.buttons[index]->setObjectName(QString::fromLatin1(buttonInfo[i].name));
+        d.buttons[index]->setToolTip(buttonInfo[i].tooltip);
+        d.buttons[index]->setCheckable(buttonInfo[i].checkable);
+        const QKeySequence shortcut(Config::value<QString>(QString("%1_shortcut").
+                                                           arg(d.buttons[index]->objectName()),
+                                                           buttonInfo[i].shortcut.toString()));
+        d.buttons[index]->setShortcut(shortcut);
+        QAction *action = new QAction(buttonInfo[i].name, this);
+        // ### Configurable? icons?
+        action->setCheckable(buttonInfo[i].checkable);
+        connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
+        connect(d.buttons[index], SIGNAL(clicked()), action, SLOT(trigger()));
+        addAction(action);
+        ++index;
     }
+
+    struct {
+        const QString name;
+        const char *member;
+        const QKeySequence shortcut;
+    } const actions[] = {
+        { tr("&Quit"), SLOT(close()), QKeySequence::Close },
+        { QString(), 0, QKeySequence() }
+    };
+    for (int i=0; actions[i].member; ++i) {
+        QAction *action = new QAction(actions[i].name, this);
+        if (actions[i].member == separator) {
+            action->setSeparator(true);
+        } else {
+            action->setShortcut(actions[i].shortcut);
+            connect(action, SIGNAL(triggered(bool)), this, actions[i].member);
+        }
+        addAction(action);
+    }
+
+
     d.posBarSlider = new Slider(Qt::Horizontal, this);
     d.posBarSlider->setGeometry(14, 72, 253, 10);
     d.posBarSlider->setRange(0, 600);

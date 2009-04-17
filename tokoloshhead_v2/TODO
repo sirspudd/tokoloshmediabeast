@@ -1,0 +1,10 @@
+- GUI for shortcuts, using Config for it now which should continue to work as a backend
+- Volume slider
+- Title bar
+- Cool filedialog for loading skins (previews, disable non-working skins etc)
+- Text stuff
+- Update song position to slider/tokolosh/display
+- Fix repeat shuffle positions
+- Playlist editor
+- Whatever playpaus does
+- Eq
