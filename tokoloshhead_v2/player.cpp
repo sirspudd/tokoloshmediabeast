@@ -15,9 +15,19 @@ static inline const char *activateMember(QAction *)
     return "1trigger()";
 }
 
+static inline QWidget *widget(QAction *a)
+{
+    return a->parentWidget();
+}
+
+static inline QWidget *widget(QWidget *a)
+{
+    return a;
+}
+
 static inline QString unquote(QString string)
 {
-    static QRegExp rx("^'(.*[^\\])'$");
+    static QRegExp rx("^'(.*[^\\\\])'$");
     if (rx.exactMatch(string))
         string = rx.cap(1);
 
@@ -25,9 +35,16 @@ static inline QString unquote(QString string)
     return string;
 }
 
-template <class T>
-static void setShortCuts(T *t, const char *member, const QKeySequence &defaultShortcut)
+inline uint qHash(const QKeySequence &seq) { return qHash(seq.toString()); }
+template <class T> static void setShortcuts(T *t)
 {
+    const QVariant defaultShortcutVariant = t->property("defaultShortcut");
+    if (defaultShortcutVariant.isNull())
+        return;
+    const QKeySequence defaultShortcut = qVariantValue<QKeySequence>(defaultShortcutVariant);
+    if (defaultShortcut.isEmpty())
+        return;
+
     qDeleteAll(qFindChildren<QShortcut*>(t));
     Q_ASSERT(!t->objectName().isEmpty());
     const QString value = Config::value<QString>(QString("Shortcuts/%1").arg(t->objectName()).simplified());
@@ -37,17 +54,30 @@ static void setShortCuts(T *t, const char *member, const QKeySequence &defaultSh
     }
 
     const QStringList list = value.split(' ', QString::SkipEmptyParts);
+    int idx = 0;
+    QSet<QKeySequence> used;
     for (int i=0; i<list.size(); ++i) {
         const QString str = ::unquote(list.at(i));
-        QKeySequence key(str);
+        QKeySequence key;
+        if (str == QLatin1String("[default]")) {
+            key = defaultShortcut;
+        } else {
+            key = QKeySequence(str);
+        }
         if (key.isEmpty()) {
             qWarning("Can't decode key '%s'", qPrintable(str));
+            continue;
         }
-        if (i == 0) {
+        if (used.contains(key))
+            continue;
+        used.insert(key);
+        if (idx == 0) {
             t->setShortcut(key);
         } else {
-            new QShortcut(key, t, ::activateMember(t));
+            new QShortcut(key, ::widget(t), ::activateMember(t));
         }
+
+        ++idx;
     }
 
 
@@ -73,42 +103,42 @@ Player::Player(QWidget *parent)
         const char *name;
         QObject *receiver;
         const char *member;
-        const QString tooltip;
         const QRect rect;
         const bool checkable;
         const QKeySequence shortcut;
     } const buttonInfo[] = {
         // prev, pause, pause, stop, next
-        { "Previous", d.tokolosh, SLOT(prev()), tr("Previous"),
+        { QT_TRANSLATE_NOOP("Player", "Previous"), d.tokolosh, SLOT(prev()),
           QRect(16, 86, 22, 18), false, Qt::Key_Z },
-        { "Play", d.tokolosh, SLOT(play()), tr("Play"),
+        { QT_TRANSLATE_NOOP("Player", "Play"), d.tokolosh, SLOT(play()),
           QRect(38, 86, 22, 18), false, Qt::Key_X },
-        { "Pause", d.tokolosh, SLOT(pause()), tr("Pause"),
+        { QT_TRANSLATE_NOOP("Player", "Pause"), d.tokolosh, SLOT(pause()),
           QRect(60, 86, 22, 18), false, Qt::Key_C },
-        { "Stop", d.tokolosh, SLOT(stop()), tr("Stop"),
+        { QT_TRANSLATE_NOOP("Player", "Stop"), d.tokolosh, SLOT(stop()),
           QRect(82, 86, 22, 18), false, Qt::Key_V },
-        { "Next", d.tokolosh, SLOT(next()), tr("Next"),
+        { QT_TRANSLATE_NOOP("Player", "Next"), d.tokolosh, SLOT(next()),
           QRect(104, 86, 22, 18), false, Qt::Key_B },
-        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
-        { "Open", this, SLOT(open()), tr("Open"), QRect(136, 87, 22, 16),
+        { 0, 0, separator, QRect(), false, QKeySequence() },
+        { QT_TRANSLATE_NOOP("Player", "Open"), this, SLOT(open()),  QRect(136, 87, 22, 16),
           false, QKeySequence::Open },
-        { "OpenSkin", this, SLOT(openSkin()), tr("OpenSkin"),
+        { QT_TRANSLATE_NOOP("Player", "OpenSkin"), this, SLOT(openSkin()),
           QRect(246, 84, 30, 20), false, Qt::ControlModifier + Qt::Key_S },
-        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
-        { "Shuffle", d.tokolosh, SLOT(toggleShuffle()), tr("Shuffle"),
+        { 0, 0, separator, QRect(), false, QKeySequence() },
+        { QT_TRANSLATE_NOOP("Player", "Shuffle"), d.tokolosh, SLOT(toggleShuffle()),
           QRect(164, 86, 32, 15), true, Qt::ControlModifier + Qt::Key_Z }, // is there a shortcut for this one?
-        { "Repeat", d.tokolosh, SLOT(repeat()), tr("Repeat"),
+        { QT_TRANSLATE_NOOP("Player", "Repeat"), d.tokolosh, SLOT(repeat()),
           QRect(209, 86, 32, 15), true, Qt::Key_R }, // is there a shortcut for this one?
-        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
-        { "Equalizer", d.tokolosh, SLOT(equalizer()), tr("Equalizer"),
+        { 0, 0, separator, QRect(), false, QKeySequence() },
+        { QT_TRANSLATE_NOOP("Player", "Equalizer"), d.tokolosh, SLOT(equalizer()),
           QRect(218, 57, 23, 13), true, Qt::Key_E },
-        { "Playlist", d.tokolosh, SLOT(playlist()), tr("Playlist"),
+        { QT_TRANSLATE_NOOP("Player", "Playlist"), d.tokolosh, SLOT(playlist()),
           QRect(242, 57, 23, 13), true, Qt::Key_P },
-        { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
-        { 0, 0, 0, QString(), QRect(), false, QKeySequence() }
+        { 0, 0, separator, QRect(), false, QKeySequence() },
+        { 0, 0, 0, QRect(), false, QKeySequence() }
     };
 
     int index = 0;
+    const bool debugButtons = Config::isEnabled("debugButtons");
     for (int i=0; buttonInfo[i].member; ++i) {
         if (buttonInfo[i].member == separator) {
             QAction *sep = new QAction(this);
@@ -120,64 +150,42 @@ Player::Player(QWidget *parent)
         d.buttons[index] = new Button(this);
         d.buttons[index]->setGeometry(buttonInfo[i].rect);
         d.buttons[index]->setObjectName(QString::fromLatin1(buttonInfo[i].name));
-        d.buttons[index]->setToolTip(buttonInfo[i].tooltip);
+        d.buttons[index]->setToolTip(QApplication::translate("Playlist", buttonInfo[i].name));
         d.buttons[index]->setCheckable(buttonInfo[i].checkable);
-        bool found = false;
-        int shortcutIdx = 1;
-        const QString key = QString("Shortcuts/%1%2").arg(d.buttons[index]->objectName());
-        forever {
-            const QString name = Config::value<QString>(key.arg(shortcutIdx == 1
-                                                                ? QString()
-                                                                : QString("_%1").arg(shortcutIdx))).
-                                 trimmed();
-            if (name.isEmpty())
-                break;
-            const QKeySequence shortcut(name);
-            if (shortcut.isEmpty()) {
-                break;
-            }
-            found = true;
-            if (shortcutIdx > 1) {
-                new QShortcut(shortcut, d.buttons[i], SLOT(animateClick()));
-            } else {
-                d.buttons[index]->setShortcut(shortcut);
-            }
-            ++shortcutIdx;
-        }
-        if (!found)
-            d.buttons[index]->setShortcut(buttonInfo[i].shortcut);
-
+        d.buttons[index]->setProperty("defaultShortcut", buttonInfo[i].shortcut);
         QAction *action = new QAction(buttonInfo[i].name, this);
         // ### icons?
         action->setCheckable(buttonInfo[i].checkable);
         connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
         connect(d.buttons[index], SIGNAL(clicked()), action, SLOT(trigger()));
+        if (debugButtons)
+            connect(d.buttons[index], SIGNAL(clicked()), this, SLOT(debugButton()));
         addAction(action);
         ++index;
     }
 
     struct {
-        const QString name;
+        const char *name;
         const char *member;
         const QKeySequence shortcut;
     } const actions[] = {
-        { tr("&Quit"), SLOT(close()), QKeySequence::Close },
+        { QT_TRANSLATE_NOOP("Player", "&Quit"), SLOT(close()), QKeySequence::Close },
 // #ifdef QT_DEBUG
-//         { tr("&Toggle debug geometry"), SLOT(toggleDebugGeometry()), },
+//         { QT_TRANSLATE_NOOP("&Toggle debug geometry"), SLOT(toggleDebugGeometry()), },
 // #endif
-        { QString(), 0, QKeySequence() }
+        { 0, 0, QKeySequence() }
     };
     for (int i=0; actions[i].member; ++i) {
-        QAction *action = new QAction(actions[i].name, this);
+        QAction *action = new QAction(QCoreApplication::translate("Player", actions[i].name), this);
+        action->setObjectName(QString::fromLatin1(actions[i].name));
         if (actions[i].member == separator) {
             action->setSeparator(true);
         } else {
-            action->setShortcut(actions[i].shortcut);
+            action->setProperty("defaultShortcut", buttonInfo[i].shortcut);
             connect(action, SIGNAL(triggered(bool)), this, actions[i].member);
         }
         addAction(action);
     }
-
 
     d.posBarSlider = new Slider(Qt::Horizontal, this);
     d.posBarSlider->setGeometry(14, 72, 253, 10);
@@ -189,6 +197,7 @@ Player::Player(QWidget *parent)
 //     d.volumeSlider->setRange(0, 600);
 //     d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle);
     d.volumeSlider = 0;
+    reloadSettings();
 }
 
 void Player::paintEvent(QPaintEvent *)
@@ -405,4 +414,20 @@ void Player::openSkin()
     if (fd.exec()) {
         Config::setValue<QString>("lastSkinDirectory", fd.directory().absolutePath());
     }
+}
+
+void Player::reloadSettings()
+{
+    foreach(QAction *a, actions()) {
+        ::setShortcuts(a);
+    }
+
+    for (int i=0; i<ButtonCount; ++i) {
+        ::setShortcuts(d.buttons[i]);
+    }
+}
+
+void Player::debugButton()
+{
+    qDebug() << sender()->objectName();
 }

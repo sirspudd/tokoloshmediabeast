@@ -63,6 +63,8 @@ public:
 public slots:
     void open();
     void openSkin();
+    void reloadSettings();
+    void debugButton();
 private:
     enum ButtonType {
         Previous = 0,
