@@ -3,9 +3,55 @@
 #include "config.h"
 #include "tokolosh_interface.h"
 
+// could use stringrefs as well
+
+static inline const char *activateMember(QAbstractButton *)
+{
+    return "1animateClick()";
+}
+
+static inline const char *activateMember(QAction *)
+{
+    return "1trigger()";
+}
+
+static inline QString unquote(QString string)
+{
+    static QRegExp rx("^'(.*[^\\])'$");
+    if (rx.exactMatch(string))
+        string = rx.cap(1);
+
+    string.replace("\\'", "'");
+    return string;
+}
+
 template <class T>
-static void initShortCuts(T *t, const QString &name, const char *member)
-{} // use this for both buttons and actions
+static void setShortCuts(T *t, const char *member, const QKeySequence &defaultShortcut)
+{
+    qDeleteAll(qFindChildren<QShortcut*>(t));
+    Q_ASSERT(!t->objectName().isEmpty());
+    const QString value = Config::value<QString>(QString("Shortcuts/%1").arg(t->objectName()).simplified());
+    if (value.isEmpty()) {
+        t->setShortcut(defaultShortcut);
+        return;
+    }
+
+    const QStringList list = value.split(' ', QString::SkipEmptyParts);
+    for (int i=0; i<list.size(); ++i) {
+        const QString str = ::unquote(list.at(i));
+        QKeySequence key(str);
+        if (key.isEmpty()) {
+            qWarning("Can't decode key '%s'", qPrintable(str));
+        }
+        if (i == 0) {
+            t->setShortcut(key);
+        } else {
+            new QShortcut(key, t, ::activateMember(t));
+        }
+    }
+
+
+} // use this for both buttons and actions
 
 Player::Player(QWidget *parent)
     : QWidget(parent)
@@ -116,9 +162,9 @@ Player::Player(QWidget *parent)
         const QKeySequence shortcut;
     } const actions[] = {
         { tr("&Quit"), SLOT(close()), QKeySequence::Close },
-#ifdef QT_DEBUG
-        { tr("&Toggle debug geometry"), SLOT(close()),  },
-#endif
+// #ifdef QT_DEBUG
+//         { tr("&Toggle debug geometry"), SLOT(toggleDebugGeometry()), },
+// #endif
         { QString(), 0, QKeySequence() }
     };
     for (int i=0; actions[i].member; ++i) {
