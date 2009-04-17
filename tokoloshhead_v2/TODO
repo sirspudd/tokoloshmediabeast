@@ -8,3 +8,4 @@
 - Playlist editor
 - Whatever playpaus does
 - Eq
+- Refactor some stuff so I do as little as possible in setSkin

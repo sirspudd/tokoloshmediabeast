@@ -154,6 +154,7 @@ Player::Player(QWidget *parent)
         d.buttons[index]->setCheckable(buttonInfo[i].checkable);
         d.buttons[index]->setProperty("defaultShortcut", buttonInfo[i].shortcut);
         QAction *action = new QAction(buttonInfo[i].name, this);
+        connect(action, SIGNAL(toggled(bool)), d.buttons[index], SLOT(setChecked(bool)));
         // ### icons?
         action->setCheckable(buttonInfo[i].checkable);
         connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
@@ -162,6 +163,9 @@ Player::Player(QWidget *parent)
             connect(d.buttons[index], SIGNAL(clicked()), this, SLOT(debugButton()));
         addAction(action);
         ++index;
+        if (buttonInfo[i].checkable && Config::isEnabled(buttonInfo[i].name)) {
+            QTimer::singleShot(0, action, SLOT(trigger()));
+        }
     }
 
     struct {
