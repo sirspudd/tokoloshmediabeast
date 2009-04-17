@@ -62,7 +62,7 @@ public:
         return value == Unset ? defaultValue : (value == True);
     }
 
-    template <typename T> static T value(const QString &key, const T &defaultValue = T())
+    template <typename T> static T value(const QString &key, const T &defaultValue = T(), bool *ok = 0)
     {
         const QStringList args = QCoreApplication::arguments();
         QRegExp rx(QString("--?%1=(.*)").arg(key));
@@ -92,8 +92,13 @@ public:
         }
 
         if (value.isNull()) {
+            if (ok)
+                *ok = false;
             return defaultValue;
         }
+        if (ok)
+            *ok = true;
+
         if (qVariantCanConvert<T>(value)) {
             return qVariantValue<T>(value);
         }

@@ -389,6 +389,10 @@ bool Player::setSkin(const QString &path)
 
 void Player::showEvent(QShowEvent *e)
 {
+    bool ok;
+    const QPoint pos = Config::value<QPoint>("position", QPoint(), &ok);
+    if (ok)
+        move(pos);
     activateWindow();
     raise();
     QWidget::showEvent(e);
@@ -434,4 +438,10 @@ void Player::reloadSettings()
 void Player::debugButton()
 {
     qDebug() << sender()->objectName();
+}
+
+void Player::closeEvent(QCloseEvent *e)
+{
+    Config::setValue("position", pos());
+    QWidget::closeEvent(e);
 }
