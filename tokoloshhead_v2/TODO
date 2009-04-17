@@ -10,3 +10,5 @@
 - Eq
 - Refactor some stuff so I do as little as possible in setSkin
 - Implement double-size stuff (scaling) (graphicsview?)
+- Load songs passed on command line
+- m3u handling
