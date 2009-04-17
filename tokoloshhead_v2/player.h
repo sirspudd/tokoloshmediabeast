@@ -60,7 +60,6 @@ public:
     void mouseMoveEvent(QMouseEvent *e);
     bool setSkin(const QString &path);
     void showEvent(QShowEvent *e);
-    void timerEvent(QTimerEvent *e);
 public slots:
     void open();
 private:

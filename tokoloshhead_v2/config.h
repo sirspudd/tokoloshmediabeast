@@ -65,7 +65,6 @@ public:
     template <typename T> static T value(const QString &key, const T &defaultValue = T())
     {
         const QStringList args = QCoreApplication::arguments();
-        qDebug() << key << args;
         QRegExp rx(QString("--?%1=(.*)").arg(key));
         rx.setCaseSensitivity(Qt::CaseInsensitive);
         QVariant value;

@@ -252,14 +252,6 @@ void Player::open()
         d.tokolosh->load(path);
     }
 
-    // ### need to query these extension
+    // ### need to query these extensions
 
-}
-
-
-void Player::timerEvent(QTimerEvent *e)
-{
-//     qDebug() << d.posBarSlider->value() << d.posBarSlider->minimum() << d.posBarSlider->maximum();
-//     d.posBarSlider->setValue((d.posBarSlider->value() + 1) % d.posBarSlider->maximum());
-//     qDebug() << d.posBarSlider->value();
 }
