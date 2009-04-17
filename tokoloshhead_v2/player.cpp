@@ -185,7 +185,7 @@ bool Player::setSkin(const QString &path)
         TextObject *textObject;
     } const textObjects[] = {
         { "numbers", "0123456789", QSize(9, 13), &d.numbers },
-        { "nums_ex", "0123456789 -", QSize(9, 13), &d.numbers },
+//        { "nums_ex", "0123456789 -", QSize(9, 13), &d.numbers }, // doesn't seem to exist everywhere. Not in YummiYogurt
         // ### is this @ larger than other stuff?
         // could make the last one on each line larger or something?
         // maybe a nasty hack like if char == '@'

@@ -1,0 +1,21 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+        <file>skins/dullSod/cbuttons.xpm</file>
+        <file>skins/dullSod/eq_ex.xpm</file>
+        <file>skins/dullSod/eqmain.xpm</file>
+        <file>skins/dullSod/main.xpm</file>
+        <file>skins/dullSod/Makefile.am</file>
+        <file>skins/dullSod/Makefile.in</file>
+        <file>skins/dullSod/monoster.xpm</file>
+        <file>skins/dullSod/numbers.xpm</file>
+        <file>skins/dullSod/nums_ex.xpm</file>
+        <file>skins/dullSod/playpaus.xpm</file>
+        <file>skins/dullSod/pledit.xpm</file>
+        <file>skins/dullSod/posbar.xpm</file>
+        <file>skins/dullSod/README</file>
+        <file>skins/dullSod/shufrep.xpm</file>
+        <file>skins/dullSod/text.xpm</file>
+        <file>skins/dullSod/titlebar.xpm</file>
+        <file>skins/dullSod/volume.xpm</file>
+    </qresource>
+</RCC>

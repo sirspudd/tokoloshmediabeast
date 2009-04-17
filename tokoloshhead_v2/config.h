@@ -65,6 +65,7 @@ public:
     template <typename T> static T value(const QString &key, const T &defaultValue = T())
     {
         const QStringList args = QCoreApplication::arguments();
+        qDebug() << key << args;
         QRegExp rx(QString("--?%1=(.*)").arg(key));
         rx.setCaseSensitivity(Qt::CaseInsensitive);
         QVariant value;
@@ -73,12 +74,12 @@ public:
             value = rx.cap(1);
             useArg(arg);
         } else {
-            rx.setPattern(QString("--?%1$"));
+            rx.setPattern(QString("--?%1$").arg(key));
             arg = args.indexOf(rx);
             if (arg != -1 && arg + 1 < args.size()) {
                 useArg(arg);
                 useArg(arg + 1);
-                value = args.value(arg);
+                value = args.value(arg + 1);
             }
         }
 

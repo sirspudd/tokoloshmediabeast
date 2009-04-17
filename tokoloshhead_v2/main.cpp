@@ -1,11 +1,12 @@
 #include <QApplication>
-#include <player.h>
+#include "player.h"
+#include "config.h"
 
 int main(int argc, char * argv[])
 {
     QApplication app(argc,argv);
     Player player;
-    player.setSkin(app.arguments().value(1, QString("./skins/dullSod")));
+    player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")));
     player.show();
     return app.exec();
 }

@@ -31,3 +31,4 @@ linux {
 }
 CONFIG -= app_bundle
 QT += dbus
+RESOURCES += tokoloshhead_v2.qrc
