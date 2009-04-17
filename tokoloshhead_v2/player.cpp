@@ -3,6 +3,10 @@
 #include "config.h"
 #include "tokolosh_interface.h"
 
+template <class T>
+static void initShortCuts(T *t, const QString &name, const char *member)
+{} // use this for both buttons and actions
+
 Player::Player(QWidget *parent)
     : QWidget(parent)
 {
@@ -46,7 +50,7 @@ Player::Player(QWidget *parent)
           QRect(246, 84, 30, 20), false, Qt::ControlModifier + Qt::Key_S },
         { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
         { "Shuffle", d.tokolosh, SLOT(toggleShuffle()), tr("Shuffle"),
-          QRect(164, 86, 32, 15), true, Qt::Key_Z }, // is there a shortcut for this one?
+          QRect(164, 86, 32, 15), true, Qt::ControlModifier + Qt::Key_Z }, // is there a shortcut for this one?
         { "Repeat", d.tokolosh, SLOT(repeat()), tr("Repeat"),
           QRect(209, 86, 32, 15), true, Qt::Key_R }, // is there a shortcut for this one?
         { 0, 0, separator, QString(), QRect(), false, QKeySequence() },
@@ -72,12 +76,33 @@ Player::Player(QWidget *parent)
         d.buttons[index]->setObjectName(QString::fromLatin1(buttonInfo[i].name));
         d.buttons[index]->setToolTip(buttonInfo[i].tooltip);
         d.buttons[index]->setCheckable(buttonInfo[i].checkable);
-        const QKeySequence shortcut(Config::value<QString>(QString("%1_shortcut").
-                                                           arg(d.buttons[index]->objectName()),
-                                                           buttonInfo[i].shortcut.toString()));
-        d.buttons[index]->setShortcut(shortcut);
+        bool found = false;
+        int shortcutIdx = 1;
+        const QString key = QString("Shortcuts/%1%2").arg(d.buttons[index]->objectName());
+        forever {
+            const QString name = Config::value<QString>(key.arg(shortcutIdx == 1
+                                                                ? QString()
+                                                                : QString("_%1").arg(shortcutIdx))).
+                                 trimmed();
+            if (name.isEmpty())
+                break;
+            const QKeySequence shortcut(name);
+            if (shortcut.isEmpty()) {
+                break;
+            }
+            found = true;
+            if (shortcutIdx > 1) {
+                new QShortcut(shortcut, d.buttons[i], SLOT(animateClick()));
+            } else {
+                d.buttons[index]->setShortcut(shortcut);
+            }
+            ++shortcutIdx;
+        }
+        if (!found)
+            d.buttons[index]->setShortcut(buttonInfo[i].shortcut);
+
         QAction *action = new QAction(buttonInfo[i].name, this);
-        // ### Configurable? icons?
+        // ### icons?
         action->setCheckable(buttonInfo[i].checkable);
         connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
         connect(d.buttons[index], SIGNAL(clicked()), action, SLOT(trigger()));
@@ -91,6 +116,9 @@ Player::Player(QWidget *parent)
         const QKeySequence shortcut;
     } const actions[] = {
         { tr("&Quit"), SLOT(close()), QKeySequence::Close },
+#ifdef QT_DEBUG
+        { tr("&Toggle debug geometry"), SLOT(close()),  },
+#endif
         { QString(), 0, QKeySequence() }
     };
     for (int i=0; actions[i].member; ++i) {
