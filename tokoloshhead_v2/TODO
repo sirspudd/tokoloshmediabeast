@@ -9,4 +9,4 @@
 - Whatever playpaus does
 - Eq
 - Refactor some stuff so I do as little as possible in setSkin
-- Implement double-size stuff (scaling)
+- Implement double-size stuff (scaling) (graphicsview?)
