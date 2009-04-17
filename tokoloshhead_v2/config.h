@@ -54,6 +54,13 @@ public:
         return value == Unset ? defaultValue : (value == True);
     }
 
+    template <typename T> static bool contains(const QString &key)
+    {
+        bool ok;
+        (void)value<T>(key, T(), &ok);
+        return ok;
+    }
+
     template <typename T> static T value(const QString &key, const T &defaultValue = T(), bool *ok = 0)
     {
         QVariant value = valueFromCommandLine(key);
