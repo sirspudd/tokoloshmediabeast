@@ -4,10 +4,10 @@
 #include "player.h"
 #include <QtGui>
 
-class PosBarSliderStyle : public QWindowsStyle
+class SliderStyle : public QWindowsStyle
 {
 public:
-    PosBarSliderStyle();
+    SliderStyle();
     virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                     const QWidget *widget = 0) const;
     virtual int pixelMetric(PixelMetric m, const QStyleOption *opt = 0, const QWidget *widget = 0) const;
@@ -19,10 +19,10 @@ private:
     RenderObject groovePressed;
 };
 
-class PosBarSlider : public QSlider
+class Slider : public QSlider
 {
 public:
-    PosBarSlider(Qt::Orientation o, QWidget *parent);
+    Slider(Qt::Orientation o, QWidget *parent);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);

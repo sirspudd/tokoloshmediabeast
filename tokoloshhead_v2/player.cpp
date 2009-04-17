@@ -50,10 +50,15 @@ Player::Player(QWidget *parent)
         d.buttons[i]->setCheckable(buttonInfo[i].checkable);
         connect(d.buttons[i], SIGNAL(clicked()), buttonInfo[i].receiver, buttonInfo[i].member);
     }
-    d.posBarSlider = new PosBarSlider(Qt::Horizontal, this);
+    d.posBarSlider = new Slider(Qt::Horizontal, this);
     d.posBarSlider->setGeometry(14, 72, 253, 10);
     d.posBarSlider->setRange(0, 600);
-    d.posBarSlider->setStyle(d.posBarStyle = new PosBarSliderStyle);
+    d.posBarSlider->setStyle(d.posBarStyle = new SliderStyle);
+
+    d.volumeSlider = new Slider(Qt::Horizontal, this);
+    d.volumeSlider->setGeometry(14, 72, 253, 10);
+    d.volumeSlider->setRange(0, 600);
+    d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle);
 }
 
 void Player::paintEvent(QPaintEvent *)

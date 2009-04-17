@@ -47,8 +47,8 @@ public:
     QHash<QChar, QRect> sourceRects;
 };
 
-class PosBarSlider;
-class PosBarSliderStyle;
+class Slider;
+class SliderStyle;
 class Button;
 class Player : public QWidget
 {
@@ -93,8 +93,10 @@ private:
         TokoloshInterface *tokolosh;
         TextObject numbers, numbersEx, text;
         QPoint dragOffset;
-        PosBarSlider *posBarSlider;
-        PosBarSliderStyle *posBarStyle;
+        Slider *posBarSlider;
+        SliderStyle *posBarStyle;
+        Slider *volumeSlider;
+        SliderStyle *volumeStyle;
     } d;
 };
 

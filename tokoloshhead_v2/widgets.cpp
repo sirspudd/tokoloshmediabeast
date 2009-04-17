@@ -1,11 +1,11 @@
 #include "widgets.h"
 
-PosBarSliderStyle::PosBarSliderStyle()
+SliderStyle::SliderStyle()
     : QWindowsStyle()
 {
 }
 
-void PosBarSliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
+void SliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
                                            QPainter *p, const QWidget *) const
 {
     Q_ASSERT(cc == CC_Slider);
@@ -24,7 +24,7 @@ void PosBarSliderStyle::drawComplexControl(ComplexControl cc, const QStyleOption
     object->render(p);
 }
 
-int PosBarSliderStyle::styleHint(StyleHint stylehint, const QStyleOption *opt, const QWidget *widget,
+int SliderStyle::styleHint(StyleHint stylehint, const QStyleOption *opt, const QWidget *widget,
                                  QStyleHintReturn* returnData) const
 {
     if (stylehint == SH_Slider_AbsoluteSetButtons) {
@@ -34,7 +34,7 @@ int PosBarSliderStyle::styleHint(StyleHint stylehint, const QStyleOption *opt, c
     }
 }
 
-int PosBarSliderStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const
+int SliderStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const
 {
     switch (m) {
     case PM_SliderLength: return normal.targetRect.width();
@@ -61,12 +61,12 @@ void Button::paintEvent(QPaintEvent *)
     }
 }
 
-PosBarSlider::PosBarSlider(Qt::Orientation o, QWidget *parent)
+Slider::Slider(Qt::Orientation o, QWidget *parent)
     : QSlider(o, parent)
 {
 }
 
-void PosBarSlider::mousePressEvent(QMouseEvent *e)
+void Slider::mousePressEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton) {
         QStyleOptionSlider slider;
@@ -83,7 +83,7 @@ void PosBarSlider::mousePressEvent(QMouseEvent *e)
     e->accept();
 }
 
-void PosBarSlider::mouseMoveEvent(QMouseEvent *e)
+void Slider::mouseMoveEvent(QMouseEvent *e)
 {
     const QRect r = rect();
     QMouseEvent me(e->type(), QPoint(qBound(r.left(), e->x(), r.right()),
@@ -93,7 +93,7 @@ void PosBarSlider::mouseMoveEvent(QMouseEvent *e)
     e->accept();
 }
 
-void PosBarSlider::mouseReleaseEvent(QMouseEvent *e)
+void Slider::mouseReleaseEvent(QMouseEvent *e)
 {
     QSlider::mouseReleaseEvent(e);
     e->accept();
