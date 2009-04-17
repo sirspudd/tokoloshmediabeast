@@ -89,6 +89,12 @@ Player::Player(QWidget *parent)
     setContextMenuPolicy(Qt::ActionsContextMenu);
     d.channelMode = Private::Stereo;
     setFixedSize(275, 116);
+    bool ok;
+    const QPoint pos = Config::value<QPoint>("position", QPoint(), &ok);
+    if (ok && QApplication::desktop()->availableGeometry(this).contains(QRect(pos, size()))) {
+        move(pos);
+    }
+
     d.tokolosh = new TokoloshInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
                                        "/TokoloshMediaPlayer",
                                        QDBusConnection::sessionBus(),
@@ -389,10 +395,6 @@ bool Player::setSkin(const QString &path)
 
 void Player::showEvent(QShowEvent *e)
 {
-    bool ok;
-    const QPoint pos = Config::value<QPoint>("position", QPoint(), &ok);
-    if (ok)
-        move(pos);
     activateWindow();
     raise();
     QWidget::showEvent(e);

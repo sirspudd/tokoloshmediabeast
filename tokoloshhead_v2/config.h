@@ -1,14 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <QString>
-#include <QStringList>
-#include <QCoreApplication>
-#include <QRegExp>
-#include <QSettings>
-#include <QLatin1String>
-#include <QVariant>
-#include <QDebug>
+#include <QtCore>
 class Config
 {
 public:
@@ -50,10 +43,9 @@ public:
         }
 
         if (value == Unset) {
-            QSettings settings(QSettings::IniFormat, QSettings::UserScope,
-                               QLatin1String("Donders"), QLatin1String("TokoloshUI"));
-            if (settings.contains(key.toLower())) {
-                value = settings.value(key.toLower()).toBool() ? True : False;
+            Settings settings;
+            if (settings->contains(key.toLower())) {
+                value = settings->value(key.toLower()).toBool() ? True : False;
             }
         } else if (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
                    || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)) {
@@ -64,31 +56,16 @@ public:
 
     template <typename T> static T value(const QString &key, const T &defaultValue = T(), bool *ok = 0)
     {
-        const QStringList args = QCoreApplication::arguments();
-        QRegExp rx(QString("--?%1=(.*)").arg(key));
-        rx.setCaseSensitivity(Qt::CaseInsensitive);
-        QVariant value;
-        int arg = args.indexOf(rx);
-        if (arg != -1) {
-            value = rx.cap(1);
-            useArg(arg);
-        } else {
-            rx.setPattern(QString("--?%1$").arg(key));
-            arg = args.indexOf(rx);
-            if (arg != -1 && arg + 1 < args.size()) {
-                useArg(arg);
-                useArg(arg + 1);
-                value = args.value(arg + 1);
-            }
-        }
+        QVariant value = valueFromCommandLine(key);
 
         if (value.isNull()) {
-            value = QSettings(QSettings::IniFormat, QSettings::UserScope,
-                              QLatin1String("Donders"), QLatin1String("TokoloshUI"))
-                    .value(key.toLower());
-        } else if (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
-                   || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)) {
-            Config::setValue(key.toLower(), qVariantValue<T>(value));
+            value = Settings()->value(key.toLower());
+        } else {
+            const QStringList args = QCoreApplication::arguments();
+            if (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
+                || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)) {
+                Config::setValue(key.toLower(), qVariantValue<T>(value));
+            }
         }
 
         if (value.isNull()) {
@@ -113,14 +90,20 @@ public:
 
     template <typename T> static void setValue(const QString &key, const T &t)
     {
-        QSettings(QSettings::IniFormat, QSettings::UserScope,
-                  QLatin1String("Donders"), QLatin1String("TokoloshUI"))
-            .setValue(key, qVariantValue<T>(t));
+        Settings()->setValue(key, qVariantValue<T>(t));
     }
 
     static QStringList unusedArguments();
 private:
+    struct Settings {
+        Settings();
+        ~Settings();
+        inline const QSettings *operator->() const { return settings; }
+        inline QSettings *operator->() { return settings; }
+        QSettings *settings;
+    };
     Config() {}
+    static QVariant valueFromCommandLine(const QString &key);
     static void useArg(int index);
     static QStringList unused;
 };

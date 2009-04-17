@@ -11,6 +11,15 @@ int main(int argc, char * argv[])
         Q_ASSERT(ret);
         Q_UNUSED(ret);
     }
+    foreach(QString arg, Config::unusedArguments()) {
+        if (QFile::exists(arg)) { // does QFile match for dirs?
+            qDebug() << "need to add" << arg;
+        } else if (arg.startsWith('-')) {
+            qWarning("Unknown argument %s", qPrintable(arg));
+        } else {
+            qWarning("%s doesn't seem to exist", qPrintable(arg));
+        }
+    }
     player.show();
     return app.exec();
 }
