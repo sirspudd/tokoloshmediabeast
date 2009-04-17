@@ -1,0 +1,101 @@
+#include "widgets.h"
+
+PosBarSliderStyle::PosBarSliderStyle()
+    : QWindowsStyle()
+{
+}
+
+void PosBarSliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
+                                           QPainter *p, const QWidget *) const
+{
+    Q_ASSERT(cc == CC_Slider);
+    Q_UNUSED(cc);
+    const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(opt);
+    RenderObject *object = (slider->state & State_Sunken
+                            && slider->activeSubControls == SC_SliderHandle ? &pressed : &normal);
+    if (object == &pressed) {
+        groovePressed.render(p);
+    }
+    QRect &r = object->targetRect;
+    const double w = slider->rect.width() - r.width();
+    const double x = double(slider->sliderValue - slider->minimum) / double(slider->maximum - slider->minimum) * w;
+
+    r.moveLeft(int(x));
+    object->render(p);
+}
+
+int PosBarSliderStyle::styleHint(StyleHint stylehint, const QStyleOption *opt, const QWidget *widget,
+                                 QStyleHintReturn* returnData) const
+{
+    if (stylehint == SH_Slider_AbsoluteSetButtons) {
+        return qVariantValue<int>(property("SH_Slider_AbsoluteSetButtons"));
+    } else {
+        return QWindowsStyle::styleHint(stylehint, opt, widget, returnData);
+    }
+}
+
+int PosBarSliderStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const
+{
+    switch (m) {
+    case PM_SliderLength: return normal.targetRect.width();
+//    case PM_MaximumDragDistance: return INT_MAX;
+    default: break;
+    }
+    return QWindowsStyle::pixelMetric(m, opt, widget);
+}
+
+Button::Button(QWidget *parent)
+    : QAbstractButton(parent)
+{
+}
+
+void Button::paintEvent(QPaintEvent *)
+{
+    // ### use paintEvent->rect() ?
+    int i = isChecked() ? Checked : Normal;
+    if (isDown() && !pixmaps[i | Pressed].pixmap.isNull())
+        i |= Pressed;
+    if (!pixmaps[i].pixmap.isNull()) {
+        QPainter p(this);
+        pixmaps[i].render(&p);
+    }
+}
+
+PosBarSlider::PosBarSlider(Qt::Orientation o, QWidget *parent)
+    : QSlider(o, parent)
+{
+}
+
+void PosBarSlider::mousePressEvent(QMouseEvent *e)
+{
+    if (e->button() == Qt::LeftButton) {
+        QStyleOptionSlider slider;
+        initStyleOption(&slider);
+        if (style()->subControlRect(QStyle::CC_Slider, &slider, QStyle::SC_SliderHandle, this)
+            .contains(e->pos())) {
+            style()->setProperty("SH_Slider_AbsoluteSetButtons", Qt::NoButton);
+        } else {
+            style()->setProperty("SH_Slider_AbsoluteSetButtons", Qt::LeftButton);
+        }
+    }
+    QSlider::mousePressEvent(e);
+    update();
+    e->accept();
+}
+
+void PosBarSlider::mouseMoveEvent(QMouseEvent *e)
+{
+    const QRect r = rect();
+    QMouseEvent me(e->type(), QPoint(qBound(r.left(), e->x(), r.right()),
+                                     qBound(r.top(), e->y(), r.bottom())),
+                   e->button(), e->buttons(), e->modifiers());
+    QSlider::mouseMoveEvent(&me); // don't want to snap back
+    e->accept();
+}
+
+void PosBarSlider::mouseReleaseEvent(QMouseEvent *e)
+{
+    QSlider::mouseReleaseEvent(e);
+    e->accept();
+    update();
+}
