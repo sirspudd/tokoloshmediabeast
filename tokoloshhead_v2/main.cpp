@@ -6,7 +6,11 @@ int main(int argc, char * argv[])
 {
     QApplication app(argc,argv);
     Player player;
-    player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")));
+    if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
+        const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
+        Q_ASSERT(ret);
+        Q_UNUSED(ret);
+    }
     player.show();
     return app.exec();
 }

@@ -83,7 +83,8 @@ void Player::mouseMoveEvent(QMouseEvent *e)
     }
 }
 
-static QPixmap findPixmap(const QString &dir, const QStringList &list, const char *buttonName)
+static QPixmap findPixmap(const QString &dir, const QStringList &list, const char *buttonName,
+                          bool warn = true)
 {
     static const QList<QByteArray> formats = QImageReader::supportedImageFormats();
     QRegExp rx(QString("%1\\.(.*)$").arg(buttonName));
@@ -91,29 +92,48 @@ static QPixmap findPixmap(const QString &dir, const QStringList &list, const cha
     const int index = list.indexOf(rx);
     if (index != -1 && formats.contains(rx.cap(1).toLower().toLocal8Bit())) { // toLatin1()?
         QPixmap pix(QString("%1/%2").arg(dir).arg(list.at(index)));
-        if (pix.isNull()) {
+        if (pix.isNull() && warn) {
             qWarning("Can't load image '%s'", qPrintable(QString("%1/%2").arg(dir).arg(list.at(index))));
         }
         return pix;
-    } else {
+    } else if (warn) {
         qWarning("Can't find image '%s'", qPrintable(QString("%1/%2.*").arg(dir).arg(buttonName)));
     }
     return QPixmap();
 }
 
-bool Player::setSkin(const QString &path)
+static bool verifySkin(const QString &path, bool warn)
 {
     const QDir dir(path);
     if (!dir.exists()) {
-        qWarning("%s doesn't seem to exist", qPrintable(path));
+        if (warn)
+            qWarning("%s doesn't seem to exist", qPrintable(path));
         return false;
     }
 
     const QStringList files = dir.entryList();
-    if (files.isEmpty()) {
-        qWarning("No files here %s", qPrintable(dir.absolutePath()));
+    static const char *fileNames[] = {
+        "cbuttons", "eqmain", "monoster", /*"nums_ex",*/ "pledit",
+        "shufrep", "titlebar", "eq_ex", "main", "numbers",
+        "playpaus", "posbar", "text", "volume", 0
+    };
+    for (int i=0; fileNames[i]; ++i) {
+        if (::findPixmap(dir.absolutePath(), files, fileNames[i], warn).isNull()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Player::setSkin(const QString &path)
+{
+    if (!::verifySkin(path, true)) {
         return false;
     }
+
+    QDir dir(path);
+    Q_ASSERT(dir.exists());
+    const QStringList files = dir.entryList();
     struct {
         const char *name;
         const QRect sourceRect;
@@ -162,18 +182,14 @@ bool Player::setSkin(const QString &path)
     for (int i=0; buttons[i].name; ++i) {
         QPixmap pixmap;
         if (!pixmaps.contains(buttons[i].name)) {
-            pixmap = ::findPixmap(dir.absolutePath(), files, buttons[i].name);
-            if (pixmap.isNull()) {
-                qWarning("Skin invalid. Can't find %s in %s", buttons[i].name, qPrintable(dir.absolutePath()));
-                // ### need to roll back
-                return false;
-            }
+            pixmap = ::findPixmap(dir.absolutePath(), files, buttons[i].name, false);
             pixmaps[buttons[i].name] = pixmap;
         } else {
             pixmap = pixmaps.value(buttons[i].name);
         }
         Q_ASSERT(buttons[i].renderObject);
         buttons[i].renderObject->pixmap = pixmap;
+        Q_ASSERT(!pixmap.isNull());
         buttons[i].renderObject->sourceRect = buttons[i].sourceRect;
         buttons[i].renderObject->targetRect = buttons[i].targetRect;
     }
@@ -201,11 +217,7 @@ bool Player::setSkin(const QString &path)
     for (int i=0; textObjects[i].name; ++i) {
         TextObject *textObject = textObjects[i].textObject;
         textObject->pixmap = ::findPixmap(dir.absolutePath(), files, textObjects[i].name);
-        if (textObject->pixmap.isNull()) {
-            qWarning("Skin invalid. Can't find %s in %s", textObjects[i].name, qPrintable(dir.absolutePath()));
-            // ### need to roll back
-            return false;
-        }
+        Q_ASSERT(!textObject->pixmap.isNull());
         QRect sourceRect(QPoint(0, 0), textObjects[i].letterSize);
         for (int j=0; textObjects[i].letters[j]; ++j) {
             if (textObjects[i].letters[j] == '\n') {
@@ -219,8 +231,7 @@ bool Player::setSkin(const QString &path)
         }
     }
     const QPixmap sliderPixmap = ::findPixmap(dir.absolutePath(), files, "posbar");
-    if (sliderPixmap.isNull())
-        return false;
+    Q_ASSERT(!sliderPixmap.isNull());
     d.posBarStyle->normal.pixmap = sliderPixmap;
     d.posBarStyle->normal.sourceRect = QRect(278, 0, 30, 10);
     d.posBarStyle->normal.targetRect = QRect(0, 0, 30, 10);
