@@ -99,8 +99,12 @@ Player::Player(QWidget *parent)
                                        "/TokoloshMediaPlayer",
                                        QDBusConnection::sessionBus(),
                                        this);
-    if (!Config::isEnabled("titlebar", false))
-        setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+    if (!Config::isEnabled("titlebar", false)) {
+        Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
+        if (Config::isEnabled("bypassx11", false))
+            flags |= Qt::X11BypassWindowManagerHint;
+        setWindowFlags(flags);
+    }
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
     setFocus();
