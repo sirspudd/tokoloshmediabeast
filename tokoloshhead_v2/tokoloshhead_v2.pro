@@ -5,11 +5,12 @@
 TEMPLATE = app
 TARGET =
 DEPENDPATH += .
-INCLUDEPATH += /Users/anders/tokolosh/tokoloshhead_v2/. .
+INCLUDEPATH += .
 
 # Input
-HEADERS += player.h tokolosh_interface.h config.h widgets.h
-SOURCES += main.cpp player.cpp tokolosh_interface.cpp config.cpp widgets.cpp
+HEADERS += player.h config.h widgets.h
+SOURCES += main.cpp player.cpp config.cpp widgets.cpp
+!include(../tokoloshclient/tokoloshclient.pri):error("Can't find tokoloshclient.pri")
 CONFIG += qdbus debug
 unix {
     MOC_DIR=.moc
