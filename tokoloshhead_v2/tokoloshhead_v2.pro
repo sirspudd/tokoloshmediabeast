@@ -8,9 +8,8 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-HEADERS += player.h config.h widgets.h
-SOURCES += main.cpp player.cpp config.cpp widgets.cpp
-!include(../tokoloshclient/tokoloshclient.pri):error("Can't find tokoloshclient.pri")
+HEADERS += player.h config.h widgets.h tokolosh_interface.h
+SOURCES += main.cpp player.cpp config.cpp widgets.cpp tokolosh_interface.cpp
 CONFIG += qdbus debug
 unix {
     MOC_DIR=.moc
@@ -21,7 +20,7 @@ unix {
     UI_DIR=tmp/ui
     OBJECTS_DIR=tmp/obj
 }
-linux {
+unix {
     generateInterface.target = GenerateInterface
     generateInterface.commands = sh generateadaptorfiles.sh
     QMAKE_EXTRA_TARGETS += generateInterface
