@@ -48,7 +48,6 @@ template <class T> static void setShortcuts(T *t)
     Q_ASSERT(!t->objectName().isEmpty());
     const QString value = Config::value<QString>(QString("Shortcuts/%1").arg(t->objectName()).simplified());
     if (value.isEmpty()) {
-        qDebug() << "setting" << defaultShortcut << "on" << t;
         t->setShortcut(defaultShortcut);
         return;
     }
@@ -123,18 +122,18 @@ Player::Player(QWidget *parent)
     } const buttonInfo[] = {
         // prev, pause, pause, stop, next
         { QT_TRANSLATE_NOOP("Player", "Previous"), d.tokolosh, SLOT(prev()),
-          QRect(16, 86, 22, 18), false, Qt::Key_Z },
+          QRect(16, 88, 23, 18), false, Qt::Key_Z },
         { QT_TRANSLATE_NOOP("Player", "Play"), d.tokolosh, SLOT(play()),
-          QRect(38, 86, 22, 18), false, Qt::Key_X },
+          QRect(39, 88, 23, 18), false, Qt::Key_X },
         { QT_TRANSLATE_NOOP("Player", "Pause"), d.tokolosh, SLOT(pause()),
-          QRect(60, 86, 22, 18), false, Qt::Key_C },
+          QRect(62, 88, 23, 18), false, Qt::Key_C },
         { QT_TRANSLATE_NOOP("Player", "Stop"), d.tokolosh, SLOT(stop()),
-          QRect(82, 86, 22, 18), false, Qt::Key_V },
+          QRect(85, 88, 23, 18), false, Qt::Key_V },
         { QT_TRANSLATE_NOOP("Player", "Next"), d.tokolosh, SLOT(next()),
-          QRect(104, 86, 22, 18), false, Qt::Key_B },
+          QRect(108, 88, 22, 18), false, Qt::Key_B },
         { 0, 0, separator, QRect(), false, QKeySequence() },
-        { QT_TRANSLATE_NOOP("Player", "Open"), this, SLOT(open()),  QRect(136, 87, 22, 16),
-          false, QKeySequence::Open },
+        { QT_TRANSLATE_NOOP("Player", "Open"), this, SLOT(open()),
+          QRect(136, 89, 22, 16), false, QKeySequence::Open },
         { QT_TRANSLATE_NOOP("Player", "OpenSkin"), this, SLOT(openSkin()),
           QRect(246, 84, 30, 20), false, Qt::ControlModifier + Qt::Key_S },
         { 0, 0, separator, QRect(), false, QKeySequence() },
@@ -152,7 +151,9 @@ Player::Player(QWidget *parent)
     };
 
     int index = 0;
+#ifdef QT_DEBUG
     const bool debugButtons = Config::isEnabled("debugButtons");
+#endif
     for (int i=0; buttonInfo[i].member; ++i) {
         if (buttonInfo[i].member == separator) {
             QAction *sep = new QAction(this);
@@ -173,8 +174,10 @@ Player::Player(QWidget *parent)
         action->setCheckable(buttonInfo[i].checkable);
         connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
         connect(d.buttons[index], SIGNAL(clicked()), action, SLOT(trigger()));
+#ifdef QT_DEBUG
         if (debugButtons)
             connect(d.buttons[index], SIGNAL(clicked()), this, SLOT(debugButton()));
+#endif
         addAction(action);
         ++index;
         if (buttonInfo[i].checkable && Config::isEnabled(buttonInfo[i].name)) {
@@ -182,18 +185,25 @@ Player::Player(QWidget *parent)
         }
     }
 
+    enum CheckStatus {
+        None = 0x0,
+        Checkable = 0x1,
+        Checked = 0x2
+    };
+
     struct {
         const char *name;
         const char *member;
-        const bool checkable;
+        const uint checkstatus;
         const QKeySequence shortcut;
     } const actionInfo[] = {
-        { QT_TRANSLATE_NOOP("Player", "&Quit"), SLOT(close()), false, QKeySequence::Close },
+        { QT_TRANSLATE_NOOP("Player", "&Quit"), SLOT(close()), None, QKeySequence::Close },
 #ifdef QT_DEBUG
         { QT_TRANSLATE_NOOP("Player", "Toggle &debug geometry"), SLOT(toggleDebugGeometry(bool)),
-          true, QKeySequence(Qt::AltModifier + Qt::Key_D) },
+          (Config::isEnabled("debuggeometry") ? Checked|Checkable : Checkable),
+          QKeySequence(Qt::AltModifier + Qt::Key_D) },
         { QT_TRANSLATE_NOOP("Player", "Toggle &overlay"), SLOT(toggleOverlay(bool)),
-          true, QKeySequence(Qt::AltModifier | Qt::Key_O) },
+          Checkable, QKeySequence(Qt::AltModifier | Qt::Key_O) },
 #endif
         { 0, 0, QKeySequence(), false }
     };
@@ -201,7 +211,8 @@ Player::Player(QWidget *parent)
         const QKeySequence shortcut = actionInfo[i].shortcut;
         QAction *action = new QAction(QCoreApplication::translate("Player", actionInfo[i].name), this);
         action->setObjectName(QString::fromLatin1(actionInfo[i].name));
-        action->setCheckable(actionInfo[i].checkable);
+        action->setCheckable(actionInfo[i].checkstatus & Checkable);
+        action->setChecked(actionInfo[i].checkstatus & Checked);
         if (actionInfo[i].member == separator) {
             action->setSeparator(true);
         } else {
@@ -305,23 +316,23 @@ bool Player::setSkin(const QString &path)
     } const buttons[] = {
         { "main", QRect(), QRect(), &d.main },
 
-        { "cbuttons", QRect(0, 0, 22, 18), QRect(), &d.buttons[Previous]->pixmaps[Button::Normal] },
-        { "cbuttons", QRect(0, 18, 22, 18), QRect(), &d.buttons[Previous]->pixmaps[Button::Pressed] },
+        { "cbuttons", QRect(0, 0, 23, 18), QRect(), &d.buttons[Previous]->pixmaps[Button::Normal] },
+        { "cbuttons", QRect(0, 18, 23, 18), QRect(), &d.buttons[Previous]->pixmaps[Button::Pressed] },
 
-        { "cbuttons", QRect(22, 0, 22, 18), QRect(), &d.buttons[Play]->pixmaps[Button::Normal] },
-        { "cbuttons", QRect(22, 18, 22, 18), QRect(), &d.buttons[Play]->pixmaps[Button::Pressed] },
+        { "cbuttons", QRect(23, 0, 23, 18), QRect(), &d.buttons[Play]->pixmaps[Button::Normal] },
+        { "cbuttons", QRect(23, 18, 23, 18), QRect(), &d.buttons[Play]->pixmaps[Button::Pressed] },
 
-        { "cbuttons", QRect(44, 0, 22, 18), QRect(), &d.buttons[Pause]->pixmaps[Button::Normal] },
-        { "cbuttons", QRect(44, 18, 22, 18), QRect(), &d.buttons[Pause]->pixmaps[Button::Pressed] },
+        { "cbuttons", QRect(46, 0, 23, 18), QRect(), &d.buttons[Pause]->pixmaps[Button::Normal] },
+        { "cbuttons", QRect(46, 18, 23, 18), QRect(), &d.buttons[Pause]->pixmaps[Button::Pressed] },
 
-        { "cbuttons", QRect(66, 0, 22, 18), QRect(), &d.buttons[Next]->pixmaps[Button::Normal] },
-        { "cbuttons", QRect(66, 18, 22, 18), QRect(), &d.buttons[Next]->pixmaps[Button::Pressed] },
+        { "cbuttons", QRect(69, 0, 23, 18), QRect(), &d.buttons[Stop]->pixmaps[Button::Normal] },
+        { "cbuttons", QRect(69, 18, 23, 18), QRect(), &d.buttons[Stop]->pixmaps[Button::Pressed] },
 
-        { "cbuttons", QRect(88, 0, 22, 18), QRect(), &d.buttons[Stop]->pixmaps[Button::Normal] },
-        { "cbuttons", QRect(88, 18, 22, 18), QRect(), &d.buttons[Stop]->pixmaps[Button::Pressed] },
+        { "cbuttons", QRect(92, 0, 22, 18), QRect(), &d.buttons[Next]->pixmaps[Button::Normal] },
+        { "cbuttons", QRect(92, 18, 22, 18), QRect(), &d.buttons[Next]->pixmaps[Button::Pressed] },
 
-        { "cbuttons", QRect(114, 0, 22, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Normal] },
-        { "cbuttons", QRect(114, 16, 22, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Pressed] },
+        { "cbuttons", QRect(115, 0, 23, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Normal] },
+        { "cbuttons", QRect(115, 16, 23, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Pressed] },
 
         { "shufrep", QRect(0, 0, 32, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Normal] },
         { "shufrep", QRect(0, 15, 32, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Pressed] },
@@ -451,10 +462,6 @@ void Player::reloadSettings()
     }
 }
 
-void Player::debugButton()
-{
-    qDebug() << sender()->objectName();
-}
 
 void Player::closeEvent(QCloseEvent *e)
 {
@@ -463,6 +470,10 @@ void Player::closeEvent(QCloseEvent *e)
 }
 
 #ifdef QT_DEBUG
+void Player::debugButton()
+{
+    qDebug() << sender()->objectName();
+}
 void Player::toggleDebugGeometry(bool on)
 {
     Config::setEnabled("debuggeometry", on);
@@ -478,7 +489,6 @@ public:
     Overlay(const QPixmap &pix, QWidget *parent)
         : QWidget(parent)
     {
-        setAttribute(Qt::WA_TransparentForMouseEvents);
         QPalette pal = palette();
         pal.setBrush(backgroundRole(), pix);
         setPalette(pal);
@@ -486,6 +496,27 @@ public:
         Q_ASSERT(parent);
         parent->installEventFilter(this);
         setGeometry(parent->rect());
+        setAttribute(Qt::WA_MouseTracking);
+    }
+
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter p(this);
+        p.setPen(Qt::white);
+        const bool debug = Config::isEnabled("debuggeometry");
+        foreach(Button *b, qFindChildren<Button*>(window())) {
+            QRect r = QRect(b->mapTo(window(), QPoint(0, 0)), b->size());
+            if (debug)
+                p.drawRect(r.adjusted(0, 0, -1, -1));
+
+            if (r.contains(QCursor::pos() - window()->pos())) {
+                p.fillRect(r, QColor(255, 0, 0, 70));
+            }
+        }
+    }
+    void mouseMoveEvent(QMouseEvent *)
+    {
+        update();
     }
 
     bool eventFilter(QObject *, QEvent *e)

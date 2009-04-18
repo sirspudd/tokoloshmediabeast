@@ -68,8 +68,8 @@ public slots:
     void open();
     void openSkin();
     void reloadSettings();
-    void debugButton();
 #ifdef QT_DEBUG
+    void debugButton();
     void toggleOverlay(bool on);
     void toggleDebugGeometry(bool on);
 #endif
@@ -79,8 +79,8 @@ private:
         Previous = 0,
         Play,
         Pause,
-        Next,
         Stop,
+        Next,
         Open,
         OpenSkin,
         Shuffle,
