@@ -1,6 +1,7 @@
 #include "player.h"
 #include "widgets.h"
 #include "config.h"
+#include <QDebug>
 #include "tokolosh_interface.h"
 
 static inline const char *activateMember(QAbstractButton *)
@@ -32,6 +33,35 @@ static inline QString unquote(QString string)
 
     string.replace("\\'", "'");
     return string;
+}
+
+class NoDebug
+{
+public:
+    inline NoDebug(){}
+    inline NoDebug(const QDebug &){}
+#if !defined( QT_NO_TEXTSTREAM )
+    inline NoDebug &operator<<(QTextStreamFunction) { return *this; }
+    inline NoDebug &operator<<(QTextStreamManipulator) { return *this; }
+#endif
+    inline NoDebug &space() { return *this; }
+    inline NoDebug &nospace() { return *this; }
+    inline NoDebug &maybeSpace() { return *this; }
+
+#ifndef QT_NO_MEMBER_TEMPLATES
+    template<typename T>
+    inline NoDebug &operator<<(const T &) { return *this; }
+#endif
+};
+
+template <class T>
+static T output() // ### verbosity levels?
+{
+    if (Config::isEnabled("verbose", false)) {
+        return qDebug();
+    } else {
+        return NoDebug();
+    }
 }
 
 inline uint qHash(const QKeySequence &seq) { return qHash(seq.toString()); }

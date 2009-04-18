@@ -1,4 +1,5 @@
 #include "config.h"
+QSettings *Config::instance = 0;
 QStringList Config::unused;
 QStringList Config::unusedArguments()
 {
@@ -21,29 +22,6 @@ void Config::useArg(int index)
     unused[index].clear();
 }
 
-Config::Settings::Settings()
-{
-    QString fileName = valueFromCommandLine(QLatin1String("conf")).toString();
-    if (!fileName.isEmpty()) {
-        if (fileName == QLatin1String("none")
-            || fileName == QLatin1String("null")
-            || fileName == QLatin1String("/dev/null")) {
-            fileName.clear();
-//         } else if (!QFile::exists(fileName)) {
-//             qWarning("%s doesn't seem to exist", qPrintable(fileName));
-        }
-        settings = new QSettings(fileName, QSettings::IniFormat);
-    } else {
-        settings = new QSettings(QSettings::IniFormat, QSettings::UserScope,
-                                 QLatin1String("Donders"), QLatin1String("TokoloshUI"));
-    }
-}
-
-Config::Settings::~Settings()
-{
-    delete settings;
-}
-
 QVariant Config::valueFromCommandLine(const QString &key)
 {
     const QStringList args = QCoreApplication::arguments();
@@ -64,4 +42,25 @@ QVariant Config::valueFromCommandLine(const QString &key)
         }
     }
     return value;
+}
+
+QSettings * Config::settings()
+{
+    if (!instance) {
+        QString fileName = valueFromCommandLine(QLatin1String("conf")).toString();
+        if (!fileName.isEmpty()) {
+            if (fileName == QLatin1String("none")
+                || fileName == QLatin1String("null")
+                || fileName == QLatin1String("/dev/null")) {
+                fileName.clear();
+//         } else if (!QFile::exists(fileName)) {
+//             qWarning("%s doesn't seem to exist", qPrintable(fileName));
+            }
+            instance = new QSettings(fileName, QSettings::IniFormat);
+        } else {
+            instance = new QSettings(QSettings::IniFormat, QSettings::UserScope,
+                                     QLatin1String("Donders"), QLatin1String("TokoloshUI"));
+        }
+    }
+    return instance;
 }

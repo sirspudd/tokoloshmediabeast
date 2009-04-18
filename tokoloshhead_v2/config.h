@@ -7,8 +7,7 @@ class Config
 public:
     static void setEnabled(const QString &key, bool on)
     {
-        Settings settings;
-        settings->setValue(key.toLower(), on);
+        Config::setValue(key, on);
     }
 
     static bool isEnabled(const QString &key, bool defaultValue = false)
@@ -49,9 +48,9 @@ public:
         }
 
         if (value == Unset) {
-            Settings settings;
-            if (settings->contains(key.toLower())) {
-                value = settings->value(key.toLower()).toBool() ? True : False;
+            QSettings *s = settings();
+            if (s->contains(key.toLower())) {
+                value = s->value(key.toLower()).toBool() ? True : False;
             }
         } else if (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
                    || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)) {
@@ -72,7 +71,7 @@ public:
         QVariant value = valueFromCommandLine(key);
 
         if (value.isNull()) {
-            value = Settings()->value(key.toLower());
+            value = settings()->value(key.toLower());
         } else {
             const QStringList args = QCoreApplication::arguments();
             if (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
@@ -103,22 +102,19 @@ public:
 
     template <typename T> static void setValue(const QString &key, const T &t)
     {
-        Settings()->setValue(key, qVariantValue<T>(t));
+        QSettings *s = settings();
+        s->setValue(key, qVariantValue<T>(t));
+        s->sync();
     }
 
     static QStringList unusedArguments();
 private:
-    struct Settings {
-        Settings();
-        ~Settings();
-        inline const QSettings *operator->() const { return settings; }
-        inline QSettings *operator->() { return settings; }
-        QSettings *settings;
-    };
+    static QSettings *settings();
     Config() {}
     static QVariant valueFromCommandLine(const QString &key);
     static void useArg(int index);
     static QStringList unused;
+    static QSettings *instance;
 };
 
 #endif
