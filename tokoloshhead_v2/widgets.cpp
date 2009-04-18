@@ -59,11 +59,12 @@ void Button::paintEvent(QPaintEvent *)
     if (!pixmaps[i].pixmap.isNull()) {
         QPainter p(this);
         pixmaps[i].render(&p);
-        static const bool debugGeometry = Config::isEnabled("debuggeometry");
-        if (debugGeometry) {
+#ifdef QT_DEBUG
+        if (Config::isEnabled("debuggeometry", false)) {
             p.setPen(Qt::white);
             p.drawRect(0, 0, width() - 1, height() - 1);
         }
+#endif
     }
 }
 

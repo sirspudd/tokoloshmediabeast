@@ -8,7 +8,7 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-HEADERS += player.h config.h widgets.h tokolosh_interface.h
+HEADERS += player.h config.h widgets.h tokolosh_interface.h 
 SOURCES += main.cpp player.cpp config.cpp widgets.cpp tokolosh_interface.cpp
 CONFIG += qdbus debug
 unix {

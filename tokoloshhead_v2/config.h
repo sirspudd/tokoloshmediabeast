@@ -5,6 +5,12 @@
 class Config
 {
 public:
+    static void setEnabled(const QString &key, bool on)
+    {
+        Settings settings;
+        settings->setValue(key.toLower(), on);
+    }
+
     static bool isEnabled(const QString &key, bool defaultValue = false)
     {
         const QStringList args = QCoreApplication::arguments();

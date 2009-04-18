@@ -5,6 +5,7 @@
 int main(int argc, char * argv[])
 {
     QApplication app(argc,argv);
+    app.setApplicationName("tokoloshhead_v2");
     Player player;
     if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
         const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));

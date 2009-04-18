@@ -3,8 +3,6 @@
 #include "config.h"
 #include "tokolosh_interface.h"
 
-// could use stringrefs as well
-
 static inline const char *activateMember(QAbstractButton *)
 {
     return "1animateClick()";
@@ -25,6 +23,7 @@ static inline QWidget *widget(QWidget *a)
     return a;
 }
 
+// could use stringrefs
 static inline QString unquote(QString string)
 {
     static QRegExp rx("^'(.*[^\\\\])'$");
@@ -49,6 +48,7 @@ template <class T> static void setShortcuts(T *t)
     Q_ASSERT(!t->objectName().isEmpty());
     const QString value = Config::value<QString>(QString("Shortcuts/%1").arg(t->objectName()).simplified());
     if (value.isEmpty()) {
+        qDebug() << "setting" << defaultShortcut << "on" << t;
         t->setShortcut(defaultShortcut);
         return;
     }
@@ -86,6 +86,10 @@ template <class T> static void setShortcuts(T *t)
 Player::Player(QWidget *parent)
     : QWidget(parent)
 {
+#ifdef QT_DEBUG
+    d.overlay = 0;
+#endif
+
     setContextMenuPolicy(Qt::ActionsContextMenu);
     d.channelMode = Private::Stereo;
     setFixedSize(275, 116);
@@ -181,22 +185,28 @@ Player::Player(QWidget *parent)
     struct {
         const char *name;
         const char *member;
+        const bool checkable;
         const QKeySequence shortcut;
-    } const actions[] = {
-        { QT_TRANSLATE_NOOP("Player", "&Quit"), SLOT(close()), QKeySequence::Close },
-// #ifdef QT_DEBUG
-//         { QT_TRANSLATE_NOOP("&Toggle debug geometry"), SLOT(toggleDebugGeometry()), },
-// #endif
-        { 0, 0, QKeySequence() }
+    } const actionInfo[] = {
+        { QT_TRANSLATE_NOOP("Player", "&Quit"), SLOT(close()), false, QKeySequence::Close },
+#ifdef QT_DEBUG
+        { QT_TRANSLATE_NOOP("Player", "Toggle &debug geometry"), SLOT(toggleDebugGeometry(bool)),
+          true, QKeySequence(Qt::AltModifier + Qt::Key_D) },
+        { QT_TRANSLATE_NOOP("Player", "Toggle &overlay"), SLOT(toggleOverlay(bool)),
+          true, QKeySequence(Qt::AltModifier | Qt::Key_O) },
+#endif
+        { 0, 0, QKeySequence(), false }
     };
-    for (int i=0; actions[i].member; ++i) {
-        QAction *action = new QAction(QCoreApplication::translate("Player", actions[i].name), this);
-        action->setObjectName(QString::fromLatin1(actions[i].name));
-        if (actions[i].member == separator) {
+    for (int i=0; actionInfo[i].member; ++i) {
+        const QKeySequence shortcut = actionInfo[i].shortcut;
+        QAction *action = new QAction(QCoreApplication::translate("Player", actionInfo[i].name), this);
+        action->setObjectName(QString::fromLatin1(actionInfo[i].name));
+        action->setCheckable(actionInfo[i].checkable);
+        if (actionInfo[i].member == separator) {
             action->setSeparator(true);
         } else {
-            action->setProperty("defaultShortcut", buttonInfo[i].shortcut);
-            connect(action, SIGNAL(triggered(bool)), this, actions[i].member);
+            action->setProperty("defaultShortcut", shortcut);
+            connect(action, SIGNAL(triggered(bool)), this, actionInfo[i].member);
         }
         addAction(action);
     }
@@ -451,3 +461,49 @@ void Player::closeEvent(QCloseEvent *e)
     Config::setValue("position", pos());
     QWidget::closeEvent(e);
 }
+
+#ifdef QT_DEBUG
+void Player::toggleDebugGeometry(bool on)
+{
+    Config::setEnabled("debuggeometry", on);
+    update();
+    foreach(QWidget *w, qFindChildren<QWidget*>(this)) {
+        w->update();
+    }
+}
+
+class Overlay : public QWidget
+{
+public:
+    Overlay(const QPixmap &pix, QWidget *parent)
+        : QWidget(parent)
+    {
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+        QPalette pal = palette();
+        pal.setBrush(backgroundRole(), pix);
+        setPalette(pal);
+        setAutoFillBackground(true);
+        Q_ASSERT(parent);
+        parent->installEventFilter(this);
+        setGeometry(parent->rect());
+    }
+
+    bool eventFilter(QObject *, QEvent *e)
+    {
+        if (e->type() == QEvent::Resize) {
+            setGeometry(parentWidget()->rect());
+        }
+        return false;
+    }
+};
+
+void Player::toggleOverlay(bool on)
+{
+    if (!d.overlay)
+        d.overlay = new Overlay(QPixmap("original.png"), this);
+    d.overlay->setVisible(on);
+    if (on)
+        d.overlay->raise();
+}
+
+#endif

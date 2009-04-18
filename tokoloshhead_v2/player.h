@@ -50,6 +50,9 @@ public:
 class Slider;
 class SliderStyle;
 class Button;
+#ifdef QT_DEBUG
+class Overlay;
+#endif
 class Player : public QWidget
 {
     Q_OBJECT
@@ -66,6 +69,11 @@ public slots:
     void openSkin();
     void reloadSettings();
     void debugButton();
+#ifdef QT_DEBUG
+    void toggleOverlay(bool on);
+    void toggleDebugGeometry(bool on);
+#endif
+
 private:
     enum ButtonType {
         Previous = 0,
@@ -100,6 +108,9 @@ private:
         SliderStyle *posBarStyle;
         Slider *volumeSlider;
         SliderStyle *volumeStyle;
+#ifdef QT_DEBUG
+        Overlay *overlay;
+#endif
     } d;
 };
 

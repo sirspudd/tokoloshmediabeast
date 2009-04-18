@@ -13,3 +13,4 @@
 - Load songs passed on command line
 - m3u handling
 - Consider rewriting config to have a static QSettings member. Would be nicer and faster
+- Make filedialog show border and not main gui. Will that work? Separate process?
