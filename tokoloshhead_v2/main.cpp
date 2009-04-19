@@ -1,25 +1,61 @@
 #include <QApplication>
+#include <QFileInfo>
 #include "player.h"
 #include "config.h"
+#include "tokolosh_interface.h"
 
 int main(int argc, char * argv[])
 {
     QApplication app(argc,argv);
     app.setApplicationName("tokoloshhead_v2");
-    Player player;
+
+    TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
+                                    "/TokoloshMediaPlayer",
+                                    QDBusConnection::sessionBus(),
+                                    &app);
+
+    const QMetaObject *dbusInterfaceMetaObject = dbusInterface.metaObject();
+
+    foreach(QString arg, Config::unusedArguments()) {
+        if (QFile::exists(arg)) {
+            // does QFile match for dirs?
+            //If dir: add path + scan
+            //If file, load file?
+            QString consideredPath(arg);
+            while(QFileInfo(consideredPath).isSymLink()) {
+                //FIXME: might want to have a counter incase there is a cyclical symlink
+                consideredPath = QFileInfo(consideredPath).symLinkTarget();
+            }
+            if(QFileInfo(consideredPath).isFile()){
+                dbusInterface.load(arg);
+            }
+            //path loading not in interface! investigating seperately
+        } else if (arg.startsWith('-')) {
+            //Does not handle slots with arguments, which can be largely reduced to the file paths above
+            const char* charArg = arg.endsWith("()")
+                            ? arg.toAscii().constData()
+                            : arg.append("()").toAscii().constData();
+            //char*+1 is a nasty but efficient way to drop the first char
+            const int index = dbusInterfaceMetaObject->indexOfSlot(charArg+1);
+            if(index != -1) {
+                qWarning("%s has index %d",charArg+1,index);
+                dbusInterfaceMetaObject->method(index).invoke( &dbusInterface,
+                                                               Qt::DirectConnection,
+                                                               QGenericReturnArgument());
+            } else {
+                qWarning("Unknown argument %s", qPrintable(arg));
+            }
+            app.quit();
+            return 0;
+        } else {
+            qWarning("%s doesn't seem to exist", qPrintable(arg));
+        }
+    }
+    Player player(&dbusInterface);
     if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
         const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
         Q_ASSERT(ret);
         Q_UNUSED(ret);
-    }
-    foreach(QString arg, Config::unusedArguments()) {
-        if (QFile::exists(arg)) { // does QFile match for dirs?
-            qDebug() << "need to add" << arg;
-        } else if (arg.startsWith('-')) {
-            qWarning("Unknown argument %s", qPrintable(arg));
-        } else {
-            qWarning("%s doesn't seem to exist", qPrintable(arg));
-        }
     }
     player.show();
     return app.exec();

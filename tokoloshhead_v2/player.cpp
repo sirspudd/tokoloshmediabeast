@@ -112,7 +112,7 @@ template <class T> static void setShortcuts(T *t)
 
 } // use this for both buttons and actions
 
-Player::Player(QWidget *parent)
+Player::Player(TokoloshInterface* dbusInterface, QWidget *parent)
     : QWidget(parent)
 {
 #ifdef QT_DEBUG
@@ -128,10 +128,8 @@ Player::Player(QWidget *parent)
         move(pos);
     }
 
-    d.tokolosh = new TokoloshInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
-                                       "/TokoloshMediaPlayer",
-                                       QDBusConnection::sessionBus(),
-                                       this);
+    d.dbusInterface = dbusInterface;
+
     if (!Config::isEnabled("titlebar", false)) {
         Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
         if (Config::isEnabled("bypassx11", false))
@@ -151,15 +149,15 @@ Player::Player(QWidget *parent)
         const QKeySequence shortcut;
     } const buttonInfo[] = {
         // prev, pause, pause, stop, next
-        { QT_TRANSLATE_NOOP("Player", "Previous"), d.tokolosh, SLOT(prev()),
+        { QT_TRANSLATE_NOOP("Player", "Previous"), d.dbusInterface, SLOT(prev()),
           QRect(16, 88, 23, 18), false, Qt::Key_Z },
-        { QT_TRANSLATE_NOOP("Player", "Play"), d.tokolosh, SLOT(play()),
+        { QT_TRANSLATE_NOOP("Player", "Play"), d.dbusInterface, SLOT(play()),
           QRect(39, 88, 23, 18), false, Qt::Key_X },
-        { QT_TRANSLATE_NOOP("Player", "Pause"), d.tokolosh, SLOT(pause()),
+        { QT_TRANSLATE_NOOP("Player", "Pause"), d.dbusInterface, SLOT(pause()),
           QRect(62, 88, 23, 18), false, Qt::Key_C },
-        { QT_TRANSLATE_NOOP("Player", "Stop"), d.tokolosh, SLOT(stop()),
+        { QT_TRANSLATE_NOOP("Player", "Stop"), d.dbusInterface, SLOT(stop()),
           QRect(85, 88, 23, 18), false, Qt::Key_V },
-        { QT_TRANSLATE_NOOP("Player", "Next"), d.tokolosh, SLOT(next()),
+        { QT_TRANSLATE_NOOP("Player", "Next"), d.dbusInterface, SLOT(next()),
           QRect(108, 88, 22, 18), false, Qt::Key_B },
         { 0, 0, separator, QRect(), false, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Open"), this, SLOT(open()),
@@ -167,14 +165,14 @@ Player::Player(QWidget *parent)
         { QT_TRANSLATE_NOOP("Player", "OpenSkin"), this, SLOT(openSkin()),
           QRect(246, 84, 30, 20), false, Qt::ControlModifier + Qt::Key_S },
         { 0, 0, separator, QRect(), false, QKeySequence() },
-        { QT_TRANSLATE_NOOP("Player", "Shuffle"), d.tokolosh, SLOT(toggleShuffle()),
+        { QT_TRANSLATE_NOOP("Player", "Shuffle"), d.dbusInterface, SLOT(toggleShuffle()),
           QRect(164, 86, 32, 15), true, Qt::ControlModifier + Qt::Key_Z }, // is there a shortcut for this one?
-        { QT_TRANSLATE_NOOP("Player", "Repeat"), d.tokolosh, SLOT(repeat()),
+        { QT_TRANSLATE_NOOP("Player", "Repeat"), d.dbusInterface, SLOT(repeat()),
           QRect(209, 86, 32, 15), true, Qt::Key_R }, // is there a shortcut for this one?
         { 0, 0, separator, QRect(), false, QKeySequence() },
-        { QT_TRANSLATE_NOOP("Player", "Equalizer"), d.tokolosh, SLOT(equalizer()),
+        { QT_TRANSLATE_NOOP("Player", "Equalizer"), d.dbusInterface, SLOT(equalizer()),
           QRect(218, 57, 23, 13), true, Qt::Key_E },
-        { QT_TRANSLATE_NOOP("Player", "Playlist"), d.tokolosh, SLOT(playlist()),
+        { QT_TRANSLATE_NOOP("Player", "Playlist"), d.dbusInterface, SLOT(playlist()),
           QRect(242, 57, 23, 13), true, Qt::Key_P },
         { 0, 0, separator, QRect(), false, QKeySequence() },
         { 0, 0, 0, QRect(), false, QKeySequence() }
@@ -464,7 +462,7 @@ void Player::open()
         return;
     Config::setValue("lastDirectory", QFileInfo(list.first()).absolutePath());
     foreach(QString path, list) {
-        d.tokolosh->load(path);
+        d.dbusInterface->load(path);
     }
 
     // ### need to query these extensions

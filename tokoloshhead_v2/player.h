@@ -57,7 +57,7 @@ class Player : public QWidget
 {
     Q_OBJECT
 public:
-    Player(QWidget *parent = 0);
+    Player(TokoloshInterface* dbusInterface, QWidget *parent = 0);
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
@@ -101,7 +101,7 @@ private:
         Button *buttons[ButtonCount];
         enum ChannelMode { Stereo, Mono } channelMode;
         RenderObject elements[ElementCount];
-        TokoloshInterface *tokolosh;
+        TokoloshInterface *dbusInterface;
         TextObject numbers, numbersEx, text;
         QPoint dragOffset;
         Slider *posBarSlider;
