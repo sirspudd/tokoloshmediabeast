@@ -113,6 +113,7 @@ public:
     static QStringList unusedArguments();
 private:
     static QSettings *settings();
+    static void initUnused();
     Config() {}
     static QVariant valueFromCommandLine(const QString &key);
     static void useArg(int index);
