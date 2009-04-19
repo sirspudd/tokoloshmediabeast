@@ -20,11 +20,16 @@ public Q_SLOTS:
     void pause();
     void next();
     void prev();
-    void volume();
+    int volume() const;
     void setVolume(int);
     void toggleMute();
     void toggleShuffle();
     void toggleRepeat();
+    void setShuffle(bool on);
+    void setRepeat(bool on);
+    bool shuffle() const;
+    bool repeat() const;
+    QString track() const;
     int getStatus();
     void syncClients();
     int speed();
@@ -40,9 +45,9 @@ public Q_SLOTS:
 
 Q_SIGNALS: // SIGNALS
     void crashed();
-    void trackChanged(QString trackPath);
-    void repeat(bool);
-    void shuffle(bool);
+    void trackChanged(const QString &trackPath);
+    void repeatChanged(bool);
+    void shuffleChanged(bool);
 private:
     class Private;
     Private *d;

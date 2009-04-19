@@ -1,5 +1,7 @@
 #include <tokolosh.h>
 
+#include "tokolosh.h"
+
 #include <QtCore>
 #include <xine.h>
 #include <xine/xineutils.h>
@@ -145,7 +147,6 @@ Tokolosh::~Tokolosh()
 
 void Tokolosh::load(const QString &fileName)
 {
-    qDebug() << fileName;
     if (!d->repeat)
         d->filePath = fileName;
 }
@@ -175,6 +176,22 @@ void Tokolosh::play()
     }
     emit trackChanged(d->filePath);
 }
+
+bool Tokolosh::shuffle() const
+{
+    return d->shuffle;
+}
+
+bool Tokolosh::repeat() const
+{
+    return d->shuffle;
+}
+
+QString Tokolosh::track() const
+{
+    return d->filePath;
+}
+
 
 void Tokolosh::stop()
 {
@@ -232,9 +249,9 @@ void Tokolosh::toggleMute()
         xine_set_param(d->stream, XINE_PARAM_AUDIO_AMP_MUTE, 0);
 }
 
-void Tokolosh::volume()
+int Tokolosh::volume() const
 {
-    xine_get_param(d->stream, XINE_PARAM_AUDIO_VOLUME);
+    return xine_get_param(d->stream, XINE_PARAM_AUDIO_VOLUME);
 }
 
 void Tokolosh::setVolume(int vol)
@@ -327,21 +344,36 @@ void Tokolosh::prev()
 
 void Tokolosh::toggleShuffle()
 {
+    qDebug("%s %d: void Tokolosh::toggleShuffle()", __FILE__, __LINE__);
     d->shuffle = !d->shuffle;
-    emit shuffle(d->shuffle);
+    emit shuffleChanged(d->shuffle);
 }
+
+
+void Tokolosh::setShuffle(bool on)
+{
+    if (on != d->shuffle)
+        toggleShuffle();
+}
+
+void Tokolosh::setRepeat(bool on)
+{
+    if (on != d->repeat)
+        toggleRepeat();
+}
+
 
 void Tokolosh::toggleRepeat()
 {
     d->repeat = !d->repeat;
-    emit repeat(d->repeat);
+    emit repeatChanged(d->repeat);
 }
 
 void Tokolosh::syncClients()
 {
     emit trackChanged(d->filePath);
-    emit shuffle(d->shuffle);
-    emit repeat(d->repeat);
+    emit shuffleChanged(d->shuffle);
+    emit repeatChanged(d->repeat);
 }
 
 int Tokolosh::speed()
