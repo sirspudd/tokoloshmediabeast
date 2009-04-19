@@ -22,7 +22,6 @@ static inline QFileInfo resolveSymlink(const QString &file)
     return fi;
 }
 
-
 static inline QStringList toFiles(const QString &arg, bool recursive = false)
 {
     const QFileInfo fi = ::resolveSymlink(arg);
@@ -55,13 +54,14 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
             continue;
 
         const QString methodName = method.signature();
+        qDebug() << method.typeName() << methodName;
         if (!methodName.startsWith(arg))
             continue;
 
         if (methodName.size() != arg.size()) {
             // if the argument part is not specified that's still a match
             const int index = methodName.lastIndexOf("(");
-            if (arg.size() < index) // if you specify setVo that shouldn't match setVolume (or should it?)
+            if (arg.size() < index) // if you specify setVo that shouldn't match setVolume(or should it?)
                 continue;
         }
         return method;
@@ -69,14 +69,30 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
     return QMetaMethod();
 }
 
-int main(int argc, char * argv[])
+static void registerMetaTypes()
 {
+    qRegisterMetaType<QDBusReply<void> >("QDBusReply<void>");
+    qRegisterMetaType<QDBusReply<int> >("QDBusReply<int>");
+    qRegisterMetaType<QDBusReply<bool> >("QDBusReply<bool>");
+    qRegisterMetaType<QDBusReply<QString> >("QDBusReply<QString>");
+    qRegisterMetaType<QDBusReply<double> >("QDBusReply<double>");
+    qRegisterMetaType<QDBusReply<QTime> >("QDBusReply<QTime>");
+    qRegisterMetaType<QDBusReply<QDateTime> >("QDBusReply<QDateTime>");
+    qRegisterMetaType<QDBusReply<QDate> >("QDBusReply<QDate>");
+    qRegisterMetaType<QDBusReply<QStringList> >("QDBusReply<QStringList>");
+    qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QRegExp>");
+    qRegisterMetaType<QDBusReply<QVariant> >("QDBusReply<QVariant>");
+}
+
+
+int main(int argc, char *argv[])
+{
+    registerMetaTypes();
     TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
                                     "/TokoloshMediaPlayer",
                                     QDBusConnection::sessionBus());
     if (argc > 1) {
         QCoreApplication *coreApp = new QCoreApplication(argc, argv);
-        // Do I need an app at all?
         coreApp->setApplicationName("tokoloshhead_v2");
 
         const QMetaObject *dbusInterfaceMetaObject = dbusInterface.metaObject();
@@ -87,12 +103,12 @@ int main(int argc, char * argv[])
             if (!method.signature())
                 continue;
 
-//            QVariant returnArg(static_cast<QVariant::Type>(QMetaType::type(method.typeName())));
+            QVariant returnArg(static_cast<QVariant::Type>(QMetaType::type(method.typeName())));
             const QList<QByteArray> types = method.parameterTypes();
             bool ret = false;
             if (types.isEmpty()) {
-                ret = method.invoke(&dbusInterface, Qt::DirectConnection); //,
-//                                    QGenericReturnArgument(returnArg.typeName()), returnArg.data()));
+                ret = method.invoke(&dbusInterface, Qt::DirectConnection,
+                                    QGenericReturnArgument(returnArg.typeName(), returnArg.data()));
             } else if (argc - i - 1 < types.size()) {
                 qWarning("Not enough arguments specified for %s needed %d, got %d",
                          method.signature(), types.size(), argc - i - 1);
@@ -107,8 +123,9 @@ int main(int argc, char * argv[])
                         return false; // ### ???
                     }
                 }
+                QDBusReply<void> rep;
                 ret = method.invoke(&dbusInterface, Qt::DirectConnection,
-//                                    QGenericReturnArgument(returnArg.typeName(), returnArg.data()), // not working because of crazy dbus-reply stuff
+                                    QGenericReturnArgument(returnArg.typeName(), returnArg.data()),
                                     QGenericArgument(types.value(0).constData(), arguments[0].data()),
                                     QGenericArgument(types.value(1).constData(), arguments[1].data()),
                                     QGenericArgument(types.value(2).constData(), arguments[2].data()),
@@ -126,11 +143,11 @@ int main(int argc, char * argv[])
                 QFile f;
                 f.open(stdout, QIODevice::WriteOnly);
                 QDebug out(&f);
-                out << "Invoked" << method.signature() << "successfully";
+                out << "Invoked" << method.signature() << "successfully" << returnArg << endl;
                 return 0;
             }
         }
-        delete coreApp;
+delete coreApp;
     }
 //             }
 
