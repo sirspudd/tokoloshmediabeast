@@ -63,3 +63,17 @@ void Config::initUnused()
         unused.replaceInStrings(QRegExp(QLatin1String("--save"), Qt::CaseInsensitive), QString());
     }
 }
+
+bool Config::store()
+{
+    static enum { DontStore = 0x0, Store = 0x1, Unset = 0x2 } state = Unset;
+    if (state == Unset) {
+        const QStringList args = QCoreApplication::arguments();
+        state = (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
+                 || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)
+                 ? Store
+                 : DontStore);
+    }
+
+    return (state == Store);
+}

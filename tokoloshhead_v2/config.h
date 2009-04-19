@@ -54,8 +54,7 @@ public:
             if (s->contains(key)) {
                 value = s->value(key).toBool() ? True : False;
             }
-        } else if (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
-                   || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)) {
+        } else if (store()) {
             Config::setValue(key, (value == True));
         }
         return value == Unset ? defaultValue : (value == True);
@@ -75,12 +74,8 @@ public:
 
         if (value.isNull()) {
             value = settings()->value(key);
-        } else {
-            const QStringList args = QCoreApplication::arguments();
-            if (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
-                || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)) {
-                Config::setValue(key, qVariantValue<T>(value));
-            }
+        } else if (store()) {
+            Config::setValue(key, qVariantValue<T>(value));
         }
 
         if (value.isNull()) {
@@ -114,6 +109,7 @@ public:
 private:
     static QSettings *settings();
     static void initUnused();
+    static bool store();
     Config() {}
     static QVariant valueFromCommandLine(const QString &key);
     static void useArg(int index);
