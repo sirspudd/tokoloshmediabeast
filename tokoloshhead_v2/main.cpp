@@ -68,20 +68,53 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
     return QMetaMethod();
 }
 
+Q_DECLARE_METATYPE(QDBusReply<void>);
+Q_DECLARE_METATYPE(QDBusReply<int>);
+Q_DECLARE_METATYPE(QDBusReply<bool>);
+Q_DECLARE_METATYPE(QDBusReply<QString>);
+Q_DECLARE_METATYPE(QDBusReply<double>);
+Q_DECLARE_METATYPE(QDBusReply<QTime>);
+Q_DECLARE_METATYPE(QDBusReply<QDateTime>);
+Q_DECLARE_METATYPE(QDBusReply<QDate>);
+Q_DECLARE_METATYPE(QDBusReply<QStringList>);
+Q_DECLARE_METATYPE(QDBusReply<QRegExp>);
+
 static QHash<int, int> registerMetaTypes()
 {
-    QHash<int, int> types;
-    types[qRegisterMetaType<QDBusReply<void> >("QDBusReply<void>")] = QMetaType::Void;
-    types[qRegisterMetaType<QDBusReply<int> >("QDBusReply<int>")] = QMetaType::Int;
-    types[qRegisterMetaType<QDBusReply<bool> >("QDBusReply<bool>")] = QMetaType::Bool;
-    types[qRegisterMetaType<QDBusReply<QString> >("QDBusReply<QString>")] = QMetaType::QString;
-    types[qRegisterMetaType<QDBusReply<double> >("QDBusReply<double>")] = QMetaType::Double;
-    types[qRegisterMetaType<QDBusReply<QTime> >("QDBusReply<QTime>")] = QMetaType::QTime;
-    types[qRegisterMetaType<QDBusReply<QDateTime> >("QDBusReply<QDateTime>")] = QMetaType::QDateTime;
-    types[qRegisterMetaType<QDBusReply<QDate> >("QDBusReply<QDate>")] = QMetaType::QDate;
-    types[qRegisterMetaType<QDBusReply<QStringList> >("QDBusReply<QStringList>")] = QMetaType::QStringList;
-    types[qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QRegExp>")] = QMetaType::QRegExp;
+    static QHash<int, int> types;
+    if (types.isEmpty()) {
+        types[qRegisterMetaType<QDBusReply<void> >("QDBusReply<void>")] = QMetaType::Void;
+        types[qRegisterMetaType<QDBusReply<int> >("QDBusReply<int>")] = QMetaType::Int;
+        types[qRegisterMetaType<QDBusReply<bool> >("QDBusReply<bool>")] = QMetaType::Bool;
+        types[qRegisterMetaType<QDBusReply<QString> >("QDBusReply<QString>")] = QMetaType::QString;
+        types[qRegisterMetaType<QDBusReply<double> >("QDBusReply<double>")] = QMetaType::Double;
+        types[qRegisterMetaType<QDBusReply<QTime> >("QDBusReply<QTime>")] = QMetaType::QTime;
+        types[qRegisterMetaType<QDBusReply<QDateTime> >("QDBusReply<QDateTime>")] = QMetaType::QDateTime;
+        types[qRegisterMetaType<QDBusReply<QDate> >("QDBusReply<QDate>")] = QMetaType::QDate;
+        types[qRegisterMetaType<QDBusReply<QStringList> >("QDBusReply<QStringList>")] = QMetaType::QStringList;
+        types[qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QRegExp>")] = QMetaType::QRegExp;
+    }
     return types;
+}
+
+static QVariant toVariant(const QVariant &dbusReply)
+{
+    const QHash<int, int> types = registerMetaTypes();
+    const int type = types.value(dbusReply.userType());
+    switch (type) {
+    case QMetaType::Void: return QVariant();
+    case QMetaType::Int: return qVariantValue<QDBusReply<int> >(dbusReply).value();
+    case QMetaType::Bool: return qVariantValue<QDBusReply<bool> >(dbusReply).value();
+    case QMetaType::QString: return qVariantValue<QDBusReply<QString> >(dbusReply).value();
+    case QMetaType::Double: return qVariantValue<QDBusReply<double> >(dbusReply).value();
+    case QMetaType::QTime: return qVariantValue<QDBusReply<QTime> >(dbusReply).value();
+    case QMetaType::QDateTime: return qVariantValue<QDBusReply<QDateTime> >(dbusReply).value();
+    case QMetaType::QDate: return qVariantValue<QDBusReply<QDate> >(dbusReply).value();
+    case QMetaType::QStringList: return qVariantValue<QDBusReply<QStringList> >(dbusReply).value();
+    case QMetaType::QRegExp: return qVariantValue<QDBusReply<QRegExp> >(dbusReply).value();
+    default: qWarning("Unknown type %d %d", dbusReply.userType(), types.value(dbusReply.userType()));
+    }
+    return QVariant();
 }
 
 int main(int argc, char *argv[])
@@ -147,8 +180,7 @@ int main(int argc, char *argv[])
                 QFile f;
                 f.open(stdout, QIODevice::WriteOnly);
                 QDebug out(&f);
-                const int returnType = types.value(returnArg.userType());
-                QVariant var(returnType, returnArg.data());
+                const QVariant var = ::toVariant(returnArg);
                 out << "Invoked" << method.signature() << "successfully" << returnArg << var << endl;
                 return 0;
             }
