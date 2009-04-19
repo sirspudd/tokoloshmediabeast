@@ -35,31 +35,6 @@ static inline QString unquote(QString string)
     return string;
 }
 
-class DevNull : public QIODevice
-{
-public:
-    static DevNull *instance()
-    {
-        static DevNull *instance = new DevNull;
-        return instance;
-    }
-    virtual qint64 readData(char*, qint64) { return -1; }
-    virtual qint64 writeData(const char*, qint64) { return -1; }
-private:
-    DevNull()
-        : QIODevice(QCoreApplication::instance())
-    {}
-};
-
-static QDebug output() // ### verbosity levels?
-{
-    if (Config::isEnabled("verbose", false)) {
-        return qDebug();
-    } else {
-        return QDebug(DevNull::instance());
-    }
-}
-
 inline uint qHash(const QKeySequence &seq) { return qHash(seq.toString()); }
 template <class T> static void setShortcuts(T *t)
 {
@@ -221,12 +196,12 @@ Player::Player(TokoloshInterface* dbusInterface, QWidget *parent)
         const uint checkstatus;
         const QKeySequence shortcut;
     } const actionInfo[] = {
-        { QT_TRANSLATE_NOOP("Player", "&Quit"), SLOT(close()), None, QKeySequence::Close },
+        { QT_TRANSLATE_NOOP("Player", "Quit"), SLOT(close()), None, QKeySequence::Close },
 #ifdef QT_DEBUG
-        { QT_TRANSLATE_NOOP("Player", "Toggle &debug geometry"), SLOT(toggleDebugGeometry(bool)),
+        { QT_TRANSLATE_NOOP("Player", "Toggle debug geometry"), SLOT(toggleDebugGeometry(bool)),
           (Config::isEnabled("debuggeometry") ? Checked|Checkable : Checkable),
           QKeySequence(Qt::AltModifier + Qt::Key_D) },
-        { QT_TRANSLATE_NOOP("Player", "Toggle &overlay"), SLOT(toggleOverlay(bool)),
+        { QT_TRANSLATE_NOOP("Player", "Toggle overlay"), SLOT(toggleOverlay(bool)),
           Checkable, QKeySequence(Qt::AltModifier | Qt::Key_O) },
 #endif
         { 0, 0, QKeySequence(), false }
