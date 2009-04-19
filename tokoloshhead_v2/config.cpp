@@ -3,21 +3,11 @@ QSettings *Config::instance = 0;
 QStringList Config::unused;
 QStringList Config::unusedArguments()
 {
-    if (unused.isEmpty()) {
-        unused = QCoreApplication::arguments();
-        unused.replaceInStrings(QRegExp(QLatin1String("--store"), Qt::CaseInsensitive), QString());
-        unused.replaceInStrings(QRegExp(QLatin1String("--save"), Qt::CaseInsensitive), QString());
-    }
     return QStringList(unused.mid(1)).filter(QRegExp("^..*$"));
 }
 
 void Config::useArg(int index)
 {
-    if (unused.isEmpty()) {
-        unused = QCoreApplication::arguments();
-        unused.replaceInStrings(QRegExp(QLatin1String("--store"), Qt::CaseInsensitive), QString());
-        unused.replaceInStrings(QRegExp(QLatin1String("--save"), Qt::CaseInsensitive), QString());
-    }
     Q_ASSERT(index < unused.size());
     unused[index].clear();
 }
@@ -63,4 +53,27 @@ QSettings * Config::settings()
         }
     }
     return instance;
+}
+
+void Config::initUnused()
+{
+    if (unused.isEmpty()) {
+        unused = QCoreApplication::arguments();
+        unused.replaceInStrings(QRegExp(QLatin1String("--store"), Qt::CaseInsensitive), QString());
+        unused.replaceInStrings(QRegExp(QLatin1String("--save"), Qt::CaseInsensitive), QString());
+    }
+}
+
+bool Config::store()
+{
+    static enum { DontStore = 0x0, Store = 0x1, Unset = 0x2 } state = Unset;
+    if (state == Unset) {
+        const QStringList args = QCoreApplication::arguments();
+        state = (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
+                 || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)
+                 ? Store
+                 : DontStore);
+    }
+
+    return (state == Store);
 }

@@ -35,32 +35,28 @@ static inline QString unquote(QString string)
     return string;
 }
 
-class NoDebug
+class DevNull : public QIODevice
 {
 public:
-    inline NoDebug(){}
-    inline NoDebug(const QDebug &){}
-#if !defined( QT_NO_TEXTSTREAM )
-    inline NoDebug &operator<<(QTextStreamFunction) { return *this; }
-    inline NoDebug &operator<<(QTextStreamManipulator) { return *this; }
-#endif
-    inline NoDebug &space() { return *this; }
-    inline NoDebug &nospace() { return *this; }
-    inline NoDebug &maybeSpace() { return *this; }
-
-#ifndef QT_NO_MEMBER_TEMPLATES
-    template<typename T>
-    inline NoDebug &operator<<(const T &) { return *this; }
-#endif
+    static DevNull *instance()
+    {
+        static DevNull *instance = new DevNull;
+        return instance;
+    }
+    virtual qint64 readData(char*, qint64) { return -1; }
+    virtual qint64 writeData(const char*, qint64) { return -1; }
+private:
+    DevNull()
+        : QIODevice(QCoreApplication::instance())
+    {}
 };
 
-template <class T>
-static T output() // ### verbosity levels?
+static QDebug output() // ### verbosity levels?
 {
     if (Config::isEnabled("verbose", false)) {
         return qDebug();
     } else {
-        return NoDebug();
+        return QDebug(DevNull::instance());
     }
 }
 
