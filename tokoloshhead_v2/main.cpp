@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
             } else if (argc - i - 1 < parameterTypes.size()) {
                 qWarning("Not enough arguments specified for %s needed %d, got %d",
                          method.signature(), parameterTypes.size(), argc - i - 1);
-                return false; // ### ???
+                return 1; // ### ???
             } else {
                 QVariant arguments[10];
                 for (int j=0; j<parameterTypes.size(); ++j) {
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
                     arguments[j] = args.at(++i);
                     if (!arguments[j].convert(static_cast<QVariant::Type>(type))) {
                         qWarning("Can't convert %s to %s", qPrintable(args.at(i)), parameterTypes.at(i).constData());
-                        return false; // ### ???
+                        return 1; // ### ???
                     }
                 }
                 ret = method.invoke(&dbusInterface, Qt::DirectConnection,
@@ -178,6 +178,12 @@ int main(int argc, char *argv[])
             }
             if (!ret) {
                 qWarning("Can't invoke %s", method.signature());
+                return 1;
+            } else if (dbusInterface.lastError().type() != QDBusError::NoError) {
+                qWarning("Couldn't invoke %s %s %s", method.signature(),
+                         qPrintable(dbusInterface.lastError().name()),
+                         qPrintable(dbusInterface.lastError().message()));
+                return 1;
             } else {
                 QFile f;
                 f.open(stdout, QIODevice::WriteOnly);
