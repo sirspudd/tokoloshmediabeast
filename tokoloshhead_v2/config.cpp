@@ -9,6 +9,7 @@ QStringList Config::unusedArguments()
 
 void Config::useArg(int index)
 {
+    initUnused();
     Q_ASSERT(index < unused.size());
     unused[index].clear();
 }
