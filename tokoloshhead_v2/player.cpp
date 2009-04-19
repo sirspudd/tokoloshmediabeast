@@ -141,9 +141,9 @@ Player::Player(TokoloshInterface* dbusInterface, QWidget *parent)
         { QT_TRANSLATE_NOOP("Player", "Repeat"), d.dbusInterface, SLOT(repeat()),
           QRect(209, 86, 32, 15), true, Qt::Key_R }, // is there a shortcut for this one?
         { 0, 0, separator, QRect(), false, QKeySequence() },
-        { QT_TRANSLATE_NOOP("Player", "Equalizer"), d.dbusInterface, SLOT(equalizer()),
+        { QT_TRANSLATE_NOOP("Player", "Equalizer"), this, SLOT(equalizer()),
           QRect(218, 57, 23, 13), true, Qt::Key_E },
-        { QT_TRANSLATE_NOOP("Player", "Playlist"), d.dbusInterface, SLOT(playlist()),
+        { QT_TRANSLATE_NOOP("Player", "Playlist"), this, SLOT(playlist()),
           QRect(242, 57, 23, 13), true, Qt::Key_P },
         { 0, 0, separator, QRect(), false, QKeySequence() },
         { 0, 0, 0, QRect(), false, QKeySequence() }
