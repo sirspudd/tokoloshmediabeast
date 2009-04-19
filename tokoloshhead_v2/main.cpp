@@ -54,7 +54,6 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
             continue;
 
         const QString methodName = method.signature();
-        qDebug() << method.typeName() << methodName;
         if (!methodName.startsWith(arg))
             continue;
 
@@ -69,25 +68,25 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
     return QMetaMethod();
 }
 
-static void registerMetaTypes()
+static QHash<int, int> registerMetaTypes()
 {
-    qRegisterMetaType<QDBusReply<void> >("QDBusReply<void>");
-    qRegisterMetaType<QDBusReply<int> >("QDBusReply<int>");
-    qRegisterMetaType<QDBusReply<bool> >("QDBusReply<bool>");
-    qRegisterMetaType<QDBusReply<QString> >("QDBusReply<QString>");
-    qRegisterMetaType<QDBusReply<double> >("QDBusReply<double>");
-    qRegisterMetaType<QDBusReply<QTime> >("QDBusReply<QTime>");
-    qRegisterMetaType<QDBusReply<QDateTime> >("QDBusReply<QDateTime>");
-    qRegisterMetaType<QDBusReply<QDate> >("QDBusReply<QDate>");
-    qRegisterMetaType<QDBusReply<QStringList> >("QDBusReply<QStringList>");
-    qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QRegExp>");
-    qRegisterMetaType<QDBusReply<QVariant> >("QDBusReply<QVariant>");
+    QHash<int, int> types;
+    types[qRegisterMetaType<QDBusReply<void> >("QDBusReply<void>")] = QMetaType::Void;
+    types[qRegisterMetaType<QDBusReply<int> >("QDBusReply<int>")] = QMetaType::Int;
+    types[qRegisterMetaType<QDBusReply<bool> >("QDBusReply<bool>")] = QMetaType::Bool;
+    types[qRegisterMetaType<QDBusReply<QString> >("QDBusReply<QString>")] = QMetaType::QString;
+    types[qRegisterMetaType<QDBusReply<double> >("QDBusReply<double>")] = QMetaType::Double;
+    types[qRegisterMetaType<QDBusReply<QTime> >("QDBusReply<QTime>")] = QMetaType::QTime;
+    types[qRegisterMetaType<QDBusReply<QDateTime> >("QDBusReply<QDateTime>")] = QMetaType::QDateTime;
+    types[qRegisterMetaType<QDBusReply<QDate> >("QDBusReply<QDate>")] = QMetaType::QDate;
+    types[qRegisterMetaType<QDBusReply<QStringList> >("QDBusReply<QStringList>")] = QMetaType::QStringList;
+    types[qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QRegExp>")] = QMetaType::QRegExp;
+    return types;
 }
-
 
 int main(int argc, char *argv[])
 {
-    registerMetaTypes();
+    const QHash<int, int> types = registerMetaTypes();
     TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
                                     "/TokoloshMediaPlayer",
                                     QDBusConnection::sessionBus());
@@ -99,43 +98,48 @@ int main(int argc, char *argv[])
         const QStringList args = coreApp->arguments();
         for (int i=1; i<argc; ++i) {
             const QString &arg = args.at(i);
+            if (arg == "--list-methods") {
+                for (int j=dbusInterfaceMetaObject->methodOffset(); j<dbusInterfaceMetaObject->methodCount(); ++j) {
+                    printf("%s\n", dbusInterfaceMetaObject->method(j).signature());
+                }
+                return 0;
+            }
             const QMetaMethod method = ::findMethod(arg, dbusInterfaceMetaObject);
             if (!method.signature())
                 continue;
 
             QVariant returnArg(static_cast<QVariant::Type>(QMetaType::type(method.typeName())));
-            const QList<QByteArray> types = method.parameterTypes();
+            const QList<QByteArray> parameterTypes = method.parameterTypes();
             bool ret = false;
-            if (types.isEmpty()) {
+            if (parameterTypes.isEmpty()) {
                 ret = method.invoke(&dbusInterface, Qt::DirectConnection,
                                     QGenericReturnArgument(returnArg.typeName(), returnArg.data()));
-            } else if (argc - i - 1 < types.size()) {
+            } else if (argc - i - 1 < parameterTypes.size()) {
                 qWarning("Not enough arguments specified for %s needed %d, got %d",
-                         method.signature(), types.size(), argc - i - 1);
+                         method.signature(), parameterTypes.size(), argc - i - 1);
                 return false; // ### ???
             } else {
                 QVariant arguments[10];
-                for (int j=0; j<types.size(); ++j) {
-                    const int type = QMetaType::type(types.at(j).constData());
+                for (int j=0; j<parameterTypes.size(); ++j) {
+                    const int type = QMetaType::type(parameterTypes.at(j).constData());
                     arguments[j] = args.at(++i);
                     if (!arguments[j].convert(static_cast<QVariant::Type>(type))) {
-                        qWarning("Can't convert %s to %s", qPrintable(args.at(i)), types.at(i).constData());
+                        qWarning("Can't convert %s to %s", qPrintable(args.at(i)), parameterTypes.at(i).constData());
                         return false; // ### ???
                     }
                 }
-                QDBusReply<void> rep;
                 ret = method.invoke(&dbusInterface, Qt::DirectConnection,
                                     QGenericReturnArgument(returnArg.typeName(), returnArg.data()),
-                                    QGenericArgument(types.value(0).constData(), arguments[0].data()),
-                                    QGenericArgument(types.value(1).constData(), arguments[1].data()),
-                                    QGenericArgument(types.value(2).constData(), arguments[2].data()),
-                                    QGenericArgument(types.value(3).constData(), arguments[3].data()),
-                                    QGenericArgument(types.value(4).constData(), arguments[4].data()),
-                                    QGenericArgument(types.value(5).constData(), arguments[5].data()),
-                                    QGenericArgument(types.value(6).constData(), arguments[6].data()),
-                                    QGenericArgument(types.value(7).constData(), arguments[7].data()),
-                                    QGenericArgument(types.value(8).constData(), arguments[8].data()),
-                                    QGenericArgument(types.value(9).constData(), arguments[9].data()));
+                                    QGenericArgument(parameterTypes.value(0).constData(), arguments[0].data()),
+                                    QGenericArgument(parameterTypes.value(1).constData(), arguments[1].data()),
+                                    QGenericArgument(parameterTypes.value(2).constData(), arguments[2].data()),
+                                    QGenericArgument(parameterTypes.value(3).constData(), arguments[3].data()),
+                                    QGenericArgument(parameterTypes.value(4).constData(), arguments[4].data()),
+                                    QGenericArgument(parameterTypes.value(5).constData(), arguments[5].data()),
+                                    QGenericArgument(parameterTypes.value(6).constData(), arguments[6].data()),
+                                    QGenericArgument(parameterTypes.value(7).constData(), arguments[7].data()),
+                                    QGenericArgument(parameterTypes.value(8).constData(), arguments[8].data()),
+                                    QGenericArgument(parameterTypes.value(9).constData(), arguments[9].data()));
             }
             if (!ret) {
                 qWarning("Can't invoke %s", method.signature());
@@ -143,11 +147,13 @@ int main(int argc, char *argv[])
                 QFile f;
                 f.open(stdout, QIODevice::WriteOnly);
                 QDebug out(&f);
-                out << "Invoked" << method.signature() << "successfully" << returnArg << endl;
+                const int returnType = types.value(returnArg.userType());
+                QVariant var(returnType, returnArg.data());
+                out << "Invoked" << method.signature() << "successfully" << returnArg << var << endl;
                 return 0;
             }
         }
-delete coreApp;
+        delete coreApp;
     }
 //             }
 
