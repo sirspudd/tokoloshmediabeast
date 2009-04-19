@@ -3,6 +3,7 @@ QSettings *Config::instance = 0;
 QStringList Config::unused;
 QStringList Config::unusedArguments()
 {
+    initUnused();
     return QStringList(unused.mid(1)).filter(QRegExp("^..*$"));
 }
 
