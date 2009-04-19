@@ -78,6 +78,7 @@ Q_DECLARE_METATYPE(QDBusReply<QDateTime>);
 Q_DECLARE_METATYPE(QDBusReply<QDate>);
 Q_DECLARE_METATYPE(QDBusReply<QStringList>);
 Q_DECLARE_METATYPE(QDBusReply<QRegExp>);
+Q_DECLARE_METATYPE(QDBusReply<QList<int> >);
 
 static QHash<int, int> registerMetaTypes()
 {
@@ -93,6 +94,7 @@ static QHash<int, int> registerMetaTypes()
         types[qRegisterMetaType<QDBusReply<QDate> >("QDBusReply<QDate>")] = QMetaType::QDate;
         types[qRegisterMetaType<QDBusReply<QStringList> >("QDBusReply<QStringList>")] = QMetaType::QStringList;
         types[qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QRegExp>")] = QMetaType::QRegExp;
+        types[qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QList<int> >")] = QMetaType::QRegExp;
     }
     return types;
 }
