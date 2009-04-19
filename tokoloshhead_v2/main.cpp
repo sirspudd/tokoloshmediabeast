@@ -14,10 +14,13 @@ int main(int argc, char * argv[])
                                     QDBusConnection::sessionBus(),
                                     &app);
 
+    int queuedMethodIndex = -1;
     const QMetaObject *dbusInterfaceMetaObject = dbusInterface.metaObject();
 
     foreach(QString arg, Config::unusedArguments()) {
-        if (QFile::exists(arg)) {
+        if ((queuedMethodIndex == -1) &&
+            QFile::exists(arg))
+        {
             // does QFile match for dirs?
             //If dir: add path + scan
             //If file, load file?
@@ -28,10 +31,12 @@ int main(int argc, char * argv[])
             }
             if(QFileInfo(consideredPath).isFile()){
                 dbusInterface.load(arg);
+            } else {
+                //handle me
+                //path loading not in interface! investigating seperately
             }
-            //path loading not in interface! investigating seperately
         } else if (arg.startsWith('-')) {
-            //Does not handle slots with arguments, which can be largely reduced to the file paths above
+            queuedMethodIndex = -1;
             const char* charArg = arg.endsWith("()")
                             ? arg.toAscii().constData()
                             : arg.append("()").toAscii().constData();
@@ -39,16 +44,35 @@ int main(int argc, char * argv[])
             const int index = dbusInterfaceMetaObject->indexOfSlot(charArg+1);
             if(index != -1) {
                 qWarning("%s has index %d",charArg+1,index);
-                dbusInterfaceMetaObject->method(index).invoke( &dbusInterface,
-                                                               Qt::DirectConnection,
-                                                               QGenericReturnArgument());
+                QMetaMethod calledMethod = dbusInterfaceMetaObject->method(index);
+                if(calledMethod.parameterNames().size() > 0) {
+                    //gag for your arg beatch
+                    queuedMethodIndex = index;
+                } else {
+                    calledMethod.invoke( &dbusInterface,
+                            Qt::DirectConnection,
+                            QGenericReturnArgument());
+                    
+                    app.quit();
+                    return 0;
+                }
             } else {
                 qWarning("Unknown argument %s", qPrintable(arg));
             }
-            app.quit();
-            return 0;
         } else {
+            if(queuedMethodIndex!=-1)
+            {
+                QMetaMethod calledMethod = dbusInterfaceMetaObject->method(queuedMethodIndex);
+                calledMethod.invoke( &dbusInterface,
+                        Qt::DirectConnection,
+                        QGenericReturnArgument(),
+                        Q_ARG(QString, arg));
+
+                app.quit();
+                return 0;
+            }
             qWarning("%s doesn't seem to exist", qPrintable(arg));
+            queuedMethodIndex = -1;
         }
     }
     Player player(&dbusInterface);
