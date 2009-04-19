@@ -25,11 +25,11 @@ int main(int argc, char * argv[])
             //If dir: add path + scan
             //If file, load file?
             QString consideredPath(arg);
-            while(QFileInfo(consideredPath).isSymLink()) {
+            while (QFileInfo(consideredPath).isSymLink()) {
                 //FIXME: might want to have a counter incase there is a cyclical symlink
                 consideredPath = QFileInfo(consideredPath).symLinkTarget();
             }
-            if(QFileInfo(consideredPath).isFile()){
+            if (QFileInfo(consideredPath).isFile()){
                 dbusInterface.load(arg);
             } else {
                 //handle me
@@ -38,21 +38,21 @@ int main(int argc, char * argv[])
         } else if (arg.startsWith('-')) {
             queuedMethodIndex = -1;
             const char* charArg = arg.endsWith("()")
-                            ? arg.toAscii().constData()
-                            : arg.append("()").toAscii().constData();
+                                  ? arg.toAscii().constData()
+                                  : arg.append("()").toAscii().constData();
             //char*+1 is a nasty but efficient way to drop the first char
             const int index = dbusInterfaceMetaObject->indexOfSlot(charArg+1);
-            if(index != -1) {
+            if (index != -1) {
                 qWarning("%s has index %d",charArg+1,index);
                 QMetaMethod calledMethod = dbusInterfaceMetaObject->method(index);
-                if(calledMethod.parameterNames().size() > 0) {
+                if (calledMethod.parameterNames().size() > 0) {
                     //gag for your arg beatch
                     queuedMethodIndex = index;
                 } else {
-                    calledMethod.invoke( &dbusInterface,
-                            Qt::DirectConnection,
-                            QGenericReturnArgument());
-                    
+                    calledMethod.invoke(&dbusInterface,
+                                         Qt::DirectConnection,
+                                         QGenericReturnArgument());
+
                     app.quit();
                     return 0;
                 }
@@ -60,13 +60,12 @@ int main(int argc, char * argv[])
                 qWarning("Unknown argument %s", qPrintable(arg));
             }
         } else {
-            if(queuedMethodIndex!=-1)
-            {
+            if (queuedMethodIndex!=-1) {
                 QMetaMethod calledMethod = dbusInterfaceMetaObject->method(queuedMethodIndex);
-                calledMethod.invoke( &dbusInterface,
-                        Qt::DirectConnection,
-                        QGenericReturnArgument(),
-                        Q_ARG(QString, arg));
+                calledMethod.invoke(&dbusInterface,
+                                     Qt::DirectConnection,
+                                     QGenericReturnArgument(),
+                                     Q_ARG(QString, arg));
 
                 app.quit();
                 return 0;
