@@ -4,6 +4,7 @@
 #include "config.h"
 #include "tokolosh_interface.h"
 
+#if 0 // all this should be in the backend
 static inline QFileInfo resolveSymlink(const QString &file)
 {
     QFileInfo fi(file);
@@ -41,13 +42,14 @@ static inline QStringList toFiles(const QString &arg, bool recursive = false)
     }
     return files;
 }
+#endif
 
 static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
 {
     QRegExp rx("^-*");
     arg.remove(rx);
-    QMetaMethod bestMethod;
-    int matchCount = 0;
+
+    QMetaMethod best;
 
     const int methodCount = metaObject->methodCount();
     for (int i=metaObject->methodOffset(); i<methodCount; ++i) {
@@ -56,24 +58,27 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
             && method.methodType() != QMetaMethod::Method)
             continue;
 
-        const QString methodName = method.signature();
+        const QString methodName = QString::fromLatin1(method.signature());
         if (!methodName.startsWith(arg))
             continue;
 
         if (methodName.size() != arg.size()) {
-            // if the argument part is not specified that's still a match
+            // if the argument part is not specified that's still an exact match
             const int index = methodName.lastIndexOf("(");
-            if (arg.size() < index) // if you specify setVo that shouldn't match setVolume(or should it?)
-            {
-                ++matchCount;
-                bestMethod = method;
+            if (arg.size() < index) {
+                if (best.signature()) {
+                    qWarning("Ambigious request. Could match either %s or %s", best.signature(), method.signature());
+                    // could maybe match more as well, should we print that as well?
+                    return QMetaMethod();
+                }
+                best = method;
                 continue;
             }
         }
-        return method;
+        best = method;
+        break;
     }
-    //Tolerance for laziness not ambiguity
-    return matchCount > 1 ? QMetaMethod() : bestMethod;
+    return best;
 }
 
 Q_DECLARE_METATYPE(QDBusReply<void>);
