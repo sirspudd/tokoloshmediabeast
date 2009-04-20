@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
             bool ret = false;
             if (parameterTypes.isEmpty()) {
                 ret = method.invoke(&dbusInterface, Qt::DirectConnection,
-                                    QGenericReturnArgument(returnArg.typeName(), returnArg.data()));
+                                    QGenericReturnArgument(returnArg.typeName(), returnArg.type() ? returnArg.data() : 0));
             } else if (argc - i - 1 < parameterTypes.size()) {
                 qWarning("Not enough arguments specified for %s needed %d, got %d",
                          method.signature(), parameterTypes.size(), argc - i - 1);
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
                     }
                 }
                 ret = method.invoke(&dbusInterface, Qt::DirectConnection,
-                                    QGenericReturnArgument(returnArg.typeName(), returnArg.data()),
+                                    QGenericReturnArgument(returnArg.typeName(), returnArg.type() ? returnArg.data() : 0),
                                     QGenericArgument(parameterTypes.value(0).constData(), arguments[0].data()),
                                     QGenericArgument(parameterTypes.value(1).constData(), arguments[1].data()),
                                     QGenericArgument(parameterTypes.value(2).constData(), arguments[2].data()),
