@@ -26,5 +26,5 @@ unix {
 }
 
 QT += dbus
-RESOURCES += tokoloshhead_v2.qrc
+RESOURCES += tokoloshhead.qrc
 !include(../shared/shared.pri):error("Can't find shared.pri")
