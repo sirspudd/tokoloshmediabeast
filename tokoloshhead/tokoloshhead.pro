@@ -5,12 +5,14 @@ INCLUDEPATH += .
 HEADERS += player.h \
            config.h \
            widgets.h \
+           shortcutdialog.h \
            tokolosh_interface.h
 
 SOURCES += main.cpp \
            player.cpp \
            config.cpp \
            widgets.cpp \
+           shortcutdialog.cpp \
            tokolosh_interface.cpp
 
 CONFIG += qdbus debug

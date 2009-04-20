@@ -1,6 +1,7 @@
 #include "player.h"
 #include "widgets.h"
 #include "config.h"
+#include "shortcutdialog.h"
 #include <QDebug>
 #include "tokolosh_interface.h"
 
@@ -35,6 +36,7 @@ static inline QString unquote(QString string)
     return string;
 }
 
+Q_DECLARE_METATYPE(QList<QShortcut*>);
 inline uint qHash(const QKeySequence &seq) { return qHash(seq.toString()); }
 template <class T> static void setShortcuts(T *t)
 {
@@ -73,8 +75,14 @@ template <class T> static void setShortcuts(T *t)
         used.insert(key);
         if (idx == 0) {
             t->setShortcut(key);
+//            qDebug() << "setting" << key << "for" << t;
         } else {
-            new QShortcut(key, ::widget(t), ::activateMember(t));
+            QShortcut *shortcut = new QShortcut(key, ::widget(t));
+            QObject::connect(shortcut, SIGNAL(activated()), t, ::activateMember(t));
+            QList<QShortcut*> shortcuts = qVariantValue<QList<QShortcut*> >(t->property("shortcuts"));
+            shortcuts.append(shortcut);
+            t->setProperty("shortcuts", qVariantFromValue<QList<QShortcut*> >(shortcuts));
+//            qDebug() << "setting" << key << "for" << t;
         }
 
         ++idx;
@@ -164,7 +172,9 @@ Player::Player(TokoloshInterface* dbusInterface, QWidget *parent)
         d.buttons[index] = new Button(this);
         d.buttons[index]->setGeometry(buttonInfo[i].rect);
         d.buttons[index]->setObjectName(QString::fromLatin1(buttonInfo[i].name));
-        d.buttons[index]->setToolTip(QApplication::translate("Playlist", buttonInfo[i].name));
+        const QString translated = QApplication::translate("Playlist", buttonInfo[i].name);
+        d.buttons[index]->setToolTip(translated);
+        d.buttons[index]->setText(translated); // used by shortcut editor
         d.buttons[index]->setCheckable(buttonInfo[i].checkable);
         d.buttons[index]->setProperty("defaultShortcut", buttonInfo[i].shortcut);
         QAction *action = new QAction(buttonInfo[i].name, this);
@@ -197,6 +207,7 @@ Player::Player(TokoloshInterface* dbusInterface, QWidget *parent)
         const QKeySequence shortcut;
     } const actionInfo[] = {
         { QT_TRANSLATE_NOOP("Player", "Quit"), SLOT(close()), None, QKeySequence::Close },
+        { QT_TRANSLATE_NOOP("Player", "Edit shortcuts"), SLOT(editShortcuts()), None, QKeySequence() },
 #ifdef QT_DEBUG
         { QT_TRANSLATE_NOOP("Player", "Toggle debug geometry"), SLOT(toggleDebugGeometry(bool)),
           (Config::isEnabled("debuggeometry") ? Checked|Checkable : Checkable),
@@ -467,6 +478,13 @@ void Player::closeEvent(QCloseEvent *e)
     Config::setValue("position", pos());
     QWidget::closeEvent(e);
 }
+
+void Player::editShortcuts()
+{
+    ShortcutDialog dialog(this);
+    dialog.exec();
+}
+
 
 #ifdef QT_DEBUG
 void Player::debugButton()

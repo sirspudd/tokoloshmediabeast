@@ -68,6 +68,7 @@ public slots:
     void open();
     void openSkin();
     void reloadSettings();
+    void editShortcuts();
 #ifdef QT_DEBUG
     void debugButton();
     void toggleOverlay(bool on);
