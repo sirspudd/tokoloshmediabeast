@@ -41,7 +41,7 @@
         </method>
         <signal name="trackChanged">
             <arg name="path" type="s" direction="out"/>
-        </method>
+        </signal>
         <method name="libraryPaths">
             <arg name="pathList" type="v" direction="out"/>
         </method>
