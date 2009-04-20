@@ -15,7 +15,5 @@
 - Make filedialog show border and not main gui. Will that work? Separate process?
 - Verbose mode that dumps all sorts of stuff
 - Way to list availble methods over DBUS also, restrict which ones we want people to be able to call
-- Need to be able to query what extensions we support
-- Make tail run as a daemon (using QtService?)
 
 * Consider rewriting config to have a static QSettings member. Would be nicer and faster (Done)

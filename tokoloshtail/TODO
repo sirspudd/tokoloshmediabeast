@@ -1,1 +1,4 @@
--seperate xine calls from other backend considerations
+- Seperate xine calls from other backend considerations
+- Need to be able to query what extensions we support
+- Make tail run as a daemon (using QtService?)
+
