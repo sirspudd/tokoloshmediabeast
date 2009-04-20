@@ -46,6 +46,9 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
 {
     QRegExp rx("^-*");
     arg.remove(rx);
+    QMetaMethod bestMethod;
+    int matchCount = 0;
+
     const int methodCount = metaObject->methodCount();
     for (int i=metaObject->methodOffset(); i<methodCount; ++i) {
         const QMetaMethod method = metaObject->method(i);
@@ -61,11 +64,16 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
             // if the argument part is not specified that's still a match
             const int index = methodName.lastIndexOf("(");
             if (arg.size() < index) // if you specify setVo that shouldn't match setVolume(or should it?)
+            {
+                ++matchCount;
+                bestMethod = method;
                 continue;
+            }
         }
         return method;
     }
-    return QMetaMethod();
+    //Tolerance for laziness not ambiguity
+    return matchCount > 1 ? QMetaMethod() : bestMethod;
 }
 
 Q_DECLARE_METATYPE(QDBusReply<void>);
