@@ -16,7 +16,7 @@ void Config::useArg(int index)
 
 QVariant Config::valueFromCommandLine(const QString &key)
 {
-    const QStringList args = QCoreApplication::arguments();
+    const QStringList args = Config::arguments();
     QRegExp rx(QString("--?%1=(.*)").arg(key));
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     QVariant value;
@@ -60,7 +60,7 @@ QSettings * Config::settings()
 void Config::initUnused()
 {
     if (unused.isEmpty()) {
-        unused = QCoreApplication::arguments();
+        unused = Config::arguments();
         unused.replaceInStrings(QRegExp(QLatin1String("--store"), Qt::CaseInsensitive), QString());
         unused.replaceInStrings(QRegExp(QLatin1String("--save"), Qt::CaseInsensitive), QString());
     }
@@ -70,7 +70,7 @@ bool Config::store()
 {
     static enum { DontStore = 0x0, Store = 0x1, Unset = 0x2 } state = Unset;
     if (state == Unset) {
-        const QStringList args = QCoreApplication::arguments();
+        const QStringList args = Config::arguments();
         state = (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
                  || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)
                  ? Store
@@ -78,4 +78,10 @@ bool Config::store()
     }
 
     return (state == Store);
+}
+
+QStringList Config::arguments()
+{
+    static const QStringList ret = QCoreApplication::arguments();
+    return ret;
 }

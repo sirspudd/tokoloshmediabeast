@@ -13,7 +13,7 @@ public:
     static bool isEnabled(const QString &k, bool defaultValue = false)
     {
         const QString key = k.toLower();
-        const QStringList args = QCoreApplication::arguments();
+        const QStringList args = Config::arguments();
         enum { Unset = -1, False = 0, True = 1 } value = Unset;
         struct {
             const char *prefix;
@@ -62,6 +62,7 @@ public:
 
     template <typename T> static bool contains(const QString &key)
     {
+        arguments();
         bool ok;
         (void)value<T>(key, T(), &ok);
         return ok;
@@ -69,6 +70,7 @@ public:
 
     template <typename T> static T value(const QString &k, const T &defaultValue = T(), bool *ok = 0)
     {
+        arguments();
         const QString key = k.toLower();
         QVariant value = valueFromCommandLine(key);
 
@@ -100,12 +102,14 @@ public:
 
     template <typename T> static void setValue(const QString &key, const T &t)
     {
+        arguments();
         QSettings *s = settings();
         s->setValue(key.toLower(), qVariantValue<T>(t));
         s->sync();
     }
 
     static QStringList unusedArguments();
+    static QStringList arguments();
 private:
     static QSettings *settings();
     static void initUnused();

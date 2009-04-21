@@ -87,11 +87,9 @@ template <class T> static void setShortcuts(T *t)
 
         ++idx;
     }
-
-
 } // use this for both buttons and actions
 
-Player::Player(TokoloshInterface* dbusInterface, QWidget *parent)
+Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     : QWidget(parent)
 {
 #ifdef QT_DEBUG
@@ -108,6 +106,7 @@ Player::Player(TokoloshInterface* dbusInterface, QWidget *parent)
     }
 
     d.dbusInterface = dbusInterface;
+    qDebug() << "connecting" << connect(dbusInterface, SIGNAL(wakeUpGui()), this, SLOT(wakeUp()));
 
     if (!Config::isEnabled("titlebar", false)) {
         Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
@@ -315,7 +314,7 @@ bool Player::setSkin(const QString &path)
         qDebug() << "Passed skin path is not acceptable";
         return false;
     }
-    
+
     qDebug() << "Constructing data structures from given skin path";
 
     QDir dir(path);
@@ -487,9 +486,16 @@ void Player::closeEvent(QCloseEvent *e)
 void Player::editShortcuts()
 {
     ShortcutDialog dialog(this);
-    dialog.exec();
+    if (dialog.exec())
+        reloadSettings();
 }
 
+void Player::wakeUp()
+{
+    qDebug("%s %d: void Player::wakeUp()", __FILE__, __LINE__);
+    activateWindow();
+    raise();
+}
 
 #ifdef QT_DEBUG
 void Player::debugButton()

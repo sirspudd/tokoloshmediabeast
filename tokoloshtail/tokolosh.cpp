@@ -38,6 +38,7 @@ public:
     bool shuffle;
     bool repeat;
     Tokolosh *pSelf;
+    QSet<QString> *guiClientCount;
 };
 
 Tokolosh::Private::Private(Tokolosh *pTokolosh)
@@ -50,7 +51,8 @@ Tokolosh::Private::Private(Tokolosh *pTokolosh)
       playing(false),
       shuffle(false),
       repeat(false),
-      pSelf(pTokolosh)
+      pSelf(pTokolosh),
+      guiClientCount(0)
 {
     //Xine initialization
     char configfile[2048];
@@ -404,6 +406,11 @@ Tokolosh * Tokolosh::instance()
     return inst;
 }
 
+void Tokolosh::sendWakeUp()
+{
+    emit wakeUpGui();
+}
+
 #include "tokolosh.moc"
 
 /*
@@ -424,4 +431,3 @@ Tokolosh * Tokolosh::instance()
   with this program; if not, write to the Free Software Foundation, Inc.,
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-

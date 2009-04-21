@@ -4,6 +4,18 @@
 #include "config.h"
 #include "tokolosh_interface.h"
 
+
+static inline bool startGui()
+{
+    if (Config::isEnabled("singlegui", true)) {
+        const qint64 pid = Config::value<qint64>("guiPid", -1);
+        if (pid != -1 && QFile::exists(QString("/proc/%1").arg(pid)))
+            return false;
+        Config::setValue<qint64>("guiPid", QCoreApplication::applicationPid());
+    }
+    return true;
+}
+
 #if 0 // all this should be in the backend
 static inline QFileInfo resolveSymlink(const QString &file)
 {
@@ -134,16 +146,15 @@ static QVariant toVariant(const QVariant &dbusReply)
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication *coreApp = new QCoreApplication(argc, argv);
+    coreApp->setApplicationName("tokoloshhead_v2");
     const QHash<int, int> types = registerMetaTypes();
     TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
                                     "/TokoloshMediaPlayer",
                                     QDBusConnection::sessionBus());
     if (argc > 1) {
-        QCoreApplication *coreApp = new QCoreApplication(argc, argv);
-        coreApp->setApplicationName("tokoloshhead_v2");
-
         const QMetaObject *dbusInterfaceMetaObject = dbusInterface.metaObject();
-        const QStringList args = coreApp->arguments();
+        const QStringList args = Config::arguments();
         for (int i=1; i<argc; ++i) {
             const QString &arg = args.at(i);
             if (arg == "--list-methods") {
@@ -206,56 +217,15 @@ int main(int argc, char *argv[])
                 return 0;
             }
         }
-        delete coreApp;
     }
-//             }
+    // ### handle file args
+    if (!startGui()) {
+        dbusInterface.sendWakeUp();
+        return 0;
+    }
 
-//             if (QFileInfo(consideredPath).isFile()) {
-//                 dbusInterface.load(arg);
-//             } else {
-//                 //handle me
-//                 //path loading not in interface! investigating seperately
-//             }
-//         } else if (arg.startsWith('-')) {
-//             queuedMethodIndex = -1;
-//             QByteArray sig = arg;
-//             const char* charArg = arg.endsWith("()")
-//                                   ? arg.toAscii().constData()
-//                                   : arg.append("()").toAscii().constData();
-//             //char*+1 is a nasty but efficient way to drop the first char
-//             const int index = dbusInterfaceMetaObject->indexOfSlot(charArg+1);
-//             if (index != -1) {
-//                 qWarning("%s has index %d",charArg+1,index);
-//                 QMetaMethod calledMethod = dbusInterfaceMetaObject->method(index);
-//                 if (calledMethod.parameterNames().size() > 0) {
-//                     //gag for your arg beatch
-//                     queuedMethodIndex = index;
-//                 } else {
-//                     calledMethod.invoke(&dbusInterface,
-//                                         Qt::DirectConnection,
-//                                         QGenericReturnArgument());
+    delete coreApp;
 
-//                     app.quit();
-//                     return 0;
-//                 }
-//             } else {
-//                 qWarning("Unknown argument %s", qPrintable(arg));
-//             }
-//         } else {
-//             if (queuedMethodIndex!=-1) {
-//                 QMetaMethod calledMethod = dbusInterfaceMetaObject->method(queuedMethodIndex);
-//                 calledMethod.invoke(&dbusInterface,
-//                                     Qt::DirectConnection,
-//                                     QGenericReturnArgument(),
-//                                     Q_ARG(QString, arg));
-
-//                 app.quit();
-//                 return 0;
-//             }
-//             qWarning("%s doesn't seem to exist", qPrintable(arg));
-//             queuedMethodIndex = -1;
-//         }
-//     }
     QApplication app(argc, argv);
     app.setApplicationName("tokoloshhead_v2");
     Player player(&dbusInterface);

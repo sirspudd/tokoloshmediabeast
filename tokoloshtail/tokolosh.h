@@ -17,6 +17,7 @@ public:
     static Tokolosh *instance();
 
 public Q_SLOTS:
+    void sendWakeUp();
     void load(const QString &fileName);
     void stop();
     void play();
@@ -50,6 +51,7 @@ Q_SIGNALS: // SIGNALS
     void trackChanged(const QString &trackPath);
     void repeatChanged(bool);
     void shuffleChanged(bool);
+    void wakeUpGui();
 private:
     class Private;
     Private *d;

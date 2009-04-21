@@ -13,13 +13,18 @@
         <method name="toggleShuffle"/>
         <method name="toggleRepeat"/>
         <method name="syncClients"/>
+        <method name="sendWakeUp"/>
         <method name="dumpFiles"/>
         <signal name="crashed"/>
+        <signal name="wakeUpGui"/>
         <method name="track">
             <arg name="track" type="s" direction="out"/>
         </method>
         <method name="shuffle">
             <arg name="enabled" type="b" direction="out"/>
+        </method>
+        <method name="guiClientCount">
+            <arg name="count" type="i" direction="out"/>
         </method>
         <method name="repeat">
             <arg name="enabled" type="b" direction="out"/>
