@@ -312,8 +312,11 @@ static bool verifySkin(const QString &path, bool warn)
 bool Player::setSkin(const QString &path)
 {
     if (!::verifySkin(path, true)) {
+        qDebug() << "Passed skin path is not acceptable";
         return false;
     }
+    
+    qDebug() << "Constructing data structures from given skin path";
 
     QDir dir(path);
     Q_ASSERT(dir.exists());
@@ -455,9 +458,11 @@ void Player::openSkin()
 {
     QFileDialog fd(this);
     fd.setFileMode(QFileDialog::DirectoryOnly);
-    fd.setDirectory(Config::value<QString>("lastSkinDirectory", QCoreApplication::applicationDirPath()));
+    fd.setDirectory(Config::value<QString>("skin", QCoreApplication::applicationDirPath()));
     if (fd.exec()) {
-        Config::setValue<QString>("lastSkinDirectory", fd.directory().absolutePath());
+        Config::setValue<QString>("skin", fd.directory().absolutePath());
+        setSkin(Config::value<QString>("skin"));
+        update();
     }
 }
 
