@@ -1,7 +1,8 @@
 #include "playlist.h"
+#include <xine.h>
 
-#define VERIFY_INDEX(idx) { Q_ASSERT_X(idx >= 0 && idx < d.current.size(), \
-                                       qPrintable(QString("Index out of range %1 (0-%2)").arg(idx).arg(d.current.size())), \
+#define VERIFY_INDEX(idx) { Q_ASSERT_X(idx >= 0 && idx < count(), \
+                                       qPrintable(QString("Index out of range %1 (0-%2)").arg(idx).arg(count())), \
                                        __FUNCTION__); }
 
 Playlist::Playlist(QObject *parent)
@@ -56,19 +57,24 @@ QStringList Playlist::validSongs(const QString &path, bool recurse) const
 
 int Playlist::count() const
 {
-    return d.current.size();
+    return d.mapping.isEmpty() ? d.all.size() : d.mapping.size();
 }
 
 int Playlist::insertSong(int index, const QString &path)
 {
-#warning This stuff must insert into both all and current (if it matches the current filter)
-    if (index < 0)
-        index = d.current.size(); // what if one
-    Q_ASSERT(index <= count());
+
     QHash<Field, QVariant> f = fields(path);
     if (f.isEmpty())
         return -1;
-    d.current.insert(index, f);
+
+    if (index < 0)
+        index = count();
+    Q_ASSERT(index <= count());
+    if (!d.mapping.isEmpty()) {
+        qDebug("%s %d: if (!d.mapping.isEmpty()) {", __FILE__, __LINE__);
+    } else {
+        d.all.insert(index, f);
+    }
     emit trackInserted(index);
     if (index + 1 < count()) {
         emit tracksChanged(index, count() - index - 1); // ### is this right?
@@ -82,22 +88,35 @@ QHash<Playlist::Field, QVariant> Playlist::fields(const QString &path, uint fiel
     if (!validSong(path))
         return ret;
     QFileInfo fi(path);
-    if (fields & FileName)
+    if (fields & FileName) {
         ret[FileName] = fi.fileName();
-    if (fields & FilePath)
+        fields &= ~FileName;
+    }
+    if (fields & FilePath) {
+        ret[FilePath] = fi.absoluteFilePath();
+        fields &= ~FilePath;
+    }
+
+    if (fields & FileDirectory) {
         ret[FilePath] = fi.path();
-    // need to ask xine for stuff
+        fields &= ~FileDirectory;
+    }
+
+    if (fields) {
+        // need to ask xine for stuff
+    }
     return ret;
 }
 
 QHash<Playlist::Field, QVariant> Playlist::fields(int track, uint fields) const
 {
     VERIFY_INDEX(track);
-    QHash<Field, QVariant> f = d.current.value(track);
+    const int idx = dataIndex(track);
+    QHash<Field, QVariant> f = d.all.value(idx);
     if (fields != All) {
-        foreach(Field key, f.keys()) { // not the most efficient way maybe
-            if (!(fields & key))
-                f.remove(key);
+        for (QHash<Field, QVariant>::iterator it = f.begin(); it != f.end(); ++it) {
+            if (!(fields & it.key()))
+                f.erase(it);
         }
     }
     return f;
@@ -106,7 +125,7 @@ QHash<Playlist::Field, QVariant> Playlist::fields(int track, uint fields) const
 QVariant Playlist::field(int track, Field field) const
 {
     VERIFY_INDEX(track);
-    return d.current.value(track).value(field);
+    return d.all.value(dataIndex(track)).value(field);
 }
 
 QVariant Playlist::field(const QString &file, Field field) const
@@ -114,27 +133,48 @@ QVariant Playlist::field(const QString &file, Field field) const
     return fields(file, field).value(field);
 }
 
-bool Playlist::remove(int track, int count)
+bool Playlist::remove(int track, int size)
 {
     VERIFY_INDEX(track);
-    VERIFY_INDEX(track + count - 1);
+    VERIFY_INDEX(track + size - 1);
+    if (!d.mapping.isEmpty()) {
+        qDebug("%s %d: if (!d.mapping.isEmpty()) {", __FILE__, __LINE__);
+        return false;
+    }
+    d.all.erase(d.all.begin() + track, (d.all.begin() + track + size));
+    return true;
 }
 
 bool Playlist::move(int from, int to)
 {
     VERIFY_INDEX(from);
     VERIFY_INDEX(to);
+    if (!d.mapping.isEmpty()) {
+        qDebug("%s %d: if (!d.mapping.isEmpty()) {", __FILE__, __LINE__);
+        return false;
+    }
+    d.all.move(from, to);
+    emit trackChanged(from);
+    emit trackChanged(to);
+    return true;
 }
 
 bool Playlist::swap(int from, int to)
 {
     VERIFY_INDEX(from);
     VERIFY_INDEX(to);
+    d.all.swap(from, to);
+    emit trackChanged(from);
+    emit trackChanged(to);
+    return true;
 }
 
 void Playlist::setFilter(const QRegExp &rx, uint fields)
 {
-
+    Q_ASSERT(fields != None || rx.isEmpty());
+    d.filter = rx;
+    d.filterFields = fields;
+    // updateView
 }
 
 QRegExp Playlist::filter() const
@@ -155,10 +195,32 @@ QList<QHash<Playlist::Field, QVariant> > Playlist::fields(int from, int size, ui
 
 void Playlist::sort(Field f, Qt::SortOrder sortorder)
 {
-
 }
 
 uint Playlist::filterFields() const
 {
     return d.filterFields;
+}
+
+bool Playlist::filter(int index) const
+{
+    VERIFY_INDEX(index);
+    return filter(fields(index, d.filterFields));
+}
+
+bool Playlist::filter(const QString &file) const
+{
+    return filter(fields(file, d.filterFields));
+}
+
+bool Playlist::filter(const QHash<Field, QVariant> &fields) const
+{
+    if (d.filter.isEmpty())
+        return true;
+    for (QHash<Field, QVariant>::const_iterator it = fields.begin(); it != fields.end(); ++it) {
+        if (it.key() & d.filterFields && it.value().toString().contains(d.filter)) {
+            return true;
+        }
+    }
+    return false;
 }

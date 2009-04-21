@@ -291,19 +291,19 @@ POSSIBILITY OF SUCH DAMAGES.
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    
-    Tokolosh    *daemon = new Tokolosh(&app);
-    MediaAdaptor    *theAdaptor = new MediaAdaptor(daemon);
-    
+
+    Tokolosh *daemon = new Tokolosh(&app);
+    MediaAdaptor *theAdaptor = new MediaAdaptor(daemon);
+
     QDBusConnection connection = QDBusConnection::sessionBus();
     connection.registerObject("/TokoloshMediaPlayer", daemon);
     connection.registerService("com.TokoloshXineBackend.TokoloshMediaPlayer");
 
     int exitCode = app.exec();
-    
-    delete      theAdaptor;
-    delete      daemon;
-    
+
+    delete theAdaptor;
+    delete daemon;
+
     return  exitCode;
 }
 /*

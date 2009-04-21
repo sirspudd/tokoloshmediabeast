@@ -5,6 +5,8 @@
 #include <QString>
 #include <QtDBus>
 
+struct xine_s;
+struct xine_audio_port_s;
 class Tokolosh : public QObject
 {
     Q_OBJECT
@@ -12,6 +14,7 @@ class Tokolosh : public QObject
 public:
     Tokolosh(QObject *parent);
     ~Tokolosh();
+    static Tokolosh *instance();
 
 public Q_SLOTS:
     void load(const QString &fileName);
@@ -42,7 +45,6 @@ public Q_SLOTS:
     QDBusVariant playlistWindow(int window = 5);
     QDBusVariant libraryPaths();
     QDBusVariant libraryContents();
-
 Q_SIGNALS: // SIGNALS
     void crashed();
     void trackChanged(const QString &trackPath);
@@ -51,6 +53,7 @@ Q_SIGNALS: // SIGNALS
 private:
     class Private;
     Private *d;
+    static Tokolosh *inst;
 };
 
 #endif

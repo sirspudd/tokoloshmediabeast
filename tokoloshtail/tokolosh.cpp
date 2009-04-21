@@ -133,10 +133,13 @@ int Tokolosh::Private::normalizeTrackPosition(int pos)
     return -1;
 }
 
+Tokolosh *Tokolosh::inst = 0;
 Tokolosh::Tokolosh(QObject *parent)
     : QObject(parent),
       d(new Private(this))
 {
+    Q_ASSERT(!inst);
+    inst = this;
 }
 
 Tokolosh::~Tokolosh()
@@ -396,6 +399,11 @@ void Tokolosh::setSpeed(int speed)
     }
 }
 
+Tokolosh * Tokolosh::instance()
+{
+    return inst;
+}
+
 #include "tokolosh.moc"
 
 /*
@@ -416,3 +424,4 @@ void Tokolosh::setSpeed(int speed)
   with this program; if not, write to the Free Software Foundation, Inc.,
   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+

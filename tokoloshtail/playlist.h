@@ -8,6 +8,7 @@ class Playlist : public QObject
     Q_OBJECT
 public:
     enum Field {
+        None = 0x000,
         FileName = 0x001,
         FilePath = 0x002,
         FileDirectory = 0x004,
@@ -17,6 +18,7 @@ public:
         Album = 0x040,
         Year = 0x080,
         Genre = 0x100,
+        TrackNumber = 0x200,
         All = 0xfff
     };
     Playlist(QObject *parent = 0);
@@ -32,6 +34,10 @@ public:
     QVariant field(int track, Field field) const;
     QVariant field(const QString &file, Field field) const;
 
+    bool filter(int index) const;
+    bool filter(const QString &file) const;
+    bool filter(const QHash<Field, QVariant> &fields) const;
+
     inline QString fileName(int track) const { return field(track, FileName).toString(); }
     inline QString filePath(int track) const { return field(track, FilePath).toString(); }
     inline QString fileDirectory(int track) const { return field(track, FileDirectory).toString(); }
@@ -40,6 +46,7 @@ public:
     inline QString artist(int track) const { return field(track, Artist).toString(); }
     inline QString album(int track) const { return field(track, Album).toString(); }
     inline int year(int track) const { return field(track, TrackName).toInt(); }
+    inline int trackNumber(int track) const { return field(track, TrackNumber).toInt(); }
     inline QString genre(int track) const { return field(track, Genre).toString(); }
 
     inline QString fileName(const QString &path) const { return field(path, FileName).toString(); }
@@ -50,6 +57,7 @@ public:
     inline QString artist(const QString &path) const { return field(path, Artist).toString(); }
     inline QString album(const QString &path) const { return field(path, Album).toString(); }
     inline int year(const QString &path) const { return field(path, TrackName).toInt(); }
+    inline int trackNumber(const QString &path) const { return field(path, TrackNumber).toInt(); }
     inline QString genre(const QString &path) const { return field(path, Genre).toString(); }
 
     QList<QHash<Field, QVariant> > fields(int from, int size, uint types) const;
@@ -60,7 +68,8 @@ public:
 
     void sort(Field f, Qt::SortOrder sortorder); // getter?
     void setFilter(const QRegExp &rx, uint fields = All);
-    inline void setFilter(const QString &str, uint fields = All) { setFilter(QRegExp(QRegExp::escape(str)), fields); } // ### is this right?
+    inline void setFilter(const QString &str, uint fields = All)
+    { setFilter(QRegExp(QRegExp::escape(str)), fields); } // ### is this right?
     QRegExp filter() const;
     uint filterFields() const;
     //void startTransaction
@@ -72,10 +81,14 @@ signals:
     void tracksRemoved(int from, int count);
     void tracksChanged(int from, int count);
 private:
+    inline int dataIndex(int idx) const { return d.mapping.value(idx, idx); }
     struct Private {
-        QList<QHash<Field, QVariant> > all, current; // should be possible to mmap this.
+        QList<QHash<Field, QVariant> > all; // should be possible to mmap this.
+        QVector<int> mapping;
         QRegExp filter;
         uint filterFields;
+        Qt::SortOrder sortOrder;
+        Field sortField;
     } d;
 };
 
