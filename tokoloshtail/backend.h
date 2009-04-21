@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include "playlist.h"
+
 class Backend : public QObject
 {
     Q_OBJECT
@@ -20,9 +21,14 @@ public:
 
     Backend() {}
     virtual ~Backend() {}
-
+    enum Flags {
+        None = 0x000,
+        SupportsEqualizer = 0x001
+    };
 public slots:
     inline bool init() { if (status() == Uninitalized) return initBackend(); return true; }
+
+    virtual uint flags() const { return None; }
     virtual void shutdown() = 0;
     virtual QVariant field(const QString &fileName, Playlist::Field field) const = 0;
     virtual void play() = 0;
@@ -38,8 +44,13 @@ public slots:
     virtual bool initBackend() = 0;
     virtual QString errorMessage() const { return QString(); }
     virtual int errorCode() const { return 0; }
+    virtual void setMute(bool on) = 0;
+    virtual bool isMute() const = 0;
+    virtual QHash<int, int> equalizerSettings() const { return QHash<int, int>(); }
+    virtual void setEqualizerSettings(const QHash<int, int> &) {}
 signals:
     void statusChanged(Status status);
+    void trackChanged(const QString &string);
 };
 
 #endif

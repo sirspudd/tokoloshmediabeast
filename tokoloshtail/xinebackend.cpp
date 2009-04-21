@@ -97,9 +97,16 @@ XineBackend::XineBackend()
     : d(new Private)
 {
 }
+XineBackend::~XineBackend()
+{
+    shutdown();
+    delete d;
+}
 
 bool XineBackend::initBackend()
 {
+    if (d->status != Uninitalized)
+        return true;
     //Xine initialization
     d->xine = xine_new();
 
@@ -140,11 +147,8 @@ bool XineBackend::initBackend()
 
 void XineBackend::shutdown()
 {
-    if (d->event_queue) {
-        xine_event_dispose_queue(d->event_queue);
-        d->event_queue = 0;
-    }
-
+    if (d->status == Uninitalized)
+        return;
     if (d->main.stream) {
         xine_close(d->main.stream);
         if (d->ao_port) {
@@ -153,6 +157,11 @@ void XineBackend::shutdown()
         }
         xine_dispose(d->main.stream);
         d->main.stream = 0;
+    }
+
+    if (d->event_queue) {
+        xine_event_dispose_queue(d->event_queue);
+        d->event_queue = 0;
     }
 
     while (d->first) {
@@ -165,6 +174,8 @@ void XineBackend::shutdown()
 
     xine_exit(d->xine);
     d->xine = 0;
+    d->status = Uninitalized;
+    emit statusChanged(d->status);
 }
 
 typedef QVariant (*Xine_Get_Meta_Info)(xine_stream_t *stream, int info);
@@ -231,6 +242,8 @@ void XineBackend::play()
         if (xine_play(d->main.stream, 0, 0))
             d->pollTimer.start(500, this);
         d->updateError(d->main.stream);
+        d->status = Playing;
+        emit statusChanged(d->status);
     }
 }
 
@@ -243,6 +256,8 @@ void XineBackend::pause()
         d->pollTimer.stop();
         xine_stop(d->main.stream);
         d->updateError(d->main.stream);
+        d->status = Idle;
+        emit statusChanged(d->status);
     }
 }
 
@@ -254,19 +269,24 @@ void XineBackend::stop()
         xine_stop(d->main.stream);
         d->updateError(d->main.stream);
         d->pollTimer.stop();
+        d->status = Idle;
+        emit statusChanged(d->status);
     }
 
 }
 
 bool XineBackend::load(const QString &fileName)
 {
+    stop();
     Node *node;
     xine_stream_t *s = d->stream(fileName, &node);
     if (!s)
         return false;
     if (node != &d->main) {
         ::swap(node, &d->main);
+        emit trackChanged(fileName);
     }
+
     return true;
 }
 
@@ -293,6 +313,20 @@ void XineBackend::setVolume(int vol)
     xine_set_param(d->main.stream, XINE_PARAM_AUDIO_VOLUME, vol);
     d->updateError(d->main.stream);
 }
+
+void XineBackend::setMute(bool on)
+{
+    xine_set_param(d->main.stream, XINE_PARAM_AUDIO_MUTE, on ? 1 : 0);
+    d->updateError(d->main.stream);
+}
+
+bool XineBackend::isMute() const
+{
+    const int ret = xine_get_param(d->main.stream, XINE_PARAM_AUDIO_MUTE);
+    d->updateError(d->main.stream);
+    return ret == 1;
+}
+
 
 XineBackend *XineBackend::inst = 0;
 XineBackend * XineBackend::instance()
@@ -358,4 +392,32 @@ QString XineBackend::errorMessage() const
 int XineBackend::errorCode() const
 {
     return d->error;
+}
+
+uint XineBackend::flags() const
+{
+    return SupportsEqualizer;
+}
+
+QHash<int, int> XineBackend::equalizerSettings() const
+{
+    QHash<int, int> ret;
+    static const int hz[] = { 30, 60, 126, 250, 500, 1000, 2000, 4000, 8000, 16000, -1 };
+    for (int i=0; hz[i] != -1; ++i) {
+        ret[hz[i]] = xine_get_param(d->main.stream, XINE_PARAM_EQ_30HZ + i);
+    }
+    d->updateError(d->main.stream);
+    return ret;
+}
+
+void XineBackend::setEqualizerSettings(const QHash<int, int> &eq)
+{
+    static const int hz[] = { 30, 60, 126, 250, 500, 1000, 2000, 4000, 8000, 16000, -1 };
+    for (int i=0; hz[i] != -1; ++i) {
+        const int val = eq.value(hz[i], -INT_MAX);
+        if (val != -INT_MAX) {
+            xine_set_param(d->main.stream, XINE_PARAM_EQ_30HZ + i, val);
+        }
+    }
+    d->updateError(d->main.stream);
 }

@@ -9,6 +9,7 @@ class XineBackend : public Backend
 {
     Q_OBJECT
 public:
+    virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
     virtual QVariant field(const QString &fileName, Playlist::Field field) const;
@@ -24,8 +25,14 @@ public:
     virtual void setVolume(int vol);
     virtual QString errorMessage() const;
     virtual int errorCode() const;
-    static XineBackend *instance();
+    virtual void setMute(bool on);
+    virtual bool isMute() const;
+    virtual uint flags() const;
+    virtual QHash<int, int> equalizerSettings() const;
+    virtual void setEqualizerSettings(const QHash<int, int> &eq);
 
+
+    static XineBackend *instance();
 private:
     Private *d;
     XineBackend();
