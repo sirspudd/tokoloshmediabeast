@@ -25,6 +25,19 @@ public:
         None = 0x000,
         SupportsEqualizer = 0x001
     };
+
+    enum Event {
+        NoEvent = 0,
+        SongFinished,
+        TrackChanged,
+        SongPaused,
+        PlayResumed,
+        SongStopped,
+        VolumeChanged,
+        MuteChanged,
+        EqualizerChanged,
+        ProgressChanged // ### ????
+    };
 public slots:
     inline bool init() { if (status() == Uninitalized) return initBackend(); return true; }
 
@@ -54,6 +67,10 @@ public slots:
     // compatible etc? Would anyone in their right mind need us to be
     // bc?
 signals:
+    // need to emit this if e.g. the command line client changes the
+    // volume on us. The other clients need to know to move their
+    // slider etc
+    void event(Event type, const QVariant &data);
     void statusChanged(Status status);
     void trackChanged(const QString &string);
 };
