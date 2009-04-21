@@ -16,7 +16,7 @@ public:
 
     enum ProgressType {
         Seconds,
-        Portion // 100th of a percent
+        Portion // ### 100th of a percent. Xine uses 0-65535 should we too?. Not a good name btw
     };
 
     Backend() {}
@@ -48,6 +48,11 @@ public slots:
     virtual bool isMute() const = 0;
     virtual QHash<int, int> equalizerSettings() const { return QHash<int, int>(); }
     virtual void setEqualizerSettings(const QHash<int, int> &) {}
+
+    // do all of this through a generic QVariant value(int
+    // type)/setValue(int type, QVariant) interface so I can be binary
+    // compatible etc? Would anyone in their right mind need us to be
+    // bc?
 signals:
     void statusChanged(Status status);
     void trackChanged(const QString &string);
