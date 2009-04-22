@@ -20,46 +20,6 @@ static inline bool startGui()
     return true;
 }
 
-#if 0 // all this should be in the backend
-static inline QFileInfo resolveSymlink(const QString &file)
-{
-    QFileInfo fi(file);
-    QStringList paths;
-    forever {
-        if (paths.contains(fi.absoluteFilePath())) {
-            qWarning("%s is a recursive symlink", qPrintable(paths.join(" => ")));
-            return QFileInfo();
-        }
-        paths.append(fi.absoluteFilePath());
-        if (!fi.isSymLink()) {
-            break;
-        }
-        fi = fi.symLinkTarget();
-    }
-    return fi;
-}
-
-static inline QStringList toFiles(const QString &arg, bool recursive = false)
-{
-    const QFileInfo fi = ::resolveSymlink(arg);
-    QStringList files;
-    if (fi.isDir()) {
-        const QDir dir(fi.absoluteFilePath());
-        foreach(QString file, dir.entryList(QDir::Dirs|QDir::Files|QDir::NoDotAndDotDot)) {
-            const QFileInfo f = ::resolveSymlink(file);
-            if (!f.isDir()) {
-                files.append(f.absoluteFilePath());
-            } else if (recursive) {
-                files += ::toFiles(f.absoluteFilePath(), recursive);
-            }
-        }
-    } else if (fi.isFile()) {
-        files.append(fi.absoluteFilePath());
-    }
-    return files;
-}
-#endif
-
 static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
 {
     QRegExp rx("^-*");
