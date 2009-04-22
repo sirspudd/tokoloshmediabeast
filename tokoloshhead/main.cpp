@@ -7,6 +7,10 @@
 
 static inline bool startGui()
 {
+#ifdef Q_WS_X11
+    if (!getenv("DISPLAY"))
+        return false;
+#endif
     if (Config::isEnabled("singlegui", true)) {
         const qint64 pid = Config::value<qint64>("guiPid", -1);
         if (pid != -1 && QFile::exists(QString("/proc/%1").arg(pid)))
