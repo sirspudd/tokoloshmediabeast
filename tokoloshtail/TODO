@@ -1,4 +1,7 @@
 - Seperate xine calls from other backend considerations
 - Need to be able to query what extensions we support
 - Make tail run as a daemon (using QtService?)
-
+- Should the backend be threaded? Could there be a multi-user
+  situation? What about heavy recursing directory stuff?
+  Maybe all playlist stuff in separate thread? or xine-stuff in
+  separate thread?

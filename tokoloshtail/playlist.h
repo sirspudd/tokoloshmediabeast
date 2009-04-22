@@ -22,20 +22,19 @@ public:
         All = 0xfff
     };
     Playlist(QObject *parent = 0);
-    bool validSong(const QString &file) const; // static?
-    inline int addFile(const QString &path) { return insertSong(count(), path); }
-    inline void addDirectory(const QString &path, bool recurse = false) { foreach(QString song, validSongs(path, recurse)) addFile(song); }
-    QStringList validSongs(const QString &path, bool recurse = false) const;
+    bool validTrack(const QString &file) const; // static?
+    void addTrack(const QString &path);
+    inline void addDirectory(const QString &path, bool recurse = false)
+    { foreach(QString track, validTracks(path, recurse)) addTrack(track); }
+    QStringList validTracks(const QString &path, bool recurse = false) const;
+
     int count() const;
-    int insertSong(int index, const QString &path);
     QHash<Field, QVariant> fields(const QString &path, uint types = All) const;
     QHash<Field, QVariant> fields(int track, uint types = All) const;
 
     QVariant field(int track, Field field) const;
     QVariant field(const QString &file, Field field) const;
 
-    bool filter(int index) const;
-    bool filter(const QString &file) const;
     bool filter(const QHash<Field, QVariant> &fields) const;
 
     inline QString fileName(int track) const { return field(track, FileName).toString(); }
@@ -77,14 +76,14 @@ public:
 signals:
     void countChanged(int);
     void trackChanged(int);
-    void trackInserted(int);
     void tracksRemoved(int from, int count);
     void tracksChanged(int from, int count);
+    void sortChanged(Field field, Qt::SortOrder order);
 private:
     inline int dataIndex(int idx) const { return d.mapping.value(idx, idx); }
     struct Private {
         QList<QHash<Field, QVariant> > all; // should be possible to mmap this.
-        QVector<int> mapping;
+        QList<int> mapping;
         QRegExp filter;
         uint filterFields;
         Qt::SortOrder sortOrder;
