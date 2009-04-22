@@ -19,8 +19,6 @@ public:
         Portion // ### 100th of a percent. Xine uses 0-65535 should we too?. Not a good name btw
     };
 
-    Backend() {}
-    virtual ~Backend() {}
     enum Flags {
         None = 0x000,
         SupportsEqualizer = 0x001
@@ -44,6 +42,7 @@ public slots:
     virtual uint flags() const { return None; }
     virtual void shutdown() = 0;
     virtual QVariant field(const QString &fileName, Playlist::Field field) const = 0;
+    virtual bool isValid(const QString &fileName) const = 0;
     virtual void play() = 0;
     virtual void pause() = 0;
     virtual void setProgress(ProgressType type, int progress) = 0;
@@ -66,6 +65,8 @@ public slots:
     // type)/setValue(int type, QVariant) interface so I can be binary
     // compatible etc? Would anyone in their right mind need us to be
     // bc?
+
+    static Backend *instance();
 signals:
     // need to emit this if e.g. the command line client changes the
     // volume on us. The other clients need to know to move their
@@ -73,6 +74,11 @@ signals:
     void event(Event type, const QVariant &data);
     void statusChanged(Status status);
     void trackChanged(const QString &string);
+protected:
+    Backend();
+    virtual ~Backend() {}
+private:
+    static Backend *inst;
 };
 
 #endif

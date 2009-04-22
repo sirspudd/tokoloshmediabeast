@@ -13,6 +13,7 @@ public:
     virtual bool initBackend();
     virtual void shutdown();
     virtual QVariant field(const QString &fileName, Playlist::Field field) const;
+    virtual bool isValid(const QString &fileName) const;
     virtual void play();
     virtual void pause();
     virtual void setProgress(ProgressType type, int progress);
@@ -30,13 +31,9 @@ public:
     virtual uint flags() const;
     virtual QHash<int, int> equalizerSettings() const;
     virtual void setEqualizerSettings(const QHash<int, int> &eq);
-
-
-    static XineBackend *instance();
 private:
     Private *d;
     XineBackend();
-    static XineBackend *inst;
 };
 
 #endif

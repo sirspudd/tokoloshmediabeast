@@ -192,7 +192,6 @@ static QVariant xine_get_meta_Integer(xine_stream_t *stream, int info)
     return QString::fromUtf8(utf8).toInt();
 }
 
-
 // also used by progress()
 static QVariant xine_get_track_length(xine_stream_t *stream, int item)
 {
@@ -235,6 +234,12 @@ QVariant XineBackend::field(const QString &fileName, Playlist::Field field) cons
 
     return QVariant();
 }
+
+bool XineBackend::isValid(const QString &fileName) const
+{
+    return status() != Uninitalized && d->stream(fileName);
+}
+
 
 void XineBackend::play()
 {
@@ -325,20 +330,6 @@ bool XineBackend::isMute() const
     const int ret = xine_get_param(d->main.stream, XINE_PARAM_AUDIO_MUTE);
     d->updateError(d->main.stream);
     return ret == 1;
-}
-
-
-XineBackend *XineBackend::inst = 0;
-XineBackend * XineBackend::instance()
-{
-    if (!inst) {
-        inst = new XineBackend;
-        if (!inst->init()) {
-            qWarning("Failed to initialize xine backend");
-            // delete and set to 0?
-        }
-    }
-    return inst;
 }
 
 void XineBackend::setProgress(ProgressType type, int progress)

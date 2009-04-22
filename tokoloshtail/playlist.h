@@ -3,6 +3,7 @@
 
 #include <QtCore>
 
+class Backend;
 class Playlist : public QObject
 {
     Q_OBJECT
@@ -78,16 +79,22 @@ signals:
     void trackChanged(int);
     void tracksRemoved(int from, int count);
     void tracksChanged(int from, int count);
+    void filterChanged(const QRegExp &rx, uint filterFields);
     void sortChanged(Field field, Qt::SortOrder order);
 private:
     inline int dataIndex(int idx) const { return d.mapping.value(idx, idx); }
     struct Private {
+        Backend *backend;
         QList<QHash<Field, QVariant> > all; // should be possible to mmap this.
         QList<int> mapping;
         QRegExp filter;
         uint filterFields;
         Qt::SortOrder sortOrder;
         Field sortField;
+        struct {
+            QHash<Field, QVariant> cachedFields;
+            QString cachedTrack;
+        } mutable cache;
     } d;
 };
 
