@@ -38,7 +38,6 @@ public:
     bool shuffle;
     bool repeat;
     Tokolosh *pSelf;
-    QSet<QString> *guiClientCount;
 };
 
 Tokolosh::Private::Private(Tokolosh *pTokolosh)
@@ -51,8 +50,7 @@ Tokolosh::Private::Private(Tokolosh *pTokolosh)
       playing(false),
       shuffle(false),
       repeat(false),
-      pSelf(pTokolosh),
-      guiClientCount(0)
+      pSelf(pTokolosh)
 {
     //Xine initialization
     char configfile[2048];

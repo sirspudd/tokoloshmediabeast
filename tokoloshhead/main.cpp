@@ -182,6 +182,16 @@ int main(int argc, char *argv[])
             }
         }
     }
+    foreach(QString arg, Config::unusedArguments()) {
+        const QFileInfo fi(arg);
+        if (!fi.exists()) {
+            if (!arg.startsWith("-")) {
+                qWarning("%s doesn't seem to exist", qPrintable(arg));
+            }
+            continue;
+        }
+        dbusInterface.load(arg);
+    }
     // ### handle file args
     if (!startGui()) {
         dbusInterface.sendWakeUp();
