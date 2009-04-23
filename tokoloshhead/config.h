@@ -1,10 +1,39 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-
 #include <QtCore>
+
+
+#if 0
+#define CONFIG_REGISTER_TYPE(t) \
+    Q_DECLARE_METATYPE(t); \
+    struct CONFIG_TYPE_#t { \
+        Config {
+};
+#endif
+
+template <typename T>
+class Streamer
+{
+public:
+    static void save(QDataStream &ds, const void *data)
+    {
+        const char *ch = reinterpret_cast<const char *>(data);
+        ds.writeRawData(ch, sizeof(T));
+    }
+    static void load(QDataStream &ds, void *data)
+    {
+        char *ch = reinterpret_cast<char *>(data);
+        ds.readRawData(ch, sizeof(T));
+    }
+};
+
 class Config
 {
 public:
+    template <typename T> static void registerType(const char *name)
+    {
+        QMetaType::registerStreamOperators(name, Streamer<T>::save, Streamer<T>::load);
+    }
     static void setEnabled(const QString &key, bool on)
     {
         Config::setValue(key, on);
@@ -104,7 +133,12 @@ public:
     {
         arguments();
         QSettings *s = settings();
-        s->setValue(key.toLower(), qVariantValue<T>(t));
+        const QVariant var = qVariantFromValue<T>(t);
+        if (var.type() != QVariant::UserType) {
+            s->setValue(key.toLower(), qVariantValue<T>(t));
+        } else {
+            s->setValue(key.toLower(), var);
+        }
         s->sync();
     }
 
