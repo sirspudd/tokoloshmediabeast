@@ -1,39 +1,97 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-#include <QtCore>
+#include <QtGui>
 
-
-#if 0
-#define CONFIG_REGISTER_TYPE(t) \
-    Q_DECLARE_METATYPE(t); \
-    struct CONFIG_TYPE_#t { \
-        Config {
-};
-#endif
-
-template <typename T>
-class Streamer
+template <typename T> bool read(const QVariant &, T &)
 {
-public:
-    static void save(QDataStream &ds, const void *data)
-    {
-        const char *ch = reinterpret_cast<const char *>(data);
-        ds.writeRawData(ch, sizeof(T));
+    return false;
+}
+
+template <typename T> static bool read(QSettings *settings, const QString &str, T &t)
+{
+    const QByteArray data = settings->value(str).toByteArray();
+    if (!data.isEmpty()) {
+        if (data.size() != sizeof(T)) {
+            qWarning("Mismatched data for %s. Expected %d bytes, got %d",
+                     qPrintable(str), sizeof(T), data.size());
+            return false;
+        }
+        memcpy(reinterpret_cast<char*>(&t), data.constData(), sizeof(T));
+        return true;
     }
-    static void load(QDataStream &ds, void *data)
-    {
-        char *ch = reinterpret_cast<char *>(data);
-        ds.readRawData(ch, sizeof(T));
-    }
-};
+    return false;
+}
+
+template <typename T> static void write(QSettings *settings, const QString &str, const T &t)
+{
+    QByteArray byteArray(sizeof(T), 0);
+    memcpy(byteArray.data(), reinterpret_cast<const char*>(&t), sizeof(T));
+    settings->setValue(str, byteArray);
+}
+
+#define CONFIG_TYPE(T)                                                  \
+    Q_DECLARE_METATYPE(T);                                              \
+    static inline bool read(const QVariant &v, T &t) {                  \
+        if (qVariantCanConvert<T>(v)) {                                 \
+            t = qVariantValue<T>(v);                                    \
+            return true;                                                \
+        }                                                               \
+        return false;                                                   \
+    }                                                                   \
+    static inline bool read(QSettings *settings, const QString &key,    \
+                            T &t) {                                     \
+        const QVariant var = settings->value(key);                      \
+        if (!var.isNull() && qVariantCanConvert<T>(var)) {              \
+            t = qVariantValue<T>(var);                                  \
+            return true;                                                \
+        }                                                               \
+        return false;                                                   \
+    }                                                                   \
+    static inline void write(QSettings *settings, const QString &key,   \
+                             const T &t) {                              \
+        settings->setValue(key, qVariantFromValue<T>(t));               \
+    }                                                                   \
+
+CONFIG_TYPE(qint8);
+CONFIG_TYPE(qint16);
+CONFIG_TYPE(qint32);
+CONFIG_TYPE(qint64);
+
+CONFIG_TYPE(quint8);
+CONFIG_TYPE(quint16);
+CONFIG_TYPE(quint32);
+CONFIG_TYPE(quint64);
+
+CONFIG_TYPE(float);
+CONFIG_TYPE(double);
+
+CONFIG_TYPE(QChar);
+CONFIG_TYPE(QString);
+CONFIG_TYPE(QByteArray);
+
+CONFIG_TYPE(QPoint);
+CONFIG_TYPE(QSize);
+CONFIG_TYPE(QRect);
+CONFIG_TYPE(QLine);
+
+CONFIG_TYPE(QPointF);
+CONFIG_TYPE(QSizeF);
+CONFIG_TYPE(QRectF);
+CONFIG_TYPE(QLineF);
+
+typedef QList<QVariant> VariantList;
+typedef QMap<QString, QVariant> StringVariantMap;
+typedef QHash<QString, QVariant> StringVariantHash;
+
+CONFIG_TYPE(VariantList);
+CONFIG_TYPE(StringVariantMap);
+CONFIG_TYPE(StringVariantHash);
+
+CONFIG_TYPE(QColor);
 
 class Config
 {
 public:
-    template <typename T> static void registerType(const char *name)
-    {
-        QMetaType::registerStreamOperators(name, Streamer<T>::save, Streamer<T>::load);
-    }
     static void setEnabled(const QString &key, bool on)
     {
         Config::setValue(key, on);
@@ -77,14 +135,13 @@ public:
             }
         }
 
+        QSettings *s = settings();
         if (value == Unset) {
-
-            QSettings *s = settings();
             if (s->contains(key)) {
                 value = s->value(key).toBool() ? True : False;
             }
         } else if (store()) {
-            Config::setValue(key, (value == True));
+            s->setValue(key, (value == True));
         }
         return value == Unset ? defaultValue : (value == True);
     }
@@ -97,48 +154,33 @@ public:
         return ok;
     }
 
-    template <typename T> static T value(const QString &k, const T &defaultValue = T(), bool *ok = 0)
+    template <typename T> static T value(const QString &k, const T &defaultValue = T(), bool *ok_in = 0)
     {
         arguments();
         const QString key = k.toLower();
         QVariant value = valueFromCommandLine(key);
-
-        if (value.isNull()) {
-            value = settings()->value(key);
-        } else if (store()) {
-            Config::setValue(key, qVariantValue<T>(value));
+        qDebug() << value;
+        T t;
+        bool ok = false;
+        QSettings *s = settings();
+        if (!value.isNull()) {
+            ok = ::read(value, t);
+            if (ok && store())
+                Config::setValue<T>(key, t);
+        } else {
+            ok = ::read(s, k, t);
         }
 
-        if (value.isNull()) {
-            if (ok)
-                *ok = false;
-            return defaultValue;
-        }
-        if (ok)
-            *ok = true;
-
-        if (qVariantCanConvert<T>(value)) {
-            return qVariantValue<T>(value);
-        }
-
-        QString txt;
-        QDebug(&txt) << value;
-
-        qWarning("Can't convert %s to %s",
-                 qPrintable(txt), qVariantFromValue<T>(T()).typeName());
-        return defaultValue;
+        if (ok_in)
+            *ok_in = ok;
+        return ok ? t : defaultValue;
     }
 
     template <typename T> static void setValue(const QString &key, const T &t)
     {
         arguments();
         QSettings *s = settings();
-        const QVariant var = qVariantFromValue<T>(t);
-        if (var.type() != QVariant::UserType) {
-            s->setValue(key.toLower(), qVariantValue<T>(t));
-        } else {
-            s->setValue(key.toLower(), var);
-        }
+        ::write<T>(s, key, t);
         s->sync();
     }
 

@@ -108,6 +108,12 @@ static QVariant toVariant(const QVariant &dbusReply)
     return QVariant();
 }
 
+struct Balle
+{
+    int i1, i2;
+};
+
+enum Barf { One, Two, Three };
 int main(int argc, char *argv[])
 {
     QCoreApplication *coreApp = new QCoreApplication(argc, argv);
@@ -182,6 +188,14 @@ int main(int argc, char *argv[])
             }
         }
     }
+    Balle balle;
+    balle.i1 = 24;
+    balle.i2 = 49;
+    Barf barf = Two;
+    Config::setValue<Balle>("balle", balle);
+    Config::setValue<Barf>("Barf", barf);
+    qDebug() << Config::value<Balle>("balle").i1;
+
     foreach(QString arg, Config::unusedArguments()) {
         const QFileInfo fi(arg);
         if (!fi.exists()) {
