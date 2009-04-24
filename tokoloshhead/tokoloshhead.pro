@@ -20,14 +20,25 @@ SOURCES += main.cpp \
 CONFIG += qdbus debug
 
 unix {
-    generateInterface.target = GenerateInterface
+    generateInterface.target = tokolosh_interface.cpp
     generateInterface.commands = sh generateadaptorfiles.sh
     QMAKE_EXTRA_TARGETS += generateInterface
-    PRE_TARGETDEPS+= GenerateInterface
+    PRE_TARGETDEPS += tokolosh_interface.cpp
     OBJECTS_DIR = .obj
     MOC_DIR = .moc
     UI_DIR = .ui
 }
+
+i18n.target = translations
+i18n.commands = lupdate tokoloshhead.pro
+QMAKE_EXTRA_TARGETS += i18n
+
+i18nrelease.target = translations-release
+i18nrelease.commands = lrelease tokoloshhead.pro
+QMAKE_EXTRA_TARGETS += i18nrelease
+
+TRANSLATIONS += i18n/tokoloshhead.no.ts \
+		i18n/tokoloshhead.de.ts
 
 QT += dbus
 RESOURCES += tokoloshhead.qrc
