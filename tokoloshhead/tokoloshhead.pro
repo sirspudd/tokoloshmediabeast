@@ -6,6 +6,7 @@ HEADERS += player.h \
            config.h \
            widgets.h \
            shortcutdialog.h \
+           SkinSelectionDialog.h \
            tokolosh_interface.h
 
 SOURCES += main.cpp \
@@ -13,6 +14,7 @@ SOURCES += main.cpp \
            config.cpp \
            widgets.cpp \
            shortcutdialog.cpp \
+           SkinSelectionDialog.cpp \
            tokolosh_interface.cpp
 
 CONFIG += qdbus debug

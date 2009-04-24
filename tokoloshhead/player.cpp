@@ -4,6 +4,13 @@
 #include "shortcutdialog.h"
 #include <QDebug>
 #include "tokolosh_interface.h"
+#include "skinSelectionDialog.h"
+
+enum SkinSelectionMechanism
+{
+    DirectlySelectFolder,
+    SkinFolderListView
+};
 
 static inline const char *activateMember(QAbstractButton *)
 {
@@ -455,13 +462,25 @@ void Player::open()
 
 void Player::openSkin()
 {
-    QFileDialog fd(this);
-    fd.setFileMode(QFileDialog::DirectoryOnly);
-    fd.setDirectory(Config::value<QString>("skin", QCoreApplication::applicationDirPath()));
-    if (fd.exec()) {
-        Config::setValue<QString>("skin", fd.directory().absolutePath());
-        setSkin(Config::value<QString>("skin"));
-        update();
+    switch(Config::value<SkinSelectionMechanism>("skinSelectionMechism", DirectlySelectFolder))
+    {
+        case SkinFolderListView:
+            qDebug() << "SkinFolderListView";
+            SkinSelectionDialog::instance()->show();
+            break;
+        case DirectlySelectFolder:
+        default:
+            {
+                QFileDialog fd(this);
+                fd.setFileMode(QFileDialog::DirectoryOnly);
+                fd.setDirectory(Config::value<QString>("skin", QCoreApplication::applicationDirPath()));
+                if (fd.exec()) {
+                    Config::setValue<QString>("skin", fd.directory().absolutePath());
+                    setSkin(Config::value<QString>("skin"));
+                    update();
+                }
+            }
+            break;
     }
 }
 
