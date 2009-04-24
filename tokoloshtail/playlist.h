@@ -61,7 +61,10 @@ public:
     uint filterFields() const;
     //void startTransaction
     //void endTransaction // ### ???
+    void requestAsyncTrackData(int track, TrackInfo info);
+    // maybe some identifier so clients that don't care don't need to know?
 signals:
+    void trackData(int track, TrackInfo info, const QVariant &variant);
     void countChanged(int);
     void trackChanged(int);
     void tracksRemoved(int from, int count);

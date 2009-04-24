@@ -400,3 +400,8 @@ bool Playlist::filter(const QHash<TrackInfo, QVariant> &fields) const
     }
     return false;
 }
+
+void Playlist::requestAsyncTrackData(int track, TrackInfo info)
+{
+    emit trackData(track, info, field(track, info));
+}
