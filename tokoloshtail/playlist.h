@@ -2,26 +2,13 @@
 #define PLAYLIST_H
 
 #include <QtCore>
+#include <global.h>
 
 class Backend;
 class Playlist : public QObject
 {
     Q_OBJECT
 public:
-    enum Field {
-        None = 0x000,
-        FileName = 0x001,
-        FilePath = 0x002,
-        FileDirectory = 0x004,
-        TrackName = 0x008,
-        TrackLength = 0x010,
-        Artist = 0x020,
-        Album = 0x040,
-        Year = 0x080,
-        Genre = 0x100,
-        TrackNumber = 0x200,
-        All = 0xfff
-    };
     Playlist(QObject *parent = 0);
     bool validTrack(const QString &file) const; // static?
     void addTrack(const QString &path);
@@ -30,13 +17,13 @@ public:
     QStringList validTracks(const QString &path, bool recurse = false) const;
 
     int count() const;
-    QHash<Field, QVariant> fields(const QString &path, uint types = All) const;
-    QHash<Field, QVariant> fields(int track, uint types = All) const;
+    QHash<TrackInfo, QVariant> fields(const QString &path, uint types = All) const;
+    QHash<TrackInfo, QVariant> fields(int track, uint types = All) const;
 
-    QVariant field(int track, Field field) const;
-    QVariant field(const QString &file, Field field) const;
+    QVariant field(int track, TrackInfo field) const;
+    QVariant field(const QString &file, TrackInfo field) const;
 
-    bool filter(const QHash<Field, QVariant> &fields) const;
+    bool filter(const QHash<TrackInfo, QVariant> &fields) const;
 
     inline QString fileName(int track) const { return field(track, FileName).toString(); }
     inline QString filePath(int track) const { return field(track, FilePath).toString(); }
@@ -60,13 +47,13 @@ public:
     inline int trackNumber(const QString &path) const { return field(path, TrackNumber).toInt(); }
     inline QString genre(const QString &path) const { return field(path, Genre).toString(); }
 
-    QList<QHash<Field, QVariant> > fields(int from, int size, uint types) const;
+    QList<QHash<TrackInfo, QVariant> > fields(int from, int size, uint types) const;
     bool remove(int track, int count = 1);
 
     bool move(int from, int to);
     bool swap(int from, int to);
 
-    void sort(Field f, Qt::SortOrder sortorder); // getter?
+    void sort(TrackInfo f, Qt::SortOrder sortorder); // getter?
     void setFilter(const QRegExp &rx, uint fields = All);
     inline void setFilter(const QString &str, uint fields = All)
     { setFilter(QRegExp(QRegExp::escape(str)), fields); } // ### is this right?
@@ -80,19 +67,19 @@ signals:
     void tracksRemoved(int from, int count);
     void tracksChanged(int from, int count);
     void filterChanged(const QRegExp &rx, uint filterFields);
-    void sortChanged(Field field, Qt::SortOrder order);
+    void sortChanged(TrackInfo field, Qt::SortOrder order);
 private:
     inline int dataIndex(int idx) const { return d.mapping.value(idx, idx); }
     struct Private {
         Backend *backend;
-        QList<QHash<Field, QVariant> > all; // should be possible to mmap this.
+        QList<QHash<TrackInfo, QVariant> > all; // should be possible to mmap this.
         QList<int> mapping;
         QRegExp filter;
         uint filterFields;
         Qt::SortOrder sortOrder;
-        Field sortField;
+        TrackInfo sortField;
         struct {
-            QHash<Field, QVariant> cachedFields;
+            QHash<TrackInfo, QVariant> cachedFields;
             QString cachedTrack;
         } mutable cache;
     } d;

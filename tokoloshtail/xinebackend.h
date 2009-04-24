@@ -12,7 +12,7 @@ public:
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
-    virtual QVariant field(const QString &fileName, Playlist::Field field) const;
+    virtual QVariant field(const QString &fileName, TrackInfo field) const;
     virtual bool isValid(const QString &fileName) const;
     virtual void play();
     virtual void pause();

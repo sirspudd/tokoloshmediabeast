@@ -69,7 +69,7 @@ int Playlist::count() const
 
 void Playlist::addTrack(const QString &path)
 {
-    const QHash<Field, QVariant> f = fields(path);
+    const QHash<TrackInfo, QVariant> f = fields(path);
     if (f.isEmpty())
         return;
 
@@ -90,21 +90,21 @@ void Playlist::addTrack(const QString &path)
     }
 }
 
-QHash<Playlist::Field, QVariant> Playlist::fields(const QString &path, uint fields) const
+QHash<TrackInfo, QVariant> Playlist::fields(const QString &path, uint fields) const
 {
     if (path == d.cache.cachedTrack) {
         if (fields == All)
             return d.cache.cachedFields;
-        QHash<Field, QVariant> ret;
+        QHash<TrackInfo, QVariant> ret;
         if (fields != All) {
-            for (QHash<Field, QVariant>::const_iterator it = d.cache.cachedFields.begin(); it != d.cache.cachedFields.end(); ++it) {
+            for (QHash<TrackInfo, QVariant>::const_iterator it = d.cache.cachedFields.begin(); it != d.cache.cachedFields.end(); ++it) {
                 if (fields & it.key())
                     ret[it.key()] = it.value();
             }
         }
         return ret;
     }
-    QHash<Field, QVariant> ret;
+    QHash<TrackInfo, QVariant> ret;
     if (!validTrack(path))
         return ret;
     QFileInfo fi(path);
@@ -133,28 +133,28 @@ QHash<Playlist::Field, QVariant> Playlist::fields(const QString &path, uint fiel
     return ret;
 }
 
-QHash<Playlist::Field, QVariant> Playlist::fields(int track, uint fields) const
+QHash<TrackInfo, QVariant> Playlist::fields(int track, uint fields) const
 {
     VERIFY_INDEX(track);
     const int idx = dataIndex(track);
-    const QHash<Field, QVariant> &orig = d.all.at(idx);
+    const QHash<TrackInfo, QVariant> &orig = d.all.at(idx);
     if (fields == All)
         return orig;
-    QHash<Field, QVariant> f;
-    for (QHash<Field, QVariant>::const_iterator it = orig.begin(); it != orig.end(); ++it) {
+    QHash<TrackInfo, QVariant> f;
+    for (QHash<TrackInfo, QVariant>::const_iterator it = orig.begin(); it != orig.end(); ++it) {
         if (fields & it.key())
             f[it.key()] = it.value();
     }
     return f;
 }
 
-QVariant Playlist::field(int track, Field field) const
+QVariant Playlist::field(int track, TrackInfo field) const
 {
     VERIFY_INDEX(track);
     return d.all.value(dataIndex(track)).value(field);
 }
 
-QVariant Playlist::field(const QString &file, Field field) const
+QVariant Playlist::field(const QString &file, TrackInfo field) const
 {
     return fields(file, field).value(field);
 }
@@ -278,11 +278,11 @@ QRegExp Playlist::filter() const
     return d.filter;
 }
 
-QList<QHash<Playlist::Field, QVariant> > Playlist::fields(int from, int size, uint types) const
+QList<QHash<TrackInfo, QVariant> > Playlist::fields(int from, int size, uint types) const
 {
     VERIFY_INDEX(from);
     VERIFY_INDEX(from + size - 1);
-    QList<QHash<Playlist::Field, QVariant> > ret;
+    QList<QHash<TrackInfo, QVariant> > ret;
     for (int i=from; i<size + from; ++i) {
         ret += fields(i, types);
     }
@@ -293,34 +293,34 @@ template <typename T>
 class Sorter
 {
 public:
-    Sorter(Playlist::Field f, Qt::SortOrder o) : field(f), order(o) {}
-    inline bool operator()(const QHash<Playlist::Field, QVariant> &l, const QHash<Playlist::Field, QVariant> &r) const
+    Sorter(TrackInfo f, Qt::SortOrder o) : field(f), order(o) {}
+    inline bool operator()(const QHash<TrackInfo, QVariant> &l, const QHash<TrackInfo, QVariant> &r) const
     {
         return (qVariantValue<T>(l.value(field)) < qVariantValue<T>(r.value(field))) == (order == Qt::AscendingOrder);
     }
 private:
-    const Playlist::Field field;
+    const TrackInfo field;
     const Qt::SortOrder order;
 };
 
-static inline QVariant::Type type(Playlist::Field field)
+static inline QVariant::Type type(TrackInfo field)
 {
     switch (field) {
-    case Playlist::All:
-    case Playlist::None:
+    case All:
+    case None:
         Q_ASSERT(0);
         break;
-    case Playlist::FileName:
-    case Playlist::FilePath:
-    case Playlist::FileDirectory:
-    case Playlist::TrackName:
-    case Playlist::Artist:
-    case Playlist::Album:
-    case Playlist::Genre:
+    case FileName:
+    case FilePath:
+    case FileDirectory:
+    case TrackName:
+    case Artist:
+    case Album:
+    case Genre:
         return QVariant::String;
-    case Playlist::TrackLength:
-    case Playlist::Year:
-    case Playlist::TrackNumber:
+    case TrackLength:
+    case Year:
+    case TrackNumber:
         return QVariant::Int;
     }
     return QVariant::Invalid;
@@ -334,7 +334,7 @@ template <typename T> inline void reverse(QList<T> &list)
     }
 }
 
-void Playlist::sort(Field field, Qt::SortOrder sortOrder)
+void Playlist::sort(TrackInfo field, Qt::SortOrder sortOrder)
 {
     if (d.sortField == field) {
         if (d.sortOrder == sortOrder)
@@ -389,11 +389,11 @@ uint Playlist::filterFields() const
     return d.filterFields;
 }
 
-bool Playlist::filter(const QHash<Field, QVariant> &fields) const
+bool Playlist::filter(const QHash<TrackInfo, QVariant> &fields) const
 {
     if (d.filter.isEmpty())
         return true;
-    for (QHash<Field, QVariant>::const_iterator it = fields.begin(); it != fields.end(); ++it) {
+    for (QHash<TrackInfo, QVariant>::const_iterator it = fields.begin(); it != fields.end(); ++it) {
         if (it.key() & d.filterFields && it.value().toString().contains(d.filter)) {
             return true;
         }

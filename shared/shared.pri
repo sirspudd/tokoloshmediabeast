@@ -1,5 +1,5 @@
 INCLUDEPATH += $$PWD
-HEADERS += $$PWD/log.h
+HEADERS += $$PWD/log.h $$PWD/global.h
 SOURCES += $$PWD/log.cpp
 unix {
     MOC_DIR=.moc

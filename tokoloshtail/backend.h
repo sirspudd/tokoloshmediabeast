@@ -2,6 +2,7 @@
 #define BACKEND_H
 
 #include <QtCore>
+#include <global.h>
 #include "playlist.h"
 
 class Backend : public QObject
@@ -20,7 +21,7 @@ public:
     };
 
     enum Flags {
-        None = 0x000,
+        NoFlags = 0x000,
         SupportsEqualizer = 0x001
     };
 
@@ -41,7 +42,7 @@ public slots:
 
     virtual uint flags() const { return None; }
     virtual void shutdown() = 0;
-    virtual QVariant field(const QString &fileName, Playlist::Field field) const = 0;
+    virtual QVariant field(const QString &fileName, TrackInfo field) const = 0;
     virtual bool isValid(const QString &fileName) const = 0;
     virtual void play() = 0;
     virtual void pause() = 0;

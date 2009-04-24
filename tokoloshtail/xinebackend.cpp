@@ -206,25 +206,25 @@ static QVariant xine_get_track_length(xine_stream_t *stream, int item)
     return QVariant();
 }
 
-QVariant XineBackend::field(const QString &fileName, Playlist::Field field) const
+QVariant XineBackend::field(const QString &fileName, TrackInfo field) const
 {
     if (status() == Uninitalized)
         return QVariant();
     xine_stream_t *stream = d->stream(fileName);
 
     struct {
-        const Playlist::Field field;
+        const TrackInfo field;
         const int id;
         const Xine_Get_Meta_Info info;
     } static const data[] = {
-        { Playlist::TrackName, XINE_META_INFO_TITLE, xine_get_meta_QString },
-        { Playlist::TrackLength, Playlist::TrackLength, xine_get_track_length },
-        { Playlist::Artist, XINE_META_INFO_ARTIST, xine_get_meta_QString },
-        { Playlist::Album, XINE_META_INFO_ALBUM, xine_get_meta_QString },
-        { Playlist::Year, XINE_META_INFO_YEAR, xine_get_meta_Integer },
-        { Playlist::Genre, XINE_META_INFO_GENRE, xine_get_meta_QString },
-        { Playlist::TrackNumber, XINE_META_INFO_TRACK_NUMBER, xine_get_meta_Integer },
-        { Playlist::None, -1, 0 }
+        { TrackName, XINE_META_INFO_TITLE, xine_get_meta_QString },
+        { TrackLength, TrackLength, xine_get_track_length },
+        { Artist, XINE_META_INFO_ARTIST, xine_get_meta_QString },
+        { Album, XINE_META_INFO_ALBUM, xine_get_meta_QString },
+        { Year, XINE_META_INFO_YEAR, xine_get_meta_Integer },
+        { Genre, XINE_META_INFO_GENRE, xine_get_meta_QString },
+        { TrackNumber, XINE_META_INFO_TRACK_NUMBER, xine_get_meta_Integer },
+        { None, -1, 0 }
     };
 
     for (int i=0; data[i].info; ++i) {
