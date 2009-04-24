@@ -15,5 +15,5 @@ unix {
     generateInterface.target = GenerateInterface
     generateInterface.commands = sh generateadaptorfiles.sh
     QMAKE_EXTRA_TARGETS += generateInterface
-    PRE_TARGETDEPS+= GenerateInterface
+    #PRE_TARGETDEPS+= GenerateInterface
 }
