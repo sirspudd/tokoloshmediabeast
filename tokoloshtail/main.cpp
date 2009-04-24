@@ -292,19 +292,14 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    Tokolosh *daemon = new Tokolosh(&app);
-    MediaAdaptor *theAdaptor = new MediaAdaptor(daemon);
+    Tokolosh daemon;
+    MediaAdaptor adaptor(0);
 
     QDBusConnection connection = QDBusConnection::sessionBus();
-    connection.registerObject("/TokoloshMediaPlayer", daemon);
+    connection.registerObject("/TokoloshMediaPlayer", &daemon);
     connection.registerService("com.TokoloshXineBackend.TokoloshMediaPlayer");
 
-    int exitCode = app.exec();
-
-    delete theAdaptor;
-    delete daemon;
-
-    return  exitCode;
+    return app.exec();
 }
 /*
     Donald Carr (sirspudd_at_gmail.com) plays songs occasionally
