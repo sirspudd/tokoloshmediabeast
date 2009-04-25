@@ -12,7 +12,7 @@ class Tokolosh : public QObject
     Q_OBJECT
 
 public:
-    Tokolosh(QObject *parent = 0);
+    Tokolosh(QObject *parent);
     ~Tokolosh();
     static Tokolosh *instance();
 
