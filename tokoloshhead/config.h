@@ -52,6 +52,7 @@ template <typename T> static void write(QSettings *settings, const QString &str,
         settings->setValue(key, qVariantFromValue<T>(t));               \
     }                                                                   \
 
+CONFIG_TYPE(bool);
 CONFIG_TYPE(qint8);
 CONFIG_TYPE(qint16);
 CONFIG_TYPE(qint32);
