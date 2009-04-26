@@ -103,7 +103,7 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     if (Config::isEnabled("resizer", true)) {
         d.resizer = new WidgetResizer(this);
         d.resizer->setAreas(AbstractResizer<QPoint, QSize, QRect>::AllAreas & ~AbstractResizer<QPoint, QSize, QRect>::Center);
-        d.resizer->setPaintingEnabled(false);
+        d.resizer->setPaintingEnabled(Config::isEnabled("resizePainting", false));
     } else {
         d.resizer = 0;
     }
