@@ -94,12 +94,12 @@ private:
         Stop,
         Next,
         Open,
-        OpenSkin,
         Shuffle,
         Repeat,
         Equalizer,
         Playlist,
         ButtonCount
+//        OpenSkin // what is the deal with this one. Is there a button for it?
     };
 
     enum ElementType {
