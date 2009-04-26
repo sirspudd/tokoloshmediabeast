@@ -122,7 +122,7 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     }
 
     d.dbusInterface = dbusInterface;
-    qDebug() << "connecting" << connect(dbusInterface, SIGNAL(wakeUpGui()), this, SLOT(wakeUp()));
+    connect(dbusInterface, SIGNAL(wakeUpGui()), this, SLOT(wakeUp()));
 
     if (!Config::isEnabled("titlebar", false)) {
         Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
@@ -490,23 +490,23 @@ void Player::openSkin()
 {
     switch(Config::value<SkinSelectionMechanism>("skinSelectionMechism", DirectlySelectFolder))
     {
-        case SkinFolderListView:
-            qDebug() << "SkinFolderListView";
-            SkinSelectionDialog::instance()->show();
-            break;
-        case DirectlySelectFolder:
-        default:
-            {
-                QFileDialog fd(this);
-                fd.setFileMode(QFileDialog::DirectoryOnly);
-                fd.setDirectory(Config::value<QString>("skin", QCoreApplication::applicationDirPath()));
-                if (fd.exec()) {
-                    Config::setValue<QString>("skin", fd.directory().absolutePath());
-                    setSkin(Config::value<QString>("skin"));
-                    update();
-                }
-            }
-            break;
+    case SkinFolderListView:
+        qDebug() << "SkinFolderListView";
+        SkinSelectionDialog::instance()->show();
+        break;
+    case DirectlySelectFolder:
+    default:
+    {
+        QFileDialog fd(this);
+        fd.setFileMode(QFileDialog::DirectoryOnly);
+        fd.setDirectory(Config::value<QString>("skin", QCoreApplication::applicationDirPath()));
+        if (fd.exec()) {
+            Config::setValue<QString>("skin", fd.directory().absolutePath());
+            setSkin(Config::value<QString>("skin"));
+            update();
+        }
+    }
+    break;
     }
 }
 
@@ -537,7 +537,6 @@ void Player::editShortcuts()
 
 void Player::wakeUp()
 {
-    qDebug("%s %d: void Player::wakeUp()", __FILE__, __LINE__);
     activateWindow();
     raise();
 }

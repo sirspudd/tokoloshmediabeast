@@ -160,7 +160,6 @@ public:
         arguments();
         const QString key = k.toLower();
         QVariant value = valueFromCommandLine(key);
-        qDebug() << value;
         T t;
         bool ok = false;
         QSettings *s = settings();
