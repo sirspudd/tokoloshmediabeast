@@ -7,10 +7,12 @@ SliderStyle::SliderStyle()
 }
 
 void SliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
-                                           QPainter *p, const QWidget *) const
+                                     QPainter *p, const QWidget *widget) const
 {
     Q_ASSERT(cc == CC_Slider);
     Q_UNUSED(cc);
+    p->setTransform(qVariantValue<QTransform>(widget->window()->property("transform")));
+
     const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(opt);
     RenderObject *object = (slider->state & State_Sunken
                             && slider->activeSubControls == SC_SliderHandle ? &pressed : &normal);
@@ -58,6 +60,7 @@ void Button::paintEvent(QPaintEvent *)
         i |= Pressed;
     if (!pixmaps[i].pixmap.isNull()) {
         QPainter p(this);
+        p.setTransform(qVariantValue<QTransform>(window()->property("transform")));
         pixmaps[i].render(&p);
 #ifdef QT_DEBUG
         if (Config::isEnabled("debuggeometry", false)) {
@@ -107,3 +110,4 @@ void Slider::mouseReleaseEvent(QMouseEvent *e)
     e->accept();
     update();
 }
+

@@ -301,9 +301,8 @@ bool AbstractResizer<Point, Size, Rect>::handleMousePress(const Point &pos, Qt::
         if (activeArea() != NoArea && !d->cursorSet) {
             qApp->setOverrideCursor(cursorForArea(activeArea()));
             d->cursorSet = true;
+            return true;
         }
-
-        return true;
     }
     return false;
 }

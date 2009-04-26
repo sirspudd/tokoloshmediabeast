@@ -184,6 +184,7 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
         }
         Q_ASSERT(index < ButtonCount);
         d.buttons[index] = new Button(this);
+        d.buttons[index]->setProperty("defaultGeometry", buttonInfo[i].rect);
         d.buttons[index]->setGeometry(buttonInfo[i].rect);
         d.buttons[index]->setObjectName(QString::fromLatin1(buttonInfo[i].name));
         const QString translated = QApplication::translate("Playlist", buttonInfo[i].name);
@@ -248,6 +249,7 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
 
     d.posBarSlider = new Slider(Qt::Horizontal, this);
     d.posBarSlider->setGeometry(14, 72, 253, 10);
+    d.posBarSlider->setProperty("defaultGeometry", d.posBarSlider->geometry());
     d.posBarSlider->setRange(0, 600);
     d.posBarSlider->setStyle(d.posBarStyle = new SliderStyle);
 
@@ -268,6 +270,7 @@ Player::~Player()
 void Player::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
+    p.setTransform(qVariantValue<QTransform>(property("transform")));
     d.main.render(&p);
 //     d.numbers.render(&p, QPoint(10, 10), "143245");
 //     d.text.render(&p, QPoint(150, 25), "THIS IS COOL");
@@ -599,3 +602,29 @@ void Player::toggleOverlay(bool on)
 }
 
 #endif
+
+void Player::resizeEvent(QResizeEvent *e)
+{
+    static const QSize defaultSize(275, 116);
+    double sw = 1;
+    double sh = 1;
+    if (width() != defaultSize.width()) {
+        sw = double(width()) / double(defaultSize.width());
+    }
+
+    if (height() != defaultSize.height()) {
+        sh = double(height()) / double(defaultSize.height());
+    }
+
+    QTransform transform;
+    transform.scale(sw, sh);
+    setProperty("transform", transform);
+
+    foreach(QWidget *w, qFindChildren<QWidget*>(this)) {
+        const QRect defaultGeometry = w->property("defaultGeometry").toRect();
+        if (!defaultGeometry.isNull()) {
+            w->setGeometry(transform.mapRect(defaultGeometry));
+        }
+    }
+    QWidget::resizeEvent(e);
+}

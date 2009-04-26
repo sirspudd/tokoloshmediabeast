@@ -17,6 +17,13 @@ struct RenderObject
         p->drawPixmap(tr, pixmap, sr);
     }
 
+    void render(QPainter *p, const QRect &tr) const // ### pass in clip?
+    {
+        const QRect sr = sourceRect.isNull() ? pixmap.rect() : sourceRect;
+        p->drawPixmap(tr, pixmap, sr);
+    }
+
+
     QPixmap pixmap;
     QRect targetRect, sourceRect;
 };
@@ -63,6 +70,7 @@ public:
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
+    void resizeEvent(QResizeEvent *e);
     bool setSkin(const QString &path);
     void showEvent(QShowEvent *e);
     void closeEvent(QCloseEvent *e);
