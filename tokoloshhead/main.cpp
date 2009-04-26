@@ -188,13 +188,6 @@ int main(int argc, char *argv[])
             }
         }
     }
-    Balle balle;
-    balle.i1 = 24;
-    balle.i2 = 49;
-    Barf barf = Two;
-    Config::setValue<Balle>("balle", balle);
-    Config::setValue<Barf>("Barf", barf);
-    qDebug() << Config::value<Balle>("balle").i1;
 
     foreach(QString arg, Config::unusedArguments()) {
         const QFileInfo fi(arg);
@@ -217,6 +210,14 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("tokoloshhead_v2");
     Player player(&dbusInterface);
+    const QDBusPendingReply<int> vol = dbusInterface.volume();
+    if (dbusInterface.lastError().type() != QDBusError::NoError) {
+        if (!QProcess::startDetached("tokoloshtail")) {
+            qWarning("Can't start tokoloshtail");
+
+        }
+    }
+//    qDebug() << dbusInterface.lastError() << dbusInterface.lastError().type();
     if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
         const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
         Q_ASSERT(ret);
