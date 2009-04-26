@@ -403,6 +403,7 @@ bool Player::setSkin(const QString &path)
 
     QHash<const char *, QPixmap> pixmaps;
     const bool dumpPixmaps = Config::isEnabled("dump-pixmaps");
+    const bool noSubPixmaps = !Config::isEnabled("subpixmaps", true);
     for (int i=0; buttons[i].name; ++i) {
         QPixmap pixmap;
         if (!pixmaps.contains(buttons[i].name)) {
@@ -412,9 +413,14 @@ bool Player::setSkin(const QString &path)
             pixmap = pixmaps.value(buttons[i].name);
         }
         Q_ASSERT(buttons[i].renderObject);
-        buttons[i].renderObject->pixmap = pixmap;
         Q_ASSERT(!pixmap.isNull());
-        buttons[i].renderObject->sourceRect = buttons[i].sourceRect;
+        if (noSubPixmaps) {
+            pixmap = pixmap.copy(buttons[i].sourceRect);
+        } else {
+            buttons[i].renderObject->sourceRect = buttons[i].sourceRect;
+        }
+        buttons[i].renderObject->pixmap = pixmap;
+
         buttons[i].renderObject->targetRect = buttons[i].targetRect;
         Q_ASSERT(buttons[i].targetRect.isNull() || buttons[i].targetRect.size() == buttons[i].sourceRect.size());
         if (dumpPixmaps) {
