@@ -12,6 +12,7 @@ void SliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
     Q_ASSERT(cc == CC_Slider);
     Q_UNUSED(cc);
     p->setTransform(qVariantValue<QTransform>(widget->window()->property("transform")));
+    p->setRenderHint(QPainter::SmoothPixmapTransform);
 
     const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(opt);
     RenderObject *object = (slider->state & State_Sunken
@@ -60,6 +61,7 @@ void Button::paintEvent(QPaintEvent *)
         i |= Pressed;
     if (!pixmaps[i].pixmap.isNull()) {
         QPainter p(this);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
         p.setTransform(qVariantValue<QTransform>(window()->property("transform")));
         pixmaps[i].render(&p);
 #ifdef QT_DEBUG

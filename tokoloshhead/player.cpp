@@ -270,6 +270,7 @@ Player::~Player()
 void Player::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
     p.setTransform(qVariantValue<QTransform>(property("transform")));
     d.main.render(&p);
 //     d.numbers.render(&p, QPoint(10, 10), "143245");
