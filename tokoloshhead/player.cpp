@@ -100,6 +100,7 @@ template <class T> static void setShortcuts(T *t)
 Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     : QWidget(parent)
 {
+    d.moving = false;
     if (Config::isEnabled("resizer", true)) {
         d.resizer = new WidgetResizer(this);
         d.resizer->setAreas(AbstractResizer<QPoint, QSize, QRect>::AllAreas & ~AbstractResizer<QPoint, QSize, QRect>::Center);
@@ -281,14 +282,20 @@ void Player::mousePressEvent(QMouseEvent *e)
 {
     if (e->button() == Qt::LeftButton) {
         d.dragOffset = e->pos();
+        d.moving = true;
     }
 }
 
 void Player::mouseMoveEvent(QMouseEvent *e)
 {
-    if (e->buttons() == Qt::LeftButton) {
+    if (e->buttons() == Qt::LeftButton && d.moving) {
         move(e->globalPos() - d.dragOffset);
     }
+}
+
+void Player::mouseReleaseEvent(QMouseEvent *)
+{
+    d.moving = false;
 }
 
 static QPixmap findPixmap(const QString &dir, const QStringList &list, const char *buttonName,

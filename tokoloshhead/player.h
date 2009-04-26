@@ -70,6 +70,7 @@ public:
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *e);
     void resizeEvent(QResizeEvent *e);
     bool setSkin(const QString &path);
     void showEvent(QShowEvent *e);
@@ -120,6 +121,7 @@ private:
         Slider *volumeSlider;
         SliderStyle *volumeStyle;
         WidgetResizer *resizer;
+        bool moving;
 #ifdef QT_DEBUG
         Overlay *overlay;
 #endif
