@@ -4,6 +4,7 @@
 #include "shortcutdialog.h"
 #include <QDebug>
 #include "tokolosh_interface.h"
+#include "resizer.h"
 #include "skinSelectionDialog.h"
 
 enum SkinSelectionMechanism
@@ -99,13 +100,20 @@ template <class T> static void setShortcuts(T *t)
 Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     : QWidget(parent)
 {
+    if (Config::isEnabled("resizer", true)) {
+        d.resizer = new WidgetResizer(this);
+        d.resizer->setAreas(AbstractResizer<QPoint, QSize, QRect>::AllAreas & ~AbstractResizer<QPoint, QSize, QRect>::Center);
+        d.resizer->setPaintingEnabled(false);
+    } else {
+        d.resizer = 0;
+    }
 #ifdef QT_DEBUG
     d.overlay = 0;
 #endif
 
     setContextMenuPolicy(Qt::ActionsContextMenu);
     d.channelMode = Private::Stereo;
-    setFixedSize(275, 116);
+    resize(275, 116);
     bool ok;
     const QPoint pos = Config::value<QPoint>("position", QPoint(), &ok);
     if (ok && QApplication::desktop()->availableGeometry(this).contains(QRect(pos, size()))) {
@@ -249,6 +257,12 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
 //     d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle);
     d.volumeSlider = 0;
     reloadSettings();
+}
+
+Player::~Player()
+{
+    delete d.resizer;
+    delete d.posBarStyle;
 }
 
 void Player::paintEvent(QPaintEvent *)

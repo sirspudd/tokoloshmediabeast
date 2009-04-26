@@ -47,6 +47,7 @@ public:
     QHash<QChar, QRect> sourceRects;
 };
 
+class WidgetResizer;
 class Slider;
 class SliderStyle;
 class Button;
@@ -58,6 +59,7 @@ class Player : public QWidget
     Q_OBJECT
 public:
     Player(TokoloshInterface* dbusInterface, QWidget *parent = 0);
+    ~Player();
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
@@ -109,6 +111,7 @@ private:
         SliderStyle *posBarStyle;
         Slider *volumeSlider;
         SliderStyle *volumeStyle;
+        WidgetResizer *resizer;
 #ifdef QT_DEBUG
         Overlay *overlay;
 #endif

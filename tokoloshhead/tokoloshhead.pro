@@ -7,7 +7,8 @@ HEADERS += player.h \
            widgets.h \
            shortcutdialog.h \
            SkinSelectionDialog.h \
-           tokolosh_interface.h
+           tokolosh_interface.h \
+           resizer.h
 
 SOURCES += main.cpp \
            player.cpp \
