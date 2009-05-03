@@ -470,6 +470,7 @@ bool Player::setSkin(const QString &path)
     d.posBarStyle->groovePressed.pixmap = sliderPixmap;
     d.posBarStyle->groovePressed.sourceRect = QRect(0, 0, 248, 10);
     // ### a lot of this stuff should be in Player::Player()
+    update();
     return true;
 }
 
@@ -502,7 +503,7 @@ void Player::openSkin()
     {
     case SkinFolderListView:
         qDebug() << "SkinFolderListView";
-        SkinSelectionDialog::instance()->show();
+        SkinSelectionDialog::instance(this)->show();
         break;
     case DirectlySelectFolder:
     default:

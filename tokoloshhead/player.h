@@ -72,10 +72,10 @@ public:
     void mouseMoveEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
     void resizeEvent(QResizeEvent *e);
-    bool setSkin(const QString &path);
     void showEvent(QShowEvent *e);
     void closeEvent(QCloseEvent *e);
 public slots:
+    bool setSkin(const QString &path);
     void open();
     void openSkin();
     void reloadSettings();
