@@ -140,36 +140,37 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
         const char *member;
         const QRect rect;
         const bool checkable;
+        const bool visualControl;
         const QKeySequence shortcut;
     } const buttonInfo[] = {
         // prev, pause, pause, stop, next
         { QT_TRANSLATE_NOOP("Player", "Previous"), d.dbusInterface, SLOT(prev()),
-          QRect(16, 88, 23, 18), false, Qt::Key_Z },
+          QRect(16, 88, 23, 18), false, true, Qt::Key_Z },
         { QT_TRANSLATE_NOOP("Player", "Play"), d.dbusInterface, SLOT(play()),
-          QRect(39, 88, 23, 18), false, Qt::Key_X },
+          QRect(39, 88, 23, 18), false, true, Qt::Key_X },
         { QT_TRANSLATE_NOOP("Player", "Pause"), d.dbusInterface, SLOT(pause()),
-          QRect(62, 88, 23, 18), false, Qt::Key_C },
+          QRect(62, 88, 23, 18), false, true, Qt::Key_C },
         { QT_TRANSLATE_NOOP("Player", "Stop"), d.dbusInterface, SLOT(stop()),
-          QRect(85, 88, 23, 18), false, Qt::Key_V },
+          QRect(85, 88, 23, 18), false, true, Qt::Key_V },
         { QT_TRANSLATE_NOOP("Player", "Next"), d.dbusInterface, SLOT(next()),
-          QRect(108, 88, 22, 18), false, Qt::Key_B },
-        { 0, 0, separator, QRect(), false, QKeySequence() },
+          QRect(108, 88, 22, 18), false, true, Qt::Key_B },
+        { 0, 0, separator, QRect(), false, false, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Open"), this, SLOT(open()),
-          QRect(136, 89, 22, 16), false, QKeySequence::Open },
-        { 0, 0, separator, QRect(), false, QKeySequence() },
+          QRect(136, 89, 22, 16), false, true, QKeySequence::Open },
+        { QT_TRANSLATE_NOOP("Player", "OpenSkin"), this, SLOT(openSkin()),
+          QRect(), false, false, Qt::ControlModifier + Qt::Key_S },
+        { 0, 0, separator, QRect(), false, false, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Shuffle"), d.dbusInterface, SLOT(toggleShuffle()),
-          QRect(164, 89, 46, 15), true, Qt::ControlModifier + Qt::Key_Z }, // is there a shortcut for this one?
+          QRect(164, 89, 46, 15), true, true, Qt::ControlModifier + Qt::Key_Z }, // is there a shortcut for this one?
         { QT_TRANSLATE_NOOP("Player", "Repeat"), d.dbusInterface, SLOT(repeat()),
-          QRect(210, 89, 28, 15), true, Qt::Key_R }, // is there a shortcut for this one?
-        { 0, 0, separator, QRect(), false, QKeySequence() },
+          QRect(210, 89, 28, 15), true, true, Qt::Key_R }, // is there a shortcut for this one?
+        { 0, 0, separator, QRect(), false, false, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Equalizer"), this, SLOT(equalizer()),
-          QRect(219, 58, 23, 12), true, Qt::Key_E },
+          QRect(219, 58, 23, 12), true, true, Qt::Key_E },
         { QT_TRANSLATE_NOOP("Player", "Playlist"), this, SLOT(playlist()),
-          QRect(242, 58, 23, 12), true, Qt::Key_P },
-        { 0, 0, separator, QRect(), false, QKeySequence() },
-        { 0, 0, 0, QRect(), false, QKeySequence() },
-//         { QT_TRANSLATE_NOOP("Player", "OpenSkin"), this, SLOT(openSkin()),
-//           QRect(246, 84, 30, 20), false, Qt::ControlModifier + Qt::Key_S },
+          QRect(242, 58, 23, 12), true, true, Qt::Key_P },
+        { 0, 0, separator, QRect(), false, false, QKeySequence() },
+        { 0, 0, 0, QRect(), false, false, QKeySequence() },
     };
 
     int index = 0;
@@ -183,28 +184,31 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
             addAction(sep);
             continue;
         }
-        Q_ASSERT(index < ButtonCount);
-        d.buttons[index] = new Button(this);
-        d.buttons[index]->setProperty("defaultGeometry", buttonInfo[i].rect);
-        d.buttons[index]->setGeometry(buttonInfo[i].rect);
-        d.buttons[index]->setObjectName(QString::fromLatin1(buttonInfo[i].name));
-        const QString translated = QApplication::translate("Playlist", buttonInfo[i].name);
-        d.buttons[index]->setToolTip(translated);
-        d.buttons[index]->setText(translated); // used by shortcut editor
-        d.buttons[index]->setCheckable(buttonInfo[i].checkable);
-        d.buttons[index]->setProperty("defaultShortcut", buttonInfo[i].shortcut);
         QAction *action = new QAction(buttonInfo[i].name, this);
-        connect(action, SIGNAL(toggled(bool)), d.buttons[index], SLOT(setChecked(bool)));
+        if(buttonInfo[i].visualControl)
+        {
+            Q_ASSERT(index < ButtonCount);
+            d.buttons[index] = new Button(this);
+            d.buttons[index]->setProperty("defaultGeometry", buttonInfo[i].rect);
+            d.buttons[index]->setGeometry(buttonInfo[i].rect);
+            d.buttons[index]->setObjectName(QString::fromLatin1(buttonInfo[i].name));
+            const QString translated = QApplication::translate("Playlist", buttonInfo[i].name);
+            d.buttons[index]->setToolTip(translated);
+            d.buttons[index]->setText(translated); // used by shortcut editor
+            d.buttons[index]->setCheckable(buttonInfo[i].checkable);
+            d.buttons[index]->setProperty("defaultShortcut", buttonInfo[i].shortcut);
+            connect(action, SIGNAL(toggled(bool)), d.buttons[index], SLOT(setChecked(bool)));
+            connect(d.buttons[index], SIGNAL(clicked()), action, SLOT(trigger()));
+#ifdef QT_DEBUG
+            if (debugButtons)
+                connect(d.buttons[index], SIGNAL(clicked()), this, SLOT(debugButton()));
+#endif
+            ++index;
+        }
         // ### icons?
         action->setCheckable(buttonInfo[i].checkable);
         connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
-        connect(d.buttons[index], SIGNAL(clicked()), action, SLOT(trigger()));
-#ifdef QT_DEBUG
-        if (debugButtons)
-            connect(d.buttons[index], SIGNAL(clicked()), this, SLOT(debugButton()));
-#endif
         addAction(action);
-        ++index;
         if (buttonInfo[i].checkable && Config::isEnabled(buttonInfo[i].name)) {
             QTimer::singleShot(0, action, SLOT(trigger()));
         }

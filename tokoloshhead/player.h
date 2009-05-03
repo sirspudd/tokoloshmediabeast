@@ -87,7 +87,7 @@ public slots:
     void toggleDebugGeometry(bool on);
 #endif
 private:
-    enum ButtonType {
+    enum ActionType {
         Previous = 0,
         Play,
         Pause,
@@ -98,8 +98,9 @@ private:
         Repeat,
         Equalizer,
         Playlist,
-        ButtonCount
-//        OpenSkin // what is the deal with this one. Is there a button for it?
+        ButtonCount,
+        OpenSkin,
+        ActionCount
     };
 
     enum ElementType {
