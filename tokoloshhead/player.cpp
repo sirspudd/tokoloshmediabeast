@@ -326,7 +326,7 @@ static bool verifySkin(const QString &path, bool warn)
     const QDir dir(path);
     if (!dir.exists()) {
         if (warn)
-            qWarning("%s doesn't seem to exist", qPrintable(path));
+            qWarning("%s doesnt seem't seem to exist", qPrintable(path));
         return false;
     }
 

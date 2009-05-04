@@ -180,7 +180,7 @@ public:
     {
         arguments();
         QSettings *s = settings();
-        ::write<T>(s, key, t);
+        ::write(s, key, t);
         s->sync();
     }
 
