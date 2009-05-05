@@ -71,6 +71,7 @@ struct Private
                 node = node->next;
             } else {
                 break;
+            }
         }
 
         Q_ASSERT(node);
