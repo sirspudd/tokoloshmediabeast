@@ -11,14 +11,6 @@ CONFIG += qdbus
 
 unix {
     LIBS += -L/usr/lib -lxine -lz -lnsl -lpthread -lrt
-
-    generateInterface.target = GenerateInterface
-    generateInterface.commands = sh generateadaptorfiles.sh
-    QMAKE_EXTRA_TARGETS += generateInterface
-    #PRE_TARGETDEPS+= GenerateInterface
-}
-
-unix {
     generateadaptor.target = tokolosh_adaptor.cpp
     generateadaptor.commands = sh generateadaptorfiles.sh
     QMAKE_EXTRA_TARGETS += generateadaptor
