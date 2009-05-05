@@ -10,6 +10,7 @@ SOURCES += main.cpp tokolosh.cpp tokolosh_adaptor.cpp playlist.cpp xinebackend.c
 CONFIG += qdbus
 
 unix {
+    LIBS += -L/usr/lib -lxine -lz -lnsl -lpthread -lrt
     generateadaptor.target = tokolosh_adaptor.cpp
     generateadaptor.commands = sh generateadaptorfiles.sh
     QMAKE_EXTRA_TARGETS += generateadaptor
