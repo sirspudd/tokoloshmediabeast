@@ -77,6 +77,8 @@ struct Private
 
     inline void updateError(xine_stream_t *stream)
     {
+        if (!stream)
+            return;
         error = xine_get_error(stream);
     }
 
@@ -97,6 +99,7 @@ XineBackend::XineBackend()
     : d(new Private)
 {
 }
+
 XineBackend::~XineBackend()
 {
     shutdown();
@@ -105,8 +108,9 @@ XineBackend::~XineBackend()
 
 bool XineBackend::initBackend()
 {
-    if (d->status != Uninitalized)
+    if (d->status != Uninitalized) {
         return true;
+    }
     //Xine initialization
     d->xine = xine_new();
 
@@ -128,7 +132,7 @@ bool XineBackend::initBackend()
 
     for (int i=0; i<XINE_STREAM_COUNT; ++i) {
         *node = new Node;
-        (*node)->stream = xine_stream_new(d->xine, NULL /*d->ao_port*/, NULL);
+        (*node)->stream = xine_stream_new(d->xine, d->ao_port, NULL);
         // can I pass 0 as ao_port?
         if ((*node)->stream) {
             d->updateError(0);

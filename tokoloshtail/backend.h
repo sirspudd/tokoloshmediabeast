@@ -39,7 +39,6 @@ public:
     };
     static Backend *instance();
 public slots:
-    inline bool init() { if (status() == Uninitalized) return initBackend(); return true; }
     virtual int capabilities() const { return None; }
     virtual void shutdown() = 0;
     virtual QVariant field(const QString &fileName, int field) const = 0;

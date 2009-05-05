@@ -9,6 +9,7 @@ class XineBackend : public Backend
 {
     Q_OBJECT
 public:
+    XineBackend();
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
@@ -33,7 +34,6 @@ public:
     virtual void setEqualizerSettings(const QByteArray &data);
 private:
     Private *d;
-    XineBackend();
 };
 
 #endif
