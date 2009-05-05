@@ -12,40 +12,50 @@
             <arg name="data" type="v" direction="out"/>
         </method>
         <method name="isValid">
+            <arg name="valid" type="b" direction="out"/>
         </method>
-        <method name="play">
-        </method>
-        <method name="pause">
-        </method>
+        <method name="play"/>
+        <method name="pause"/>
         <method name="setProgress">
+            <arg name="type" type="i" direction="in"/>
+            <arg name="progress" type="i" direction="in"/>
         </method>
         <method name="progress">
+            <arg name="type" type="i" direction="in"/>
+            <arg name="progress" type="i" direction="out"/>
         </method>
-        <method name="stop">
-        </method>
+        <method name="stop"/>
         <method name="load">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
         </method>
         <method name="currentTrack">
+            <arg name="path" type="s" direction="out"/>
         </method>
         <method name="status">
+            <arg name="status" type="i" direction="out"/>
         </method>
         <method name="volume">
+            <arg name="status" type="i" direction="out"/>
         </method>
         <method name="setVolume">
-        </method>
-        <method name="initBackend">
+            <arg name="status" type="i" direction="in"/>
         </method>
         <method name="errorMessage">
+            <arg name="error" type="s" direction="out"/>
         </method>
         <method name="errorCode">
+            <arg name="error" type="i" direction="out"/>
         </method>
         <method name="setMute">
+            <arg name="mute" type="b" direction="in"/>
         </method>
         <method name="isMute">
+            <arg name="mute" type="b" direction="out"/>
         </method>
-        <method name="int> equalizerSettings">
+        <!--<method name="equalizerSettings">
         </method>
         <method name="setEqualizerSettings">
-        </method>
+        </method> -->
     </interface>
 </node>

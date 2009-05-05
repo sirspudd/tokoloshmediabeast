@@ -51,7 +51,7 @@ public slots:
     virtual void stop() = 0;
     virtual bool load(const QString &fileName) = 0;
     virtual QString currentTrack() const = 0;
-    virtual Status status() const = 0;
+    virtual int status() const = 0;
     virtual int volume() const = 0;
     virtual void setVolume(int vol) = 0;
     virtual bool initBackend() = 0;

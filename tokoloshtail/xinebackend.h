@@ -21,7 +21,7 @@ public:
     virtual void stop();
     virtual bool load(const QString &fileName);
     virtual QString currentTrack() const;
-    virtual Status status() const;
+    virtual int status() const;
     virtual int volume() const;
     virtual void setVolume(int vol);
     virtual QString errorMessage() const;

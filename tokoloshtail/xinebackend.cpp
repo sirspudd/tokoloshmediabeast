@@ -300,7 +300,7 @@ QString XineBackend::currentTrack() const
     return d->main.track;
 }
 
-Backend::Status XineBackend::status() const
+int XineBackend::status() const
 {
     // could use xine_get_status
     return d->status;
