@@ -206,7 +206,7 @@ static QVariant xine_get_track_length(xine_stream_t *stream, int item)
     return QVariant();
 }
 
-QVariant XineBackend::field(const QString &fileName, TrackInfo field) const
+QVariant XineBackend::field(const QString &fileName, int field) const
 {
     if (status() == Uninitalized)
         return QVariant();
@@ -332,10 +332,10 @@ bool XineBackend::isMute() const
     return ret == 1;
 }
 
-void XineBackend::setProgress(ProgressType type, int progress)
+void XineBackend::setProgress(int type, int progress)
 {
     if (status() != Playing) {
-        d->progressType = type;
+        d->progressType = static_cast<ProgressType>(type);
         d->pendingProgress = progress;
     } else {
         d->progressType = Seconds;
@@ -352,7 +352,7 @@ void XineBackend::setProgress(ProgressType type, int progress)
     }
 }
 
-int XineBackend::progress(ProgressType type)
+int XineBackend::progress(int type)
 {
     const QVariant var = ::xine_get_track_length(d->main.stream, type == Seconds ? 1 : 0);
     if (var.isNull())
@@ -385,12 +385,12 @@ int XineBackend::errorCode() const
     return d->error;
 }
 
-uint XineBackend::flags() const
+int XineBackend::flags() const
 {
     return SupportsEqualizer;
 }
 
-QHash<int, int> XineBackend::equalizerSettings() const
+QByteArray XineBackend::equalizerSettings() const
 {
     QHash<int, int> ret;
     static const int hz[] = { 30, 60, 126, 250, 500, 1000, 2000, 4000, 8000, 16000, -1 };
@@ -398,11 +398,12 @@ QHash<int, int> XineBackend::equalizerSettings() const
         ret[hz[i]] = xine_get_param(d->main.stream, XINE_PARAM_EQ_30HZ + i);
     }
     d->updateError(d->main.stream);
-    return ret;
+    return ::fromEq(ret);
 }
 
-void XineBackend::setEqualizerSettings(const QHash<int, int> &eq)
+void XineBackend::setEqualizerSettings(const QByteArray &data)
 {
+    QHash<int, int> eq = toEq(data);
     static const int hz[] = { 30, 60, 126, 250, 500, 1000, 2000, 4000, 8000, 16000, -1 };
     for (int i=0; hz[i] != -1; ++i) {
         const int val = eq.value(hz[i], -INT_MAX);

@@ -12,12 +12,12 @@ public:
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
-    virtual QVariant field(const QString &fileName, TrackInfo field) const;
+    virtual QVariant field(const QString &fileName, int field) const;
     virtual bool isValid(const QString &fileName) const;
     virtual void play();
     virtual void pause();
-    virtual void setProgress(ProgressType type, int progress);
-    virtual int progress(ProgressType type);
+    virtual void setProgress(int type, int progress);
+    virtual int progress(int type);
     virtual void stop();
     virtual bool load(const QString &fileName);
     virtual QString currentTrack() const;
@@ -28,9 +28,9 @@ public:
     virtual int errorCode() const;
     virtual void setMute(bool on);
     virtual bool isMute() const;
-    virtual uint flags() const;
-    virtual QHash<int, int> equalizerSettings() const;
-    virtual void setEqualizerSettings(const QHash<int, int> &eq);
+    virtual int flags() const;
+    virtual QByteArray equalizerSettings() const;
+    virtual void setEqualizerSettings(const QByteArray &data);
 private:
     Private *d;
     XineBackend();
