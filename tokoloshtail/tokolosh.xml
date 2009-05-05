@@ -2,78 +2,60 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node name="/com/TokoloshXineBackend/MediaPlayer">
     <interface name="com.TokoloshXineBackend.TokoloshMediaPlayer">
+        <method name="capabilities">
+            <arg name="capabilities" type="i" direction="out"/>
+        </method>
+        <method name="shutdown"/>
+        <method name="field">
+            <arg name="filename" type="s" direction="in"/>
+            <arg name="trackinfo" type="i" direction="in"/>
+            <arg name="data" type="v" direction="out"/>
+        </method>
+        <method name="isValid">
+            <arg name="valid" type="b" direction="out"/>
+        </method>
         <method name="play"/>
-        <method name="stop"/>
-        <method name="prev"/>
-        <method name="next"/>
         <method name="pause"/>
-        <method name="clearLibraryPaths"/>
-        <method name="repopulateLibrary"/>
-        <method name="toggleMute"/>
-        <method name="toggleShuffle"/>
-        <method name="toggleRepeat"/>
-        <method name="syncClients"/>
-        <method name="sendWakeUp"/>
-        <method name="dumpFiles"/>
-        <signal name="crashed"/>
-        <signal name="wakeUpGui"/>
-        <method name="track">
-            <arg name="track" type="s" direction="out"/>
+        <method name="setProgress">
+            <arg name="type" type="i" direction="in"/>
+            <arg name="progress" type="i" direction="in"/>
         </method>
-        <method name="shuffle">
-            <arg name="enabled" type="b" direction="out"/>
+        <method name="progress">
+            <arg name="type" type="i" direction="in"/>
+            <arg name="progress" type="i" direction="out"/>
         </method>
-        <method name="guiClientCount">
-            <arg name="count" type="i" direction="out"/>
-        </method>
-        <method name="repeat">
-            <arg name="enabled" type="b" direction="out"/>
-        </method>
-        <method name="volume">
-            <arg name="volume" type="i" direction="out"/>
-        </method>
-        <method name="setRepeat">
-            <arg name="on" type="b" direction="in"/>
-        </method>
-        <method name="setShuffle">
-            <arg name="on" type="b" direction="in"/>
-        </method>
-        <method name="setVolume">
-            <arg name="volume" type="i" direction="in"/>
-        </method>
+        <method name="stop"/>
         <method name="load">
             <arg name="path" type="s" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
         </method>
-        <signal name="trackChanged">
+        <method name="currentTrack">
             <arg name="path" type="s" direction="out"/>
-        </signal>
-        <method name="libraryPaths">
-            <arg name="pathList" type="v" direction="out"/>
         </method>
-        <method name="addLibraryPath">
-            <arg name="path" type="s" direction="in"/>
+        <method name="status">
+            <arg name="status" type="i" direction="out"/>
         </method>
-        <method name="removeLibraryPath">
-            <arg name="path" type="s" direction="in"/>
+        <method name="volume">
+            <arg name="status" type="i" direction="out"/>
         </method>
-        <method name="libraryContents">
-            <arg name="fileList" type="v" direction="out"/>
+        <method name="setVolume">
+            <arg name="status" type="i" direction="in"/>
         </method>
-        <method name="playlistWindow">
-            <arg name="windowSize" type="i" direction="in"/>
-            <arg name="trackList" type="v" direction="out"/>
+        <method name="errorMessage">
+            <arg name="error" type="s" direction="out"/>
         </method>
-        <method name="speed">
-            <arg name="speed" type="i" direction="out"/>
+        <method name="errorCode">
+            <arg name="error" type="i" direction="out"/>
         </method>
-        <method name="setSpeed">
-            <arg name="speed" type="i" direction="in"/>
+        <method name="setMute">
+            <arg name="mute" type="b" direction="in"/>
         </method>
-        <method name="loadMediaLibrary">
-            <arg name="libPath" type="s" direction="in"/>
+        <method name="isMute">
+            <arg name="mute" type="b" direction="out"/>
         </method>
-        <method name="saveMediaLibrary">
-            <arg name="libPath" type="s" direction="in"/>
+        <!--<method name="equalizerSettings">
         </method>
+        <method name="setEqualizerSettings">
+        </method> -->
     </interface>
 </node>

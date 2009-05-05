@@ -16,5 +16,22 @@ enum TrackInfo {
     All = 0xfff
 };
 
+static inline QByteArray fromEq(const QHash<int, int> &eq)
+{
+    QByteArray ba;
+    QDataStream ds(&ba, QIODevice::WriteOnly);
+    ds << eq;
+    return ba;
+}
+
+static inline QHash<int, int> toEq(const QByteArray &ba)
+{
+    QDataStream ds(ba);
+    QHash<int, int> ret;
+    ds >> ret;
+    return ret;
+}
+
+
 
 #endif

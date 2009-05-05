@@ -19,3 +19,4 @@ unix {
     MOC_DIR = .moc
     UI_DIR = .ui
 }
+DEFINES += XINE_STREAM_COUNT=0
