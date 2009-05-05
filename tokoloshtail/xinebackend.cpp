@@ -23,11 +23,13 @@ void swap(Node *left, Node *right)
 
 static bool initStream(Node *node, const QString &fileName)
 {
+    Q_ASSERT(node->stream);
     xine_close(node->stream);
     if (!xine_open(node->stream, qPrintable(fileName))) {
         printf("Unable to open path '%s'\n", qPrintable(fileName));
         return false;
     }
+    qDebug() << "fileName" << fileName;
     Q_ASSERT(node->track != fileName);
     node->track = fileName;
     return true;
@@ -49,23 +51,31 @@ struct Private
         }
         Node *last = 0;
         Node *node = first;
-        forever {
-            if (node->track == fileName) {
-                if (out)
-                    *out = node;
-                return node->stream;
-            } else if (node->next) {
-                last = node;
-                node = node->next;
-            } else {
-                break;
+        if (first) {
+            forever {
+                if (node->track == fileName) {
+                    if (out)
+                        *out = node;
+                    return node->stream;
+                } else if (node->next) {
+                    last = node;
+                    node = node->next;
+                } else {
+                    break;
+                }
             }
+        } else {
+            node = &main;
         }
+
         Q_ASSERT(node);
         if (!::initStream(node, fileName)) {
             if (out)
                 *out = 0;
             return 0;
+        }
+        if (node == &main) {
+            return main.stream;
         }
         last->next = 0;
         node->next = first;
@@ -128,6 +138,13 @@ bool XineBackend::initBackend()
         d->updateError(0);
         return false;
     }
+
+    if (!(d->event_queue = xine_event_new_queue(d->main.stream))) {
+        d->error = -1;
+        return false;
+    }
+
+    d->first = 0;
     Node **node = &d->first;
 
     for (int i=0; i<XINE_STREAM_COUNT; ++i) {
@@ -141,10 +158,7 @@ bool XineBackend::initBackend()
         node = &((*node)->next);
     }
 
-    if (!(d->event_queue = xine_event_new_queue(d->main.stream))) {
-        d->error = -1;
-        return false;
-    }
+    d->status = Idle;
 
     return true;
 }
@@ -248,11 +262,14 @@ bool XineBackend::isValid(const QString &fileName) const
 void XineBackend::play()
 {
     if (status() == Idle) {
-        if (xine_play(d->main.stream, 0, 0))
+        const bool ok = xine_play(d->main.stream, 0, 0);
+        if (ok) {
             d->pollTimer.start(500, this);
-        d->updateError(d->main.stream);
-        d->status = Playing;
-        emit statusChanged(d->status);
+            d->status = Playing;
+            emit statusChanged(d->status);
+        } else {
+            d->updateError(d->main.stream);
+        }
     }
 }
 
