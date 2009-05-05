@@ -48,6 +48,15 @@ struct Private
             if (out)
                 *out = &main;
             return main.stream;
+        } else if (!first) {
+            if (!::initStream(&main, fileName)) {
+                if (out)
+                    *out = 0;
+                return 0;
+            }
+            if (out)
+                *out = &main;
+            return main.stream;
         }
         Node *last = 0;
         Node *node = first;
