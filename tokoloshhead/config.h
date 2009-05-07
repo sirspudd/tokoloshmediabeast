@@ -13,7 +13,7 @@ template <typename T> static bool read(QSettings *settings, const QString &str, 
     if (!data.isEmpty()) {
         if (data.size() != sizeof(T)) {
             qWarning("Mismatched data for %s. Expected %d bytes, got %d",
-                     qPrintable(str), sizeof(T), data.size());
+                     qPrintable(str), int(sizeof(T)), data.size());
             return false;
         }
         memcpy(reinterpret_cast<char*>(&t), data.constData(), sizeof(T));
