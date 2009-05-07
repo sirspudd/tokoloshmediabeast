@@ -58,5 +58,72 @@
         </method>
         <method name="setEqualizerSettings">
         </method> -->
+
+        <!-- Playlist functionality -->
+        <method name="validTracks">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="valid" type="b" direction="out"/>
+        </method>
+        <method name="addTrack">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="valid" type="b" direction="out"/>
+        </method>
+        <method name="addDirectory">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="recurse" type="b" direction="in"/>
+        </method>
+        <method name="validTracks">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="recurse" type="b" direction="in"/>
+            <arg name="tracks" type="as" direction="in"/>
+        </method>
+        <method name="count">
+            <arg name="count" type="i" direction="out"/>
+        </method>
+    QHash<int, QVariant> fields(const QString &path, uint types = All) const;
+    QHash<int, QVariant> fields(int track, uint types = All) const;
+
+    QVariant field(int track, int field) const;
+    QVariant field(const QString &file, int field) const;
+
+    bool filter(const QHash<int, QVariant> &fields) const;
+
+    QString fileName(int track) const
+    QString filePath(int track) const
+    QString fileDirectory(int track) const
+    QString trackName(int track) const
+    int trackLength(int track) const
+    QString artist(int track) const
+    QString album(int track) const
+    int year(int track) const
+    int trackNumber(int track) const
+    QString genre(int track) const
+
+    QString fileName(const QString &path) const
+    QString filePath(const QString &path) const
+    QString fileDirectory(const QString &path) const
+    QString trackName(const QString &path) const
+    int trackLength(const QString &path) const
+    QString artist(const QString &path) const
+    QString album(const QString &path) const
+    int year(const QString &path) const
+    int trackNumber(const QString &path) const
+    QString genre(const QString &path) const
+
+    QList<QHash<int, QVariant> > fields(int from, int size, uint types) const;
+    bool remove(int track, int count = 1);
+
+    bool move(int from, int to);
+    bool swap(int from, int to);
+
+    void sort(int f, Qt::SortOrder sortorder); // getter?
+    void setFilter(const QRegExp &rx, uint fields = All);
+    void setFilter(const QString &str, uint fields = All)
+    QRegExp filter() const;
+    uint filterFields() const;
+    //void startTransaction
+    //void endTransaction // ### ???
+    void requestAsyncTrackData(int track, int info);
+
     </interface>
 </node>

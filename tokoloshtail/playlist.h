@@ -27,19 +27,19 @@ public:
     ~Playlist() { delete d; }
 public slots:
     bool validTrack(const QString &file) const; // static?
-    void addTrack(const QString &path);
+    bool addTrack(const QString &path);
     inline void addDirectory(const QString &path, bool recurse = false)
     { foreach(QString track, validTracks(path, recurse)) addTrack(track); }
     QStringList validTracks(const QString &path, bool recurse = false) const;
 
     int count() const;
-    QHash<int, QVariant> fields(const QString &path, uint types = All) const;
-    QHash<int, QVariant> fields(int track, uint types = All) const;
+    QByteArray fields(const QString &path, uint types = All) const;
+    QByteArray fields(int track, uint types = All) const;
 
     QVariant field(int track, int field) const;
     QVariant field(const QString &file, int field) const;
 
-    bool filter(const QHash<int, QVariant> &fields) const;
+    bool filter(const QByteArray &fields) const;
 
     inline QString fileName(int track) const { return field(track, FileName).toString(); }
     inline QString filePath(int track) const { return field(track, FilePath).toString(); }
@@ -63,7 +63,7 @@ public slots:
     inline int trackNumber(const QString &path) const { return field(path, TrackNumber).toInt(); }
     inline QString genre(const QString &path) const { return field(path, Genre).toString(); }
 
-    QList<QHash<int, QVariant> > fields(int from, int size, uint types) const;
+    QByteArray fields(int from, int size, uint types) const;
     bool remove(int track, int count = 1);
 
     bool move(int from, int to);

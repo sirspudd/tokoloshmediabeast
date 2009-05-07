@@ -66,11 +66,21 @@ int Playlist::count() const
     return d->filter.isEmpty() ? d->all.size() : d->mapping.size();
 }
 
-void Playlist::addTrack(const QString &path)
+bool Playlist::addTrack(const QString &path)
 {
-    const QHash<int, QVariant> f = fields(path);
+    static const int infos[] = {
+        FileName, FilePath, FileDirectory, TrackName, TrackLength,
+        Artist, Album, Year, Genre, TrackNumber, 0
+    };
+
+    QHash<int, QVariant> f;
+    for (int i=0; infos[i]; ++i) {
+        const QVariant v = field(path, infos[i]);
+        if (!v.isNull())
+            f[infos[i]] = v;
+    }
     if (f.isEmpty())
-        return;
+        return false;
 
     const int c = count();
     d->all.append(f);
@@ -87,6 +97,7 @@ void Playlist::addTrack(const QString &path)
             emit sortChanged(d->sortField, d->sortOrder);
         }
     }
+    return true;
 }
 
 QHash<int, QVariant> Playlist::fields(const QString &path, uint fields) const

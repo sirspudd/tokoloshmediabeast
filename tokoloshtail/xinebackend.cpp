@@ -421,12 +421,12 @@ QByteArray XineBackend::equalizerSettings() const
         ret[hz[i]] = xine_get_param(d->main.stream, XINE_PARAM_EQ_30HZ + i);
     }
     d->updateError(d->main.stream);
-    return ::fromEq(ret);
+    return ::toByteArray(ret);
 }
 
 void XineBackend::setEqualizerSettings(const QByteArray &data)
 {
-    QHash<int, int> eq = toEq(data);
+    QHash<int, int> eq = ::fromByteArray<QHash<int, int> > (data);
     static const int hz[] = { 30, 60, 126, 250, 500, 1000, 2000, 4000, 8000, 16000, -1 };
     for (int i=0; hz[i] != -1; ++i) {
         const int val = eq.value(hz[i], -INT_MAX);
