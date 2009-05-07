@@ -6,6 +6,7 @@
             <arg name="capabilities" type="i" direction="out"/>
         </method>
         <method name="shutdown"/>
+        <method name="sendWakeUp"/>
         <method name="field">
             <arg name="filename" type="s" direction="in"/>
             <arg name="trackinfo" type="i" direction="in"/>
