@@ -35,7 +35,7 @@ static bool initStream(Node *node, const QString &fileName)
     return true;
 }
 
-struct Private
+struct Private : public BackendPrivate
 {
     Private() : xine(0), first(0), ao_port(0), event_queue(0),
                 status(Backend::Uninitalized), error(XINE_ERROR_NONE),
@@ -108,15 +108,14 @@ struct Private
     int pendingProgress;
 };
 
-XineBackend::XineBackend()
-    : d(new Private)
+XineBackend::XineBackend(QObject *parent)
+    : Backend(*(d = new Private), parent)
 {
 }
 
 XineBackend::~XineBackend()
 {
     shutdown();
-    delete d;
 }
 
 bool XineBackend::initBackend()

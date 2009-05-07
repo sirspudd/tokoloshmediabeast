@@ -9,7 +9,7 @@ class XineBackend : public Backend
 {
     Q_OBJECT
 public:
-    XineBackend();
+    XineBackend(QObject *parent = 0);
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();

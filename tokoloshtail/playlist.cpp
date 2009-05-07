@@ -2,17 +2,16 @@
 #include <xine.h>
 #include "backend.h"
 
-#define VERIFY_INDEX(idx) { Q_ASSERT_X(idx >= 0 && idx < count(), \
+#define VERIFY_INDEX(idx) { Q_ASSERT_X(idx >= 0 && idx < count(),       \
                                        qPrintable(QString("Index out of range %1 (0-%2)").arg(idx).arg(count())), \
                                        __FUNCTION__); }
 
-Playlist::Playlist(QObject *parent)
-    : QObject(parent)
+Playlist::Playlist(PlaylistPrivate &dd, QObject *parent)
+    : QObject(parent), d(&dd)
 {
-    d.backend = Backend::instance();
-    d.filterFields = All;
-    d.sortField = None;
-    d.sortOrder = Qt::AscendingOrder;
+    d->filterFields = All;
+    d->sortField = None;
+    d->sortOrder = Qt::AscendingOrder;
 }
 
 bool Playlist::validTrack(const QString &file) const
@@ -64,47 +63,47 @@ QStringList Playlist::validTracks(const QString &path, bool recurse) const
 
 int Playlist::count() const
 {
-    return d.filter.isEmpty() ? d.all.size() : d.mapping.size();
+    return d->filter.isEmpty() ? d->all.size() : d->mapping.size();
 }
 
 void Playlist::addTrack(const QString &path)
 {
-    const QHash<TrackInfo, QVariant> f = fields(path);
+    const QHash<int, QVariant> f = fields(path);
     if (f.isEmpty())
         return;
 
     const int c = count();
-    d.all.append(f);
-    if (!d.filter.isEmpty() && filter(f)) {
-        d.mapping.append(c);
+    d->all.append(f);
+    if (!d->filter.isEmpty() && filter(f)) {
+        d->mapping.append(c);
     }
     if (count() != c) {
         Q_ASSERT(count() - 1 == c);
         emit countChanged(c + 1);
-        if (d.sortField != None) {
+        if (d->sortField != None) {
             // we're always appending so this breaks the sort. Could
             // insertion-sort it though.
-            d.sortField = None;
-            emit sortChanged(d.sortField, d.sortOrder);
+            d->sortField = None;
+            emit sortChanged(d->sortField, d->sortOrder);
         }
     }
 }
 
-QHash<TrackInfo, QVariant> Playlist::fields(const QString &path, uint fields) const
+QHash<int, QVariant> Playlist::fields(const QString &path, uint fields) const
 {
-    if (path == d.cache.cachedTrack) {
+    if (path == d->cache.cachedTrack) {
         if (fields == All)
-            return d.cache.cachedFields;
-        QHash<TrackInfo, QVariant> ret;
+            return d->cache.cachedFields;
+        QHash<int, QVariant> ret;
         if (fields != All) {
-            for (QHash<TrackInfo, QVariant>::const_iterator it = d.cache.cachedFields.begin(); it != d.cache.cachedFields.end(); ++it) {
+            for (QHash<int, QVariant>::const_iterator it = d->cache.cachedFields.begin(); it != d->cache.cachedFields.end(); ++it) {
                 if (fields & it.key())
                     ret[it.key()] = it.value();
             }
         }
         return ret;
     }
-    QHash<TrackInfo, QVariant> ret;
+    QHash<int, QVariant> ret;
     if (!validTrack(path))
         return ret;
     QFileInfo fi(path);
@@ -126,35 +125,35 @@ QHash<TrackInfo, QVariant> Playlist::fields(const QString &path, uint fields) co
         // need to ask xine for stuff
     }
     if (fields == All) {
-        d.cache.cachedFields = ret;
-        d.cache.cachedTrack = path;
+        d->cache.cachedFields = ret;
+        d->cache.cachedTrack = path;
     }
 
     return ret;
 }
 
-QHash<TrackInfo, QVariant> Playlist::fields(int track, uint fields) const
+QHash<int, QVariant> Playlist::fields(int track, uint fields) const
 {
     VERIFY_INDEX(track);
     const int idx = dataIndex(track);
-    const QHash<TrackInfo, QVariant> &orig = d.all.at(idx);
+    const QHash<int, QVariant> &orig = d->all.at(idx);
     if (fields == All)
         return orig;
-    QHash<TrackInfo, QVariant> f;
-    for (QHash<TrackInfo, QVariant>::const_iterator it = orig.begin(); it != orig.end(); ++it) {
+    QHash<int, QVariant> f;
+    for (QHash<int, QVariant>::const_iterator it = orig.begin(); it != orig.end(); ++it) {
         if (fields & it.key())
             f[it.key()] = it.value();
     }
     return f;
 }
 
-QVariant Playlist::field(int track, TrackInfo field) const
+QVariant Playlist::field(int track, int field) const
 {
     VERIFY_INDEX(track);
-    return d.all.value(dataIndex(track)).value(field);
+    return d->all.value(dataIndex(track)).value(field);
 }
 
-QVariant Playlist::field(const QString &file, TrackInfo field) const
+QVariant Playlist::field(const QString &file, int field) const
 {
     return fields(file, field).value(field);
 }
@@ -164,12 +163,12 @@ bool Playlist::remove(int track, int size)
     VERIFY_INDEX(track);
     VERIFY_INDEX(track + size - 1);
     const int c = count();
-    d.all.erase(d.all.begin() + track, (d.all.begin() + track + size));
+    d->all.erase(d->all.begin() + track, (d->all.begin() + track + size));
     int removeFrom = -1;
     int removeLast = -1;
-    const int s = d.mapping.size();
+    const int s = d->mapping.size();
     for (int i=0; i<s; ++i) {
-        int &val = d.mapping[i++];
+        int &val = d->mapping[i++];
         if (val >= track + size) {
             val -= size;
             if (removeLast == -1)
@@ -181,7 +180,7 @@ bool Playlist::remove(int track, int size)
     }
     if (removeFrom != -1) {
         // emit ///
-        d.mapping.erase(d.mapping.begin() + removeFrom, d.mapping.begin() + removeLast);
+        d->mapping.erase(d->mapping.begin() + removeFrom, d->mapping.begin() + removeLast);
     }
     if (c != count()) {
         emit countChanged(count());
@@ -194,21 +193,21 @@ bool Playlist::move(int from, int to)
 {
     VERIFY_INDEX(from);
     VERIFY_INDEX(to);
-    if (!d.mapping.isEmpty()) {
+    if (!d->mapping.isEmpty()) {
         // ### need to fix
-        qDebug("%s %d: if (!d.mapping.isEmpty()) {", __FILE__, __LINE__);
+        qDebug("%s %d: if (!d->mapping.isEmpty()) {", __FILE__, __LINE__);
         return false;
     } else {
-        d.all.move(from, to);
+        d->all.move(from, to);
     }
 
 
     const int c = count();
     const int start = qMin(from, to);
     emit tracksChanged(start, c - start);
-    if (d.sortField != None) {
-        d.sortField = None;
-        emit sortChanged(d.sortField, d.sortOrder);
+    if (d->sortField != None) {
+        d->sortField = None;
+        emit sortChanged(d->sortField, d->sortOrder);
     }
 
     return true;
@@ -218,49 +217,49 @@ bool Playlist::swap(int from, int to)
 {
     VERIFY_INDEX(from);
     VERIFY_INDEX(to);
-    if (!d.mapping.isEmpty()) {
+    if (!d->mapping.isEmpty()) {
         // ### need to fix
-        qDebug("%s %d: if (!d.mapping.isEmpty()) {", __FILE__, __LINE__);
+        qDebug("%s %d: if (!d->mapping.isEmpty()) {", __FILE__, __LINE__);
         return false;
     } else {
-        d.all.swap(from, to);
+        d->all.swap(from, to);
     }
     emit trackChanged(from);
     emit trackChanged(to);
-    if (d.sortField != None) {
-        d.sortField = None;
-        emit sortChanged(d.sortField, d.sortOrder);
+    if (d->sortField != None) {
+        d->sortField = None;
+        emit sortChanged(d->sortField, d->sortOrder);
     }
     return true;
 }
 
 void Playlist::setFilter(const QRegExp &rx, uint fields)
 {
-    const bool hadFilter = d.filter.isEmpty();
+    const bool hadFilter = d->filter.isEmpty();
     Q_ASSERT(!rx.isEmpty() || fields == None);
-    d.filter = rx;
-    d.filterFields = fields;
+    d->filter = rx;
+    d->filterFields = fields;
     const int c = count();
-    const int s = d.all.size();
+    const int s = d->all.size();
     if (!hadFilter) {
-        Q_ASSERT(d.mapping.isEmpty());
-        if (d.filter.isEmpty())
+        Q_ASSERT(d->mapping.isEmpty());
+        if (d->filter.isEmpty())
             return; // still no filter
         for (int i=0; i<s; ++i) {
-            if (filter(d.all.at(i)))
-                d.mapping.append(i);
+            if (filter(d->all.at(i)))
+                d->mapping.append(i);
         }
-    } else if (d.filter.isEmpty()) {
-        d.mapping.clear();
+    } else if (d->filter.isEmpty()) {
+        d->mapping.clear();
     } else {
         int idx = 0;
         for (int i=0; i<s; ++i) {
-            const bool old = (d.mapping.value(idx, -1) == i);
-            if (filter(d.all.at(i)) != old) {
+            const bool old = (d->mapping.value(idx, -1) == i);
+            if (filter(d->all.at(i)) != old) {
                 if (old) {
-                    d.mapping.removeAt(idx);
+                    d->mapping.removeAt(idx);
                 } else {
-                    d.mapping.insert(idx++, i);
+                    d->mapping.insert(idx++, i);
                 }
             } else {
                 ++idx;
@@ -268,21 +267,21 @@ void Playlist::setFilter(const QRegExp &rx, uint fields)
         }
     }
     if (c != count()) {
-        emit filterChanged(d.filter, d.filterFields);
+        emit filterChanged(d->filter, d->filterFields);
         emit countChanged(c);
     }
 }
 
 QRegExp Playlist::filter() const
 {
-    return d.filter;
+    return d->filter;
 }
 
-QList<QHash<TrackInfo, QVariant> > Playlist::fields(int from, int size, uint types) const
+QList<QHash<int, QVariant> > Playlist::fields(int from, int size, uint types) const
 {
     VERIFY_INDEX(from);
     VERIFY_INDEX(from + size - 1);
-    QList<QHash<TrackInfo, QVariant> > ret;
+    QList<QHash<int, QVariant> > ret;
     for (int i=from; i<size + from; ++i) {
         ret += fields(i, types);
     }
@@ -293,17 +292,17 @@ template <typename T>
 class Sorter
 {
 public:
-    Sorter(TrackInfo f, Qt::SortOrder o) : field(f), order(o) {}
-    inline bool operator()(const QHash<TrackInfo, QVariant> &l, const QHash<TrackInfo, QVariant> &r) const
+    Sorter(int f, Qt::SortOrder o) : field(f), order(o) {}
+    inline bool operator()(const QHash<int, QVariant> &l, const QHash<int, QVariant> &r) const
     {
         return (qVariantValue<T>(l.value(field)) < qVariantValue<T>(r.value(field))) == (order == Qt::AscendingOrder);
     }
 private:
-    const TrackInfo field;
+    const int field;
     const Qt::SortOrder order;
 };
 
-static inline QVariant::Type type(TrackInfo field)
+static inline QVariant::Type type(int field)
 {
     switch (field) {
     case All:
@@ -334,74 +333,74 @@ template <typename T> inline void reverse(QList<T> &list)
     }
 }
 
-void Playlist::sort(TrackInfo field, Qt::SortOrder sortOrder)
+void Playlist::sort(int field, Qt::SortOrder sortOrder)
 {
-    if (d.sortField == field) {
-        if (d.sortOrder == sortOrder)
+    if (d->sortField == field) {
+        if (d->sortOrder == sortOrder)
             return;
-        d.sortOrder = sortOrder;
-        if (!d.all.isEmpty()) {
-            ::reverse(d.all);
-            if (!d.mapping.isEmpty()) {
+        d->sortOrder = sortOrder;
+        if (!d->all.isEmpty()) {
+            ::reverse(d->all);
+            if (!d->mapping.isEmpty()) {
                 // is this stuff right?
-                const int size = d.all.size();
-                const int mappingSize = d.mapping.size() / 2;
+                const int size = d->all.size();
+                const int mappingSize = d->mapping.size() / 2;
                 for (int i=0; i<mappingSize; ++i) {
-                    const int tmp = size - d.mapping.at(i);
-                    d.mapping[i] = size - d.mapping.at(mappingSize - i - 1);
-                    d.mapping[mappingSize - i - 1] = tmp;
+                    const int tmp = size - d->mapping.at(i);
+                    d->mapping[i] = size - d->mapping.at(mappingSize - i - 1);
+                    d->mapping[mappingSize - i - 1] = tmp;
                 }
             }
         }
     } else {
         const QVariant::Type type = ::type(field);
         Q_ASSERT(type != QVariant::Invalid);
-        d.sortField = field;
-        d.sortOrder = sortOrder;
-        if (!d.all.isEmpty()) {
+        d->sortField = field;
+        d->sortOrder = sortOrder;
+        if (!d->all.isEmpty()) {
             switch (type) {
             case QVariant::String:
-                qSort(d.all.begin(), d.all.end(), Sorter<QString>(field, sortOrder));
+                qSort(d->all.begin(), d->all.end(), Sorter<QString>(field, sortOrder));
                 break;
             case QVariant::Int:
-                qSort(d.all.begin(), d.all.end(), Sorter<int>(field, sortOrder));
+                qSort(d->all.begin(), d->all.end(), Sorter<int>(field, sortOrder));
                 break;
             default:
                 Q_ASSERT(0);
                 break;
             }
-            if (!d.mapping.isEmpty()) {
+            if (!d->mapping.isEmpty()) {
                 int index = 0;
-                const int size = d.all.size();
+                const int size = d->all.size();
                 for (int i=0; i<size; ++i) {
-                    if (filter(d.all.at(i))) {
-                        d.mapping[index++] = i;
+                    if (filter(d->all.at(i))) {
+                        d->mapping[index++] = i;
                     }
                 }
             }
         }
     }
-    emit sortChanged(d.sortField, d.sortOrder);
+    emit sortChanged(d->sortField, d->sortOrder);
 }
 
 uint Playlist::filterFields() const
 {
-    return d.filterFields;
+    return d->filterFields;
 }
 
-bool Playlist::filter(const QHash<TrackInfo, QVariant> &fields) const
+bool Playlist::filter(const QHash<int, QVariant> &fields) const
 {
-    if (d.filter.isEmpty())
+    if (d->filter.isEmpty())
         return true;
-    for (QHash<TrackInfo, QVariant>::const_iterator it = fields.begin(); it != fields.end(); ++it) {
-        if (it.key() & d.filterFields && it.value().toString().contains(d.filter)) {
+    for (QHash<int, QVariant>::const_iterator it = fields.begin(); it != fields.end(); ++it) {
+        if (it.key() & d->filterFields && it.value().toString().contains(d->filter)) {
             return true;
         }
     }
     return false;
 }
 
-void Playlist::requestAsyncTrackData(int track, TrackInfo info)
+void Playlist::requestAsyncTrackData(int track, int info)
 {
     emit trackData(track, info, field(track, info));
 }

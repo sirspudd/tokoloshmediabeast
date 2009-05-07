@@ -5,7 +5,11 @@
 #include <global.h>
 #include "playlist.h"
 
-class Backend : public QObject
+struct BackendPrivate : public PlaylistPrivate
+{
+};
+
+class Backend : public Playlist
 {
     Q_OBJECT
 public:
@@ -60,11 +64,6 @@ public slots:
     virtual bool isMute() const = 0;
     virtual QByteArray equalizerSettings() const { return QByteArray(); }
     virtual void setEqualizerSettings(const QByteArray &) {}
-
-    // do all of this through a generic QVariant value(int
-    // type)/setValue(int type, QVariant) interface so I can be binary
-    // compatible etc? Would anyone in their right mind need us to be
-    // bc?
 signals:
     // need to emit this if e.g. the command line client changes the
     // volume on us. The other clients need to know to move their
@@ -73,9 +72,10 @@ signals:
     void statusChanged(Status status);
     void trackChanged(const QString &string);
 protected:
-    Backend();
+    Backend(BackendPrivate &dd, QObject *parent);
     virtual ~Backend() {}
 private:
+    BackendPrivate *d;
     static Backend *inst;
 };
 
