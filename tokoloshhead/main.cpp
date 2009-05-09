@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     }
     // ### handle file args
     if (!startGui()) {
-        dbusInterface.sendWakeUp();
+//        dbusInterface.sendWakeUp();
         return 0;
     }
 
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setApplicationName("tokoloshhead_v2");
     Player player(&dbusInterface);
-    const QDBusPendingReply<int> vol = dbusInterface.volume();
+    const QDBusReply<int> vol = dbusInterface.volume();
     if (dbusInterface.lastError().type() != QDBusError::NoError) {
         if (!QProcess::startDetached("tokoloshtail")) {
             qWarning("Can't start tokoloshtail");

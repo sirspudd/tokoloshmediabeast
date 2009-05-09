@@ -24,7 +24,7 @@ unix {
     generateInterface.target = tokolosh_interface.cpp
     generateInterface.commands = sh generateadaptorfiles.sh
     QMAKE_EXTRA_TARGETS += generateInterface
-    PRE_TARGETDEPS += tokolosh_interface.cpp
+    PRE_TARGETDEPS += ../tokoloshtail/tokolosh.xml
     OBJECTS_DIR = .obj
     MOC_DIR = .moc
     UI_DIR = .ui
