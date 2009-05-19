@@ -78,7 +78,9 @@ public:
     void resizeEvent(QResizeEvent *e);
     void showEvent(QShowEvent *e);
     void closeEvent(QCloseEvent *e);
+    QSize sizeHint() const;
 public slots:
+    void restoreDefaultSize();
     bool setSkin(const QString &path);
     void open();
     void openSkin();

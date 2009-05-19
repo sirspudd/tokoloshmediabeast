@@ -114,11 +114,20 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
 
     setContextMenuPolicy(Qt::ActionsContextMenu);
     d.channelMode = Private::Stereo;
-    resize(275, 116);
-    bool ok;
-    const QPoint pos = Config::value<QPoint>("position", QPoint(), &ok);
-    if (ok && QApplication::desktop()->availableGeometry(this).contains(QRect(pos, size()))) {
-        move(pos);
+    if (!Config::isEnabled("ignorelastgeometry", false)) {
+        const QByteArray g = Config::value<QByteArray>("geometry");
+        if (!g.isEmpty()) {
+            restoreGeometry(g);
+            if (!QApplication::desktop()->availableGeometry(this).intersects(geometry())) {
+                QRect r(QPoint(), sizeHint());
+                r.moveCenter(QApplication::desktop()->availableGeometry(this).center());
+                setGeometry(r);
+            }
+        }
+    } else {
+        QRect r(QPoint(), sizeHint());
+        r.moveCenter(QApplication::desktop()->availableGeometry(this).center());
+        setGeometry(r);
     }
 
     d.dbusInterface = dbusInterface;
@@ -228,6 +237,7 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     } const actionInfo[] = {
         { QT_TRANSLATE_NOOP("Player", "Quit"), SLOT(close()), None, QKeySequence::Close },
         { QT_TRANSLATE_NOOP("Player", "Edit shortcuts"), SLOT(editShortcuts()), None, QKeySequence() },
+        { QT_TRANSLATE_NOOP("Player", "Restore default size"), SLOT(restoreDefaultSize()), None, QKeySequence() },
 #ifdef QT_DEBUG
         { QT_TRANSLATE_NOOP("Player", "Toggle debug geometry"), SLOT(toggleDebugGeometry(bool)),
           (Config::isEnabled("debuggeometry") ? Checked|Checkable : Checkable),
@@ -540,7 +550,7 @@ void Player::reloadSettings()
 
 void Player::closeEvent(QCloseEvent *e)
 {
-    Config::setValue("position", pos());
+    Config::setValue("geometry", saveGeometry());
     QWidget::closeEvent(e);
 }
 
@@ -652,4 +662,14 @@ void Player::resizeEvent(QResizeEvent *e)
         }
     }
     QWidget::resizeEvent(e);
+}
+
+QSize Player::sizeHint() const
+{
+    return QSize(275, 116);
+}
+
+void Player::restoreDefaultSize()
+{
+    resize(sizeHint());
 }
