@@ -379,8 +379,8 @@ bool Player::setSkin(const QString &path)
         { "cbuttons", QRect(92, 0, 22, 18), QRect(), &d.buttons[Next]->pixmaps[Button::Normal] }, // Next
         { "cbuttons", QRect(92, 18, 22, 18), QRect(), &d.buttons[Next]->pixmaps[Button::Pressed] },
 
-        { "cbuttons", QRect(114, 0, 23, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Normal] }, // Open
-        { "cbuttons", QRect(114, 16, 23, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Pressed] },
+        { "cbuttons", QRect(114, 0, 22, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Normal] }, // Open
+        { "cbuttons", QRect(114, 16, 22, 16), QRect(), &d.buttons[Open]->pixmaps[Button::Pressed] },
 
         { "shufrep", QRect(28, 0, 46, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Normal] }, // Shuffle
         { "shufrep", QRect(28, 15, 46, 15), QRect(), &d.buttons[Shuffle]->pixmaps[Button::Pressed] },
@@ -392,8 +392,8 @@ bool Player::setSkin(const QString &path)
         { "shufrep", QRect(0, 30, 28, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Checked] },
         { "shufrep", QRect(0, 45, 28, 15), QRect(), &d.buttons[Repeat]->pixmaps[Button::Checked|Button::Pressed] },
 
-        { "shufrep", QRect(0, 61, 23, 13), QRect(), &d.buttons[Equalizer]->pixmaps[Button::Normal] }, // EQ
-        { "shufrep", QRect(0, 73, 23, 13), QRect(), &d.buttons[Equalizer]->pixmaps[Button::Checked] },
+        { "shufrep", QRect(0, 61, 23, 12), QRect(), &d.buttons[Equalizer]->pixmaps[Button::Normal] }, // EQ
+        { "shufrep", QRect(0, 73, 23, 12), QRect(), &d.buttons[Equalizer]->pixmaps[Button::Checked] },
 
         { "shufrep", QRect(23, 61, 23, 12), QRect(), &d.buttons[Playlist]->pixmaps[Button::Normal] }, // Playlist
         { "shufrep", QRect(23, 73, 23, 12), QRect(), &d.buttons[Playlist]->pixmaps[Button::Checked] },

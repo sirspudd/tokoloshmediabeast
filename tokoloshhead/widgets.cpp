@@ -64,6 +64,11 @@ void Button::paintEvent(QPaintEvent *)
         p.setRenderHint(QPainter::SmoothPixmapTransform);
         p.setTransform(qVariantValue<QTransform>(window()->property("transform")));
         pixmaps[i].render(&p);
+        if (!pixmaps[i].sourceRect.isNull() && pixmaps[i].sourceRect.size() != size()) {
+            qDebug() << objectName() << pixmaps[i].sourceRect << size();
+        }
+
+//        Q_ASSERT(pixmaps[i].sourceRect.isNull() || pixmaps[i].sourceRect.size() == size());
 #ifdef QT_DEBUG
         if (Config::isEnabled("debuggeometry", false)) {
             p.setPen(Qt::white);
