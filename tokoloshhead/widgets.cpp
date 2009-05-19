@@ -1,8 +1,8 @@
 #include "widgets.h"
 #include "config.h"
 
-SliderStyle::SliderStyle()
-    : QWindowsStyle()
+SliderStyle::SliderStyle(Player *p)
+    : QWindowsStyle(), player(p)
 {
 }
 
@@ -22,11 +22,14 @@ void SliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComple
     const double x = double(slider->sliderValue - slider->minimum) / double(slider->maximum - slider->minimum) * w;
 
     r.moveLeft(int(x));
+    p->save();
+    p->setTransform(qVariantValue<QTransform>(player->property("transform")));
     object->render(p);
+    p->restore();
 }
 
 int SliderStyle::styleHint(StyleHint stylehint, const QStyleOption *opt, const QWidget *widget,
-                                 QStyleHintReturn* returnData) const
+                           QStyleHintReturn* returnData) const
 {
     if (stylehint == SH_Slider_AbsoluteSetButtons) {
         return qVariantValue<int>(property("SH_Slider_AbsoluteSetButtons"));
@@ -38,7 +41,8 @@ int SliderStyle::styleHint(StyleHint stylehint, const QStyleOption *opt, const Q
 int SliderStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const
 {
     switch (m) {
-    case PM_SliderLength: return normal.targetRect.width();
+    case PM_SliderLength:
+        return qVariantValue<QTransform>(player->property("transform")).mapRect(normal.targetRect).width();
 //    case PM_MaximumDragDistance: return INT_MAX;
     default: break;
     }

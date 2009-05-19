@@ -7,13 +7,14 @@
 class SliderStyle : public QWindowsStyle
 {
 public:
-    SliderStyle();
+    SliderStyle(Player *player);
     virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                     const QWidget *widget = 0) const;
     virtual int pixelMetric(PixelMetric m, const QStyleOption *opt = 0, const QWidget *widget = 0) const;
     virtual int styleHint(StyleHint stylehint, const QStyleOption *opt = 0,
                           const QWidget *widget = 0, QStyleHintReturn* returnData = 0) const;
 private:
+    Player *player;
     friend class Player;
     mutable RenderObject normal, pressed;
     RenderObject groovePressed;

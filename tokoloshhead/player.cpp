@@ -266,7 +266,7 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     d.posBarSlider->setGeometry(14, 72, 253, 10);
     d.posBarSlider->setProperty("defaultGeometry", d.posBarSlider->geometry());
     d.posBarSlider->setRange(0, 600);
-    d.posBarSlider->setStyle(d.posBarStyle = new SliderStyle);
+    d.posBarSlider->setStyle(d.posBarStyle = new SliderStyle(this));
 
 //     d.volumeSlider = new Slider(Qt::Horizontal, this);
 //     d.volumeSlider->setGeometry(14, 72, 253, 10);
