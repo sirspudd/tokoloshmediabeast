@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <QtGui>
+#include <config.h>
 
 class TokoloshInterface;
 struct RenderObject
@@ -12,6 +13,8 @@ struct RenderObject
     {}
     void render(QPainter *p) const // ### pass in clip?
     {
+        static const bool smoothPixmapTransform = Config::isEnabled("smoothpixmaptransform", true);
+        p->setRenderHints(smoothPixmapTransform ? QPainter::SmoothPixmapTransform : static_cast<QPainter::RenderHint>(0));
         const QRect sr = sourceRect.isNull() ? pixmap.rect() : sourceRect;
         const QRect tr = targetRect.isNull() ? QRect(QPoint(), sr.size()) : targetRect;
         p->drawPixmap(tr, pixmap, sr);
@@ -19,10 +22,11 @@ struct RenderObject
 
     void render(QPainter *p, const QRect &tr) const // ### pass in clip?
     {
+        static const bool smoothPixmapTransform = Config::isEnabled("smoothpixmaptransform", true);
+        p->setRenderHints(smoothPixmapTransform ? QPainter::SmoothPixmapTransform : static_cast<QPainter::RenderHint>(0));
         const QRect sr = sourceRect.isNull() ? pixmap.rect() : sourceRect;
         p->drawPixmap(tr, pixmap, sr);
     }
-
 
     QPixmap pixmap;
     QRect targetRect, sourceRect;

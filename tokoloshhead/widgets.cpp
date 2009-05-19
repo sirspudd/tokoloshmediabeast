@@ -7,13 +7,10 @@ SliderStyle::SliderStyle()
 }
 
 void SliderStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
-                                     QPainter *p, const QWidget *widget) const
+                                     QPainter *p, const QWidget *) const
 {
     Q_ASSERT(cc == CC_Slider);
     Q_UNUSED(cc);
-    p->setTransform(qVariantValue<QTransform>(widget->window()->property("transform")));
-    p->setRenderHint(QPainter::SmoothPixmapTransform);
-
     const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider*>(opt);
     RenderObject *object = (slider->state & State_Sunken
                             && slider->activeSubControls == SC_SliderHandle ? &pressed : &normal);
