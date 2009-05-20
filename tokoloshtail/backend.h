@@ -65,7 +65,18 @@ public slots:
     // type)/setValue(int type, QVariant) interface so I can be binary
     // compatible etc? Would anyone in their right mind need us to be
     // bc?
+
+    int count() const;
+    QString currentTrackName() const;
+    int currentTrackIndex() const;
+    QByteArray trackData(const QString &fileName) const;
+    QStringList tracks(int start, int count) const;
+    void setCurrentTrack(int index);
+    void setCurrentTrack(const QString &name);
+    int indexOfTrack(const QString &name) const;
 signals:
+    void currentTrackChanged(int index, const QString &string, const QByteArray &data);
+    void trackCountChanged(int count);
     // need to emit this if e.g. the command line client changes the
     // volume on us. The other clients need to know to move their
     // slider etc
@@ -75,6 +86,11 @@ signals:
 protected:
     Backend();
     virtual ~Backend() {}
+    struct PlaylistData {
+        int current;
+        QStringList tracks;
+        // QMap<QString, QByteArray> cachedData; // ### ???
+    } playlistData;
 private:
     static Backend *inst;
 };
