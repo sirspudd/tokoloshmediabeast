@@ -1,6 +1,10 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+#ifdef QT_GUI_LIB
 #include <QtGui>
+#else
+#include <QtCore>
+#endif
 
 template <typename T> bool read(const QVariant &, T &)
 {
@@ -88,7 +92,9 @@ CONFIG_TYPE(VariantList);
 CONFIG_TYPE(StringVariantMap);
 CONFIG_TYPE(StringVariantHash);
 
+#ifdef QT_GUI_LIB
 CONFIG_TYPE(QColor);
+#endif
 
 class Config
 {
