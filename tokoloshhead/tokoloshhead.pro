@@ -3,7 +3,6 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 HEADERS += player.h \
-           config.h \
            widgets.h \
            shortcutdialog.h \
            SkinSelectionDialog.h \
@@ -12,7 +11,6 @@ HEADERS += player.h \
 
 SOURCES += main.cpp \
            player.cpp \
-           config.cpp \
            widgets.cpp \
            shortcutdialog.cpp \
            SkinSelectionDialog.cpp \
