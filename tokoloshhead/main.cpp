@@ -117,7 +117,7 @@ enum Barf { One, Two, Three };
 int main(int argc, char *argv[])
 {
     QCoreApplication *coreApp = new QCoreApplication(argc, argv);
-    coreApp->setApplicationName("tokoloshhead_v2");
+    ::initApp(coreApp, "tokoloshhead");
     const QHash<int, int> types = registerMetaTypes();
     TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
                                     "/TokoloshMediaPlayer",
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
     delete coreApp;
 
     QApplication app(argc, argv);
-    app.setApplicationName("tokoloshhead_v2");
+    ::initApp(&app, "tokoloshhead");
     Player player(&dbusInterface);
     const QDBusReply<int> vol = dbusInterface.volume();
     if (dbusInterface.lastError().type() != QDBusError::NoError) {

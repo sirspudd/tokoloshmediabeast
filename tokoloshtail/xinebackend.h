@@ -13,14 +13,14 @@ public:
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
-    virtual QVariant field(const QString &fileName, int field) const;
+    virtual bool trackData(TrackData *data, const QString &path, uint types = All) const;
     virtual bool isValid(const QString &fileName) const;
     virtual void play();
     virtual void pause();
     virtual void setProgress(int type, int progress);
     virtual int progress(int type);
     virtual void stop();
-    virtual bool load(const QString &fileName);
+    virtual bool loadFile(const QString &fileName);
     virtual QString currentTrack() const;
     virtual int status() const;
     virtual int volume() const;

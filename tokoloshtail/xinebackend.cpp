@@ -154,7 +154,7 @@ bool XineBackend::initBackend()
         *node = new Node;
         (*node)->stream = xine_stream_new(d->xine, d->ao_port, NULL);
         // can I pass 0 as ao_port?
-        if ((*node)->stream) {
+        if (!(*node)->stream) {
             d->updateError(0);
             return false;
         }
@@ -190,7 +190,9 @@ void XineBackend::shutdown()
             xine_close(d->first->stream);
             xine_dispose(d->first->stream);
         }
+        Node *tmp = d->first;
         d->first = d->first->next;
+        delete tmp;
     }
 
     xine_exit(d->xine);
@@ -199,18 +201,12 @@ void XineBackend::shutdown()
     emit statusChanged(d->status);
 }
 
-typedef QVariant (*Xine_Get_Meta_Info)(xine_stream_t *stream, int info);
-
-static QVariant xine_get_meta_QString(xine_stream_t *stream, int info)
+typedef QVariant (*Xine_Get_Meta_Info_Func)(xine_stream_t *stream, int info);
+typedef void (*VariableSetter_Func)(void *target, const QVariant &source);
+static QVariant xine_get_meta_data(xine_stream_t *stream, int info)
 {
     const char *utf8 = xine_get_meta_info(stream, info);
     return QString::fromUtf8(utf8);
-}
-
-static QVariant xine_get_meta_Integer(xine_stream_t *stream, int info)
-{
-    const char *utf8 = xine_get_meta_info(stream, info);
-    return QString::fromUtf8(utf8).toInt();
 }
 
 // also used by progress()
@@ -227,33 +223,55 @@ static QVariant xine_get_track_length(xine_stream_t *stream, int item)
     return QVariant();
 }
 
-QVariant XineBackend::field(const QString &fileName, int field) const
+template <typename T> class Setter
+{
+public:
+    static void set(void *target, const QVariant &source)
+    {
+        Q_ASSERT(target);
+        if (source.canConvert<T>()) {
+            T **tt = reinterpret_cast<T**>(&target);
+            *(*tt) = qVariantValue<T>(source);
+        }
+    }
+};
+
+bool XineBackend::trackData(TrackData *data, const QString &path, uint mask) const
 {
     if (status() == Uninitalized)
-        return QVariant();
-    xine_stream_t *stream = d->stream(fileName);
+        return false;
+    enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|TrackNumber };
+    if (!(mask & BackendTypes)) // shouldn't really happen
+        return true;
+
+    xine_stream_t *stream = d->stream(path);
+    if (!stream)
+        return false; // set error codes? warn?
 
     struct {
         const TrackInfo field;
         const int id;
-        const Xine_Get_Meta_Info info;
-    } static const data[] = {
-        { TrackName, XINE_META_INFO_TITLE, xine_get_meta_QString },
-        { TrackLength, TrackLength, xine_get_track_length },
-        { Artist, XINE_META_INFO_ARTIST, xine_get_meta_QString },
-        { Album, XINE_META_INFO_ALBUM, xine_get_meta_QString },
-        { Year, XINE_META_INFO_YEAR, xine_get_meta_Integer },
-        { Genre, XINE_META_INFO_GENRE, xine_get_meta_QString },
-        { TrackNumber, XINE_META_INFO_TRACK_NUMBER, xine_get_meta_Integer },
-        { None, -1, 0 }
+        const Xine_Get_Meta_Info_Func info;
+        const VariableSetter_Func setter;
+        void *target;
+    } static const fields[] = {
+        { Title, XINE_META_INFO_TITLE, xine_get_meta_data, Setter<QString>::set, &data->title },
+        { TrackLength, 2, xine_get_track_length, Setter<int>::set, &data->trackLength },
+        { Artist, XINE_META_INFO_ARTIST, xine_get_meta_data, Setter<QString>::set, &data->artist },
+        { Year, XINE_META_INFO_YEAR, xine_get_meta_data, Setter<int>::set, &data->year },
+        { Genre, XINE_META_INFO_GENRE, xine_get_meta_data, Setter<QString>::set, &data->genre },
+        { TrackNumber, XINE_META_INFO_TRACK_NUMBER, xine_get_meta_data, Setter<int>::set, &data->trackNumber },
+        { None, -1, 0, 0, 0 }
     };
 
-    for (int i=0; data[i].info; ++i) {
-        if (data[i].field == field)
-            return data[i].info(stream, data[i].id);
+    for (int i=0; fields[i].info; ++i) {
+        if (mask & fields[i].field) {
+            const QVariant v = fields[i].info(stream, fields[i].id);
+            fields[i].setter(fields[i].target, v);
+        }
     }
 
-    return QVariant();
+    return true;
 }
 
 bool XineBackend::isValid(const QString &fileName) const
@@ -304,7 +322,7 @@ void XineBackend::stop()
 
 }
 
-bool XineBackend::load(const QString &fileName)
+bool XineBackend::loadFile(const QString &fileName)
 {
     stop();
     Node *node;
@@ -313,7 +331,7 @@ bool XineBackend::load(const QString &fileName)
         return false;
     if (node != &d->main) {
         ::swap(node, &d->main);
-        emit trackChanged(fileName);
+//        emit currentTrackChanged(fileName);
     }
 
     return true;

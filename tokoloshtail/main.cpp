@@ -6,6 +6,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+    ::initApp(&app, QLatin1String("tokoloshtail"));
 
     XineBackend daemon;
     if (!daemon.initBackend()) {

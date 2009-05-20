@@ -3,7 +3,6 @@
 
 #include <QtCore>
 #include <global.h>
-#include "playlist.h"
 
 class Backend : public QObject
 {
@@ -38,17 +37,17 @@ public:
         ProgressChanged // ### ????
     };
     static Backend *instance();
+    virtual bool trackData(TrackData *data, const QString &path, uint types = All) const = 0;
 public slots:
     virtual int capabilities() const { return None; }
     virtual void shutdown() = 0;
-    virtual QVariant field(const QString &fileName, int field) const = 0;
     virtual bool isValid(const QString &fileName) const = 0;
     virtual void play() = 0;
     virtual void pause() = 0;
     virtual void setProgress(int type, int progress) = 0;
     virtual int progress(int type) = 0;
     virtual void stop() = 0;
-    virtual bool load(const QString &fileName) = 0;
+    virtual bool loadFile(const QString &fileName) = 0;
     virtual QString currentTrack() const = 0;
     virtual int status() const = 0;
     virtual int volume() const = 0;
@@ -66,23 +65,30 @@ public slots:
     // compatible etc? Would anyone in their right mind need us to be
     // bc?
 
+    // playlist stuff
     int count() const;
     QString currentTrackName() const;
     int currentTrackIndex() const;
-    QByteArray trackData(const QString &fileName) const;
     QStringList tracks(int start, int count) const;
     void setCurrentTrack(int index);
     void setCurrentTrack(const QString &name);
     int indexOfTrack(const QString &name) const;
+    void requestTrackData(const QString &filepath, uint trackInfo = All);
+    void requestTracknames(int from, int size);
+    void swap(int from, int to);
+    void load(const QString &path);
+    void removeTrack(int index);
 signals:
-    void currentTrackChanged(int index, const QString &string, const QByteArray &data);
+    void swapped(int from, int to);
+    void trackData(const QString &path, const QVariant &data);
+    void trackNames(int from, const QStringList &list);
+    void currentTrackChanged(int index, const QString &string);
     void trackCountChanged(int count);
     // need to emit this if e.g. the command line client changes the
     // volume on us. The other clients need to know to move their
     // slider etc
     void event(int type, const QVariant &data);
     void statusChanged(Status status);
-    void trackChanged(const QString &string);
 protected:
     Backend();
     virtual ~Backend() {}
