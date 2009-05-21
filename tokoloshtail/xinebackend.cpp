@@ -282,6 +282,7 @@ bool XineBackend::isValid(const QString &fileName) const
 
 void XineBackend::play()
 {
+    qDebug() << "status" << status() << Idle << d->main.track;
     if (status() == Idle) {
         const bool ok = xine_play(d->main.stream, 0, 0);
         if (ok) {
@@ -335,11 +336,6 @@ bool XineBackend::loadFile(const QString &fileName)
     }
 
     return true;
-}
-
-QString XineBackend::currentTrack() const
-{
-    return d->main.track;
 }
 
 int XineBackend::status() const

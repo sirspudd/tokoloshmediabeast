@@ -28,29 +28,45 @@ int Backend::currentTrackIndex() const
     return playlistData.current;
 }
 
-QStringList Backend::tracks(int start, int count) const
+static inline bool tracks(const QStringList &list, int from, int size, QStringList *out)
 {
-    return playlistData.tracks.mid(start, count);
+    const int count = list.size();
+    if (count != 0 && size != 0 && from >= 0 && from < count && (size < 0 || from + size <= count)) {
+        if (size < 0)
+            size = count - from;
+        *out = list.mid(from, size);
+        return true;
+    }
+    return false;
 }
 
-void Backend::setCurrentTrack(int index)
+
+QStringList Backend::tracks(int start, int count) const
+{
+    QStringList ret;
+    ::tracks(playlistData.tracks, start, count, &ret);
+    return ret;
+}
+
+bool Backend::setCurrentTrack(int index)
 {
     if (index >= 0 && index < playlistData.tracks.size()) {
         playlistData.current = index;
-//        emit currentTrackChanged(index, playlistData.tracks.at(index), trackData(playlistData.tracks.at(index)));
+        emit currentTrackChanged(index, playlistData.tracks.at(index)); //, trackData(playlistData.tracks.at(index)));
+        return true;
     } else {
-        qDebug("%s %d: } else {", __FILE__, __LINE__);
+        return false;
     }
 }
 
-void Backend::setCurrentTrack(const QString &name)
+bool Backend::setCurrentTrack(const QString &name)
 {
     const int idx = playlistData.tracks.indexOf(name);
     if (idx != -1) {
         setCurrentTrack(idx);
-    } else {
-        qDebug("%s %d: } else {", __FILE__, __LINE__);
+        return true;
     }
+    return false;
 }
 
 int Backend::indexOfTrack(const QString &name) const
@@ -58,7 +74,7 @@ int Backend::indexOfTrack(const QString &name) const
     return playlistData.tracks.indexOf(name);
 }
 
-void Backend::requestTrackData(const QString &filepath, uint trackInfo)
+bool Backend::requestTrackData(const QString &filepath, uint trackInfo)
 {
     TrackData data;
     if (trackInfo & FilePath)
@@ -70,59 +86,91 @@ void Backend::requestTrackData(const QString &filepath, uint trackInfo)
         trackData(&data, filepath, trackInfo); // ### check return value?
     }
     emit trackData(filepath, qVariantFromValue(data));
+    // ### should check if the file exists in list??
+    return indexOfTrack(filepath) != -1;
 }
 
-void Backend::requestTracknames(int from, int size)
+bool Backend::requestTracknames(int start, int count)
 {
-    if (!playlistData.tracks.isEmpty()) {
-        from = qBound(0, from, playlistData.tracks.size() - 1);
-        if (size < 0) {
-            size = playlistData.tracks.size() - from;
-        } else {
-            size = qMin(playlistData.tracks.size() - from, size);
-        }
-        emit trackNames(from, playlistData.tracks.mid(from, size));
+    QStringList ret;
+    if (::tracks(playlistData.tracks, start, count, &ret)) {
+        emit trackNames(start, ret);
+        return true;
     }
+    return false;
 }
 
-static inline QFileInfo resolveSymlink(const QString &file)
+static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }
+static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSet<QFileInfo> *seen)
 {
-    QFileInfo fi(file);
-    QStringList paths;
-    forever {
-        if (paths.contains(fi.absoluteFilePath())) {
-            qWarning("%s is a recursive symlink", qPrintable(paths.join(" => ")));
-            return QFileInfo();
-        }
-        paths.append(fi.absoluteFilePath());
-        if (!fi.isSymLink()) {
-            break;
-        }
-        fi = fi.symLinkTarget();
+    QStringList ret;
+    if (seen->contains(file)) {
+        qWarning("Recursive symlink detected %s", qPrintable(file.absoluteFilePath()));
+        return ret;
     }
-    return fi;
-
-}
-
-void Backend::load(const QString &path)
-{
-    static const bool resolveSymlinks = Config::isEnabled("resolvesymlinks");
-    const QFileInfo fi = resolveSymlinks ? ::resolveSymlink(path) : QFileInfo(path);
-    Q_ASSERT(!fi.isSymLink());
-    if (fi.exists()) {
-        if (fi.isFile()) {
-//            data.playlistData.tracks.append(path);
-        } else {
-
+    seen->insert(file);
+    if (file.isSymLink()) {
+        static const bool resolveSymlinks = Config::isEnabled("resolvesymlinks", true);
+        if (resolveSymlinks)
+            ret += ::recursiveLoad(file.readLink(), recurse, seen);
+    } else if (file.isDir()) {
+        const QDir dir(file.absoluteFilePath());
+        const QFileInfoList list = dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot|(recurse
+                                                                                       ? QDir::Dirs
+                                                                                       : static_cast<QDir::Filter>(0)));
+        foreach(const QFileInfo &f, list) {
+            Q_ASSERT(!f.isDir() || recurse);
+            ::recursiveLoad(f, recurse, seen);
+        }
+    } else if (file.isFile()) {
+        const QString path = file.absoluteFilePath();
+        static QPointer<Backend> backend = Backend::instance(); // could just be a member function
+        if (backend->isValid(path) || true) {
+            ret += path;
+            // ### should I load song name here? Probably. Checking if
+            // ### it's valid probably means parsing header anyway
         }
     }
+    return ret;
 }
 
-void Backend::removeTrack(int index)
+bool Backend::load(const QString &path, bool recurse)
 {
-
+    const QFileInfo fi(path);
+    if (!fi.exists()) {
+        qWarning("%s doesn't seem to exist", qPrintable(path));
+        return false;
+    }
+    QSet<QFileInfo> seen;
+    const QStringList songs = ::recursiveLoad(path, recurse, &seen);
+    if (!songs.isEmpty()) {
+        playlistData.tracks.append(songs);
+        emit trackCountChanged(playlistData.tracks.size());
+        return true;
+    }
+    if (seen.size() == 1)
+        qWarning("[%s] doesn't seem to be a valid file", qPrintable((*seen.begin()).absoluteFilePath()));
+    return false;
 }
-void Backend::swap(int from, int to)
-{
 
+bool Backend::removeTrack(int index)
+{
+    qWarning("%s not implemented", __FUNCTION__);
+    return false;
+}
+
+bool Backend::swap(int from, int to)
+{
+    qWarning("%s not implemented", __FUNCTION__);
+    return false;
+}
+
+bool Backend::setCWD(const QString &path)
+{
+    return QDir::setCurrent(path);
+}
+
+QString Backend::CWD() const
+{
+    return QDir::currentPath();
 }

@@ -2,6 +2,7 @@
 #include <QFileInfo>
 #include "player.h"
 #include "config.h"
+#include "global.h"
 #include "tokolosh_interface.h"
 
 
@@ -22,6 +23,7 @@ static inline bool startGui()
 
 static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
 {
+    // ### need to translate
     QRegExp rx("^-*");
     arg.remove(rx);
 

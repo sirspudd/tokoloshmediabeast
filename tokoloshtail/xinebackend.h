@@ -21,7 +21,6 @@ public:
     virtual int progress(int type);
     virtual void stop();
     virtual bool loadFile(const QString &fileName);
-    virtual QString currentTrack() const;
     virtual int status() const;
     virtual int volume() const;
     virtual void setVolume(int vol);

@@ -36,11 +36,14 @@ public:
         EqualizerChanged,
         ProgressChanged // ### ????
     };
+
+    bool load(const QString &path, bool recursive);
     static Backend *instance();
     virtual bool trackData(TrackData *data, const QString &path, uint types = All) const = 0;
 public slots:
     virtual int capabilities() const { return None; }
     virtual void shutdown() = 0;
+    void sendWakeUp() { qWarning("%s not implemented", __FUNCTION__); }
     virtual bool isValid(const QString &fileName) const = 0;
     virtual void play() = 0;
     virtual void pause() = 0;
@@ -48,7 +51,6 @@ public slots:
     virtual int progress(int type) = 0;
     virtual void stop() = 0;
     virtual bool loadFile(const QString &fileName) = 0;
-    virtual QString currentTrack() const = 0;
     virtual int status() const = 0;
     virtual int volume() const = 0;
     virtual void setVolume(int vol) = 0;
@@ -70,14 +72,17 @@ public slots:
     QString currentTrackName() const;
     int currentTrackIndex() const;
     QStringList tracks(int start, int count) const;
-    void setCurrentTrack(int index);
-    void setCurrentTrack(const QString &name);
+    bool setCurrentTrack(int index);
+    bool setCurrentTrack(const QString &name);
     int indexOfTrack(const QString &name) const;
-    void requestTrackData(const QString &filepath, uint trackInfo = All);
-    void requestTracknames(int from, int size);
-    void swap(int from, int to);
-    void load(const QString &path);
-    void removeTrack(int index);
+    bool requestTrackData(const QString &filepath, uint trackInfo = All);
+    bool requestTracknames(int from, int size);
+    bool swap(int from, int to);
+    inline bool load(const QString &path) { return load(path, false); }
+    inline bool loadRecursively(const QString &path) { return load(path, true); }
+    bool removeTrack(int index);
+    bool setCWD(const QString &path);
+    QString CWD() const;
 signals:
     void swapped(int from, int to);
     void trackData(const QString &path, const QVariant &data);
@@ -93,9 +98,11 @@ protected:
     Backend();
     virtual ~Backend() {}
     struct PlaylistData {
+        PlaylistData() : current(-1), seenPaths(0) {}
         int current;
         QStringList tracks;
         // QMap<QString, QByteArray> cachedData; // ### ???
+        QSet<QString> *seenPaths;
     } playlistData;
 private:
     static Backend *inst;

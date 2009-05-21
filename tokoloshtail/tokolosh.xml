@@ -7,12 +7,8 @@
         </method>
         <method name="shutdown"/>
         <method name="sendWakeUp"/>
-        <method name="field">
-            <arg name="filename" type="s" direction="in"/>
-            <arg name="trackinfo" type="i" direction="in"/>
-            <arg name="data" type="v" direction="out"/>
-        </method>
         <method name="isValid">
+            <arg name="path" type="s" direction="in"/>
             <arg name="valid" type="b" direction="out"/>
         </method>
         <method name="play"/>
@@ -26,13 +22,6 @@
             <arg name="progress" type="i" direction="out"/>
         </method>
         <method name="stop"/>
-        <method name="load">
-            <arg name="path" type="s" direction="in"/>
-            <arg name="success" type="b" direction="out"/>
-        </method>
-        <method name="currentTrack">
-            <arg name="path" type="s" direction="out"/>
-        </method>
         <method name="status">
             <arg name="status" type="i" direction="out"/>
         </method>
@@ -53,6 +42,66 @@
         </method>
         <method name="isMute">
             <arg name="mute" type="b" direction="out"/>
+        </method>
+        <method name="count">
+            <arg name="count" type="i" direction="out"/>
+        </method>
+        <method name="setCWD">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="CWD">
+            <arg name="path" type="s" direction="out"/>
+        </method>
+        <method name="currentTrackName">
+            <arg name="path" type="s" direction="out"/>
+        </method>
+        <method name="currentTrackIndex">
+            <arg name="index" type="i" direction="out"/>
+        </method>
+        <method name="tracks">
+            <arg name="start" type="i" direction="in"/>
+            <arg name="count" type="i" direction="in"/>
+            <arg name="tracks" type="as" direction="out"/>
+        </method>
+        <method name="setCurrentTrack">
+            <arg name="index" type="i" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="setCurrentTrack">
+            <arg name="track" type="s" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="indexOfTrack">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="index" type="i" direction="out"/>
+        </method>
+        <method name="requestTrackData">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="fields" type="u" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="requestTracknames">
+            <arg name="start" type="i" direction="in"/>
+            <arg name="count" type="i" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="swap">
+            <arg name="from" type="i" direction="in"/>
+            <arg name="to" type="i" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="removeTrack">
+            <arg name="index" type="i" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="load">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <method name="loadRecursively">
+            <arg name="path" type="s" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
         </method>
         <!--<method name="equalizerSettings">
         </method>
