@@ -76,7 +76,11 @@ void Backend::requestTracknames(int from, int size)
 {
     if (!playlistData.tracks.isEmpty()) {
         from = qBound(0, from, playlistData.tracks.size() - 1);
-        size = qMin(playlistData.tracks.size() - from, size);
+        if (size < 0) {
+            size = playlistData.tracks.size() - from;
+        } else {
+            size = qMin(playlistData.tracks.size() - from, size);
+        }
         emit trackNames(from, playlistData.tracks.mid(from, size));
     }
 }
