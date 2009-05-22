@@ -105,3 +105,4 @@ void ShortcutDialog::editItem(QTreeWidgetItem *item)
 {
     // grabKeyboard etc
 }
+

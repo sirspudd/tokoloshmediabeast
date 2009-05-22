@@ -13,10 +13,14 @@ static inline bool startGui()
         return false;
 #endif
     if (Config::isEnabled("singlegui", true)) {
-        const qint64 pid = Config::value<qint64>("guiPid", -1);
-        if (pid != -1 && QFile::exists(QString("/proc/%1").arg(pid)))
-            return false;
-        Config::setValue<qint64>("guiPid", QCoreApplication::applicationPid());
+        if (QDir("/proc").exists()) {
+            const qint64 pid = Config::value<qint64>("guiPid", -1);
+            if (pid != -1 && QFile::exists(QString("/proc/%1").arg(pid)))
+                return false;
+            Config::setValue<qint64>("guiPid", QCoreApplication::applicationPid());
+        } else {
+            qWarning("singlegui stuff doesn't work on this platform. There must be some API that checks if a process is running");
+        }
     }
     return true;
 }

@@ -81,11 +81,12 @@ public:
     SkinSelectionModel skinDirModel;
     static QPointer<SkinSelectionDialog> instance;
 public slots:
-    void handleSelectionChanged(const QModelIndex & current, const QModelIndex & previous);
+    void handleSelectionChanged(const QModelIndex & current);
 private:
     SkinSelectionDialog *pSelf;
 };
 
+#include "skinselectiondialog.moc"
 QPointer<SkinSelectionDialog> SkinSelectionDialog::Private::instance = 0;
 
 SkinSelectionDialog::Private::Private(SkinSelectionDialog *pSSD)
@@ -94,12 +95,14 @@ SkinSelectionDialog::Private::Private(SkinSelectionDialog *pSSD)
 {
     skinView = new QListView(pSSD);
     skinView->setModel(&skinDirModel);
-    connect(skinView->selectionModel(),
-            SIGNAL(currentChanged(QModelIndex, QModelIndex)),
-            SLOT(handleSelectionChanged(QModelIndex, QModelIndex)));
+    connect(skinView, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(handleSelectionChanged(QModelIndex)));
+    connect(skinView, SIGNAL(doubleClicked(QModelIndex)),
+            pSSD, SLOT(close()));
+
 }
 
-void SkinSelectionDialog::Private::handleSelectionChanged(const QModelIndex &current, const QModelIndex &/*previous*/)
+void SkinSelectionDialog::Private::handleSelectionChanged(const QModelIndex &current)
 {
     emit pSelf->skinSelected(current.data(Qt::UserRole).toString());
 }
@@ -136,4 +139,3 @@ SkinSelectionDialog::~SkinSelectionDialog()
     d = 0;
 }
 
-#include "skinSelectionDialog.moc"
