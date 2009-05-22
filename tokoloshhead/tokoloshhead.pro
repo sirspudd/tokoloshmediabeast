@@ -5,7 +5,7 @@ INCLUDEPATH += .
 HEADERS += player.h \
            widgets.h \
            shortcutdialog.h \
-           SkinSelectionDialog.h \
+           skinselectiondialog.h \
            tokolosh_interface.h \
            resizer.h
 
@@ -13,7 +13,7 @@ SOURCES += main.cpp \
            player.cpp \
            widgets.cpp \
            shortcutdialog.cpp \
-           SkinSelectionDialog.cpp \
+           skinselectiondialog.cpp \
            tokolosh_interface.cpp
 
 CONFIG += qdbus debug

@@ -1,4 +1,4 @@
-#include "skinSelectionDialog.h"
+#include "skinselectiondialog.h"
 
 #include "player.h"
 
