@@ -5,7 +5,7 @@
 #include <QDebug>
 #include "tokolosh_interface.h"
 #include "resizer.h"
-#include "skinSelectionDialog.h"
+#include "skinselectiondialog.h"
 
 enum SkinSelectionMechanism
 {
@@ -330,7 +330,7 @@ static QPixmap findPixmap(const QString &dir, const QStringList &list, const cha
     return QPixmap();
 }
 
-static bool verifySkin(const QString &path, bool warn)
+static inline bool verifySkin(const QString &path, bool warn)
 {
     const QDir dir(path);
     if (!dir.exists()) {
@@ -353,14 +353,18 @@ static bool verifySkin(const QString &path, bool warn)
     return true;
 }
 
+bool Player::verifySkin(const QString &path)
+{
+    return ::verifySkin(path, false);
+}
+
+
 bool Player::setSkin(const QString &path)
 {
     if (!::verifySkin(path, true)) {
         qDebug() << "Passed skin path is not acceptable";
         return false;
     }
-
-    qDebug() << "Constructing data structures from given skin path";
 
     QDir dir(path);
     Q_ASSERT(dir.exists());
@@ -514,14 +518,11 @@ void Player::open()
 
 void Player::openSkin()
 {
-    switch(Config::value<int>("skinSelectionMechism", DirectlySelectFolder))
-    {
+    switch(Config::value<int>("skinSelectionMechism", DirectlySelectFolder)) {
     case SkinFolderListView:
-        qDebug() << "SkinFolderListView";
         SkinSelectionDialog::instance(this)->show();
         break;
     case DirectlySelectFolder:
-    default:
     {
         QFileDialog fd(this);
         fd.setFileMode(QFileDialog::DirectoryOnly);
@@ -574,7 +575,6 @@ void Player::debugButton()
 }
 void Player::toggleDebugGeometry(bool on)
 {
-    qDebug() << on;
     Config::setEnabled("debuggeometry", on);
     update();
     foreach(QWidget *w, qFindChildren<QWidget*>(this)) {

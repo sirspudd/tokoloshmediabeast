@@ -24,8 +24,8 @@ static inline bool startGui()
 static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
 {
     // ### need to translate
-    QRegExp rx("^-*");
-    arg.remove(rx);
+//     QRegExp rx("^-*");
+//     arg.remove(rx);
 
     QMetaMethod best;
 

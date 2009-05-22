@@ -169,8 +169,10 @@ public:
         T t;
         bool ok = false;
         QSettings *s = settings();
+        qDebug() << key << value;
         if (!value.isNull()) {
             ok = ::read(value, t);
+            qDebug() << ok << store() << k << t;
             if (ok && store())
                 Config::setValue<T>(key, t);
         } else {

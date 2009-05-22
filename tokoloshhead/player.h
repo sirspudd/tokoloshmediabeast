@@ -49,7 +49,6 @@ public:
             Q_ASSERT(!r.isNull());
             p->drawPixmap(pp, pixmap, r);
             pixmap.copy(r).save(string.at(i) + QLatin1String(".png"), "PNG");
-            qDebug() << string.at(i) << r;
             pp += QPoint(r.width(), 0);
         }
     }
@@ -79,6 +78,7 @@ public:
     void showEvent(QShowEvent *e);
     void closeEvent(QCloseEvent *e);
     QSize sizeHint() const;
+    static bool verifySkin(const QString &dir);
 public slots:
     void restoreDefaultSize();
     bool setSkin(const QString &path);

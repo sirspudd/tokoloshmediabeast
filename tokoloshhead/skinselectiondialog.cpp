@@ -33,6 +33,7 @@ SkinSelectionModel::SkinSelectionModel(const QString & path, QObject *parent)
             SLOT(updateAvailableSkins(const QString &)));
 
     updateAvailableSkins(path);
+
 }
 
 QVariant SkinSelectionModel::data(const QModelIndex & index, int role) const
@@ -61,6 +62,14 @@ void SkinSelectionModel::updateAvailableSkins(const QString &skinPath)
 {
     availableDirs = QDir(skinPath).entryInfoList(QStringList(),
                                                  QDir::Dirs|QDir::NoDotAndDotDot|QDir::Readable);
+    reset();
+    int i = availableDirs.size() - 1;
+    while (i >= 0) {
+        if (!Player::verifySkin(availableDirs.at(i).absoluteFilePath())) {
+            availableDirs.removeAt(i);
+        }
+        --i;
+    }
 }
 
 class SkinSelectionDialog::Private : public QObject
@@ -68,7 +77,7 @@ class SkinSelectionDialog::Private : public QObject
     Q_OBJECT
 public:
     Private(SkinSelectionDialog *pSSD);
-    QListView skinView;
+    QListView *skinView;
     SkinSelectionModel skinDirModel;
     static QPointer<SkinSelectionDialog> instance;
 public slots:
@@ -83,13 +92,14 @@ SkinSelectionDialog::Private::Private(SkinSelectionDialog *pSSD)
     : skinDirModel(QCoreApplication::applicationDirPath() + "/skins"),
       pSelf(pSSD)
 {
-    skinView.setModel(&skinDirModel);
-    connect(skinView.selectionModel(),
+    skinView = new QListView(pSSD);
+    skinView->setModel(&skinDirModel);
+    connect(skinView->selectionModel(),
             SIGNAL(currentChanged(QModelIndex, QModelIndex)),
             SLOT(handleSelectionChanged(QModelIndex, QModelIndex)));
 }
 
-void SkinSelectionDialog::Private::handleSelectionChanged(const QModelIndex &current, const QModelIndex &previous)
+void SkinSelectionDialog::Private::handleSelectionChanged(const QModelIndex &current, const QModelIndex &/*previous*/)
 {
     emit pSelf->skinSelected(current.data(Qt::UserRole).toString());
 }
@@ -114,7 +124,10 @@ SkinSelectionDialog::SkinSelectionDialog(QWidget * parent, Qt::WindowFlags f)
     setModal(false);
     setWindowTitle(tr("Select skin"));
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(&d->skinView);
+    layout->addWidget(d->skinView);
+    QDialogButtonBox *box = new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, this);
+    connect(box, SIGNAL(clicked(QAbstractButton*)), this, SLOT(close()));
+    layout->addWidget(box);
 }
 
 SkinSelectionDialog::~SkinSelectionDialog()
