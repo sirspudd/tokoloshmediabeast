@@ -514,7 +514,7 @@ void Player::open()
 
 void Player::openSkin()
 {
-    switch(Config::value<SkinSelectionMechanism>("skinSelectionMechism", DirectlySelectFolder))
+    switch(Config::value<int>("skinSelectionMechism", DirectlySelectFolder))
     {
     case SkinFolderListView:
         qDebug() << "SkinFolderListView";
