@@ -111,6 +111,7 @@ SkinSelectionDialog* SkinSelectionDialog::instance(Player *player)
 {
     if (!Private::instance) {
         Private::instance = new SkinSelectionDialog();
+
         connect(Private::instance,
                 SIGNAL(skinSelected(const QString &)),
                 player,
@@ -123,6 +124,7 @@ SkinSelectionDialog::SkinSelectionDialog(QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f),
       d(new Private(this))
 {
+    setAttribute(Qt::WA_QuitOnClose, false);
     setAttribute(Qt::WA_DeleteOnClose);
     setModal(false);
     setWindowTitle(tr("Select skin"));
