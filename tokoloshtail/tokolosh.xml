@@ -59,6 +59,7 @@
         <method name="currentTrackIndex">
             <arg name="index" type="i" direction="out"/>
         </method>
+        <method name="clear"/>
         <method name="tracks">
             <arg name="start" type="i" direction="in"/>
             <arg name="count" type="i" direction="in"/>

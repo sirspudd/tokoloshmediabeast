@@ -137,6 +137,7 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
 bool Backend::load(const QString &path, bool recurse)
 {
     const QFileInfo fi(path);
+    qDebug() << fi.absoluteFilePath() << recurse << fi.isDir();
     if (!fi.exists()) {
         qWarning("%s doesn't seem to exist", qPrintable(path));
         return false;
@@ -146,6 +147,9 @@ bool Backend::load(const QString &path, bool recurse)
     if (!songs.isEmpty()) {
         playlistData.tracks.append(songs);
         emit trackCountChanged(playlistData.tracks.size());
+        if (playlistData.current == -1)
+            setCurrentTrack(0);
+        qDebug() << "loadedd" << path << songs;
         return true;
     }
     if (seen.size() == 1)
@@ -173,4 +177,14 @@ bool Backend::setCWD(const QString &path)
 QString Backend::CWD() const
 {
     return QDir::currentPath();
+}
+
+void Backend::clear()
+{
+    if (!playlistData.tracks.isEmpty()) {
+        playlistData.tracks.clear();
+        playlistData.current = -1;
+        emit trackCountChanged(0);
+        emit currentTrackChanged(-1, QString());
+    }
 }

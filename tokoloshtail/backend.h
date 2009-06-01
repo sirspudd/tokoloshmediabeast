@@ -83,6 +83,7 @@ public slots:
     bool removeTrack(int index);
     bool setCWD(const QString &path);
     QString CWD() const;
+    void clear();
 signals:
     void swapped(int from, int to);
     void trackData(const QString &path, const QVariant &data);

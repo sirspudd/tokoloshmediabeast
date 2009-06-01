@@ -4,8 +4,8 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-HEADERS += tokolosh.h tokolosh_adaptor.h backend.h xinebackend.h
-SOURCES += main.cpp tokolosh.cpp tokolosh_adaptor.cpp xinebackend.cpp backend.cpp
+HEADERS += tokolosh_adaptor.h backend.h xinebackend.h
+SOURCES += main.cpp tokolosh_adaptor.cpp xinebackend.cpp backend.cpp
 !include(../shared/shared.pri):error("Can't find shared.pri")
 CONFIG += qdbus
 
