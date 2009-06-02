@@ -1,5 +1,6 @@
 #include "xinebackend.h"
 #include "tokolosh_adaptor.h"
+#include "tokolosh_interface.h"
 #include <QtGui/QApplication>
 #include <QtDBus/QDBusConnection>
 
@@ -7,6 +8,13 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
     ::initApp(&app, QLatin1String("tokoloshtail"));
+
+    {
+        TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
+                                        "/TokoloshMediaPlayer",
+                                        QDBusConnection::sessionBus());
+        dbusInterface.quit();
+    }
 
     XineBackend daemon;
     if (!daemon.initBackend()) {
@@ -20,10 +28,11 @@ int main(int argc, char *argv[])
     bool dbusInitSuccess = connection.registerObject("/TokoloshMediaPlayer", &daemon) &&
                            connection.registerService("com.TokoloshXineBackend.TokoloshMediaPlayer");
 
-    if(!dbusInitSuccess) {
-        qDebug() << "Failed to register DBUS object/service, chances are " \
-            "you already have a tolokosh backend running, or someone has " \
-            "nicked our luscious name. Either way: ejected";
+    Q_ASSERT(dbusInitSuccess);
+    if (!dbusInitSuccess) {
+        qDebug() << "Failed to register DBUS object/service, chances are "
+                    "you already have a tolokosh backend running, or someone has "
+                    "nicked our luscious name. Either way: ejected";
         QCoreApplication::quit();
     }
     return app.exec();

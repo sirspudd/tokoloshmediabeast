@@ -211,3 +211,9 @@ void Backend::clear()
         emit currentTrackChanged(-1, QString());
     }
 }
+
+void Backend::quit()
+{
+    shutdown();
+    QCoreApplication::quit();
+}

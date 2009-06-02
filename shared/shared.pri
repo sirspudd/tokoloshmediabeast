@@ -1,6 +1,4 @@
 INCLUDEPATH += $$PWD
-HEADERS += $$PWD/log.h $$PWD/global.h $$PWD/config.h
-SOURCES += $$PWD/log.cpp $$PWD/config.cpp
 unix {
     MOC_DIR=.moc
     UI_DIR=.ui
@@ -11,4 +9,15 @@ unix {
     OBJECTS_DIR=tmp/obj
 }
 
-CONFIG -= app_bundle
+mac:CONFIG -= app_bundle
+unix {
+    LIBS += -L/usr/lib -lxine -lz -lnsl -lpthread -lrt
+    generateadaptor.target = $$PWD/tokolosh_adaptor.h 
+    generateadaptor.commands = sh $$PWD/generatedbusinterfaces.sh $$PWD
+    generateinterface.target = $$PWD/tokolosh_interface.h 
+    generateinterface.commands = sh $$PWD/generatedbusinterfaces.sh $$PWD
+    QMAKE_EXTRA_TARGETS += generateadaptor generateinterface
+    PRE_TARGETDEPS += $$PWD/tokolosh.xml $$PWD/tokolosh_adaptor.h $$PWD/tokolosh_interface.h
+}
+HEADERS += $$PWD/log.h $$PWD/global.h $$PWD/config.h $$PWD/tokolosh_interface.h
+SOURCES += $$PWD/log.cpp $$PWD/config.cpp $$PWD/tokolosh_interface.cpp

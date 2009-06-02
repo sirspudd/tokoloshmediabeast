@@ -5,7 +5,7 @@
         <method name="capabilities">
             <arg name="capabilities" type="i" direction="out"/>
         </method>
-        <method name="shutdown"/>
+        <method name="quit"/>
         <method name="sendWakeUp"/>
         <method name="isValid">
             <arg name="path" type="s" direction="in"/>

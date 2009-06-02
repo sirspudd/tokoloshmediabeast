@@ -40,9 +40,10 @@ public:
     bool load(const QString &path, bool recursive);
     static Backend *instance();
     virtual bool trackData(TrackData *data, const QString &path, uint types = All) const = 0;
+    virtual void shutdown() = 0;
 public slots:
     virtual int capabilities() const { return None; }
-    virtual void shutdown() = 0;
+    void quit();
     void sendWakeUp() { qWarning("%s not implemented", __FUNCTION__); }
     virtual bool isValid(const QString &fileName) const = 0;
     virtual void play() = 0;
