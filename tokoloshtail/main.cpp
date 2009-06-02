@@ -17,8 +17,15 @@ int main(int argc, char *argv[])
     new MediaAdaptor(&daemon);
 
     QDBusConnection connection = QDBusConnection::sessionBus();
-    connection.registerObject("/TokoloshMediaPlayer", &daemon);
-    connection.registerService("com.TokoloshXineBackend.TokoloshMediaPlayer");
+    bool dbusInitSuccess = connection.registerObject("/TokoloshMediaPlayer", &daemon) &&
+                           connection.registerService("com.TokoloshXineBackend.TokoloshMediaPlayer");
+
+    if(!dbusInitSuccess) {
+        qDebug() << "Failed to register DBUS object/service, chances are " \
+            "you already have a tolokosh backend running, or someone has " \
+            "nicked our luscious name. Either way: ejected";
+        QCoreApplication::quit();
+    }
     return app.exec();
 }
 /*
