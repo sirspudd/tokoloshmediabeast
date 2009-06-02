@@ -220,13 +220,12 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     ::initApp(&app, "tokoloshhead");
     Player player(&dbusInterface);
-    const QDBusReply<int> vol = dbusInterface.volume();
-    if (dbusInterface.lastError().type() != QDBusError::NoError) {
-        if (!QProcess::startDetached("tokoloshtail")) {
-            qWarning("Can't start tokoloshtail");
-
-        }
-    }
+//     const QDBusReply<int> vol = dbusInterface.volume();
+//     if (dbusInterface.lastError().type() != QDBusError::NoError) {
+//         if (!QProcess::startDetached("tokoloshtail")) {
+//             qWarning("Can't start tokoloshtail");
+//         }
+//     }
 //    qDebug() << dbusInterface.lastError() << dbusInterface.lastError().type();
     if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
         const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));

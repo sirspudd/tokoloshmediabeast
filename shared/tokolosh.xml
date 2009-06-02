@@ -112,6 +112,7 @@
             <arg name="path" type="s" direction="in"/>
             <arg name="success" type="b" direction="out"/>
         </method>
+        <signal name="wakeUp"/>
         <signal name="swapped">
             <arg name="from" type="i" direction="out"/>
             <arg name="to" type="i" direction="out"/>
@@ -138,6 +139,7 @@
         <signal name="statusChanged">
             <arg name="status" type="i" direction="out"/>
         </signal>
+        <method name="ping"/>
         <!--<method name="equalizerSettings">
         </method>
         <method name="setEqualizerSettings">

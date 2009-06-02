@@ -172,7 +172,7 @@ bool Backend::load(const QString &path, bool recurse)
         emit trackCountChanged(playlistData.tracks.size());
         if (playlistData.current == -1)
             setCurrentTrack(0);
-        qDebug() << "loadedd" << path << songs;
+        qDebug() << "loaded" << path << songs;
         return true;
     }
     if (seen.size() == 1)
@@ -216,4 +216,10 @@ void Backend::quit()
 {
     shutdown();
     QCoreApplication::quit();
+}
+
+void Backend::sendWakeUp()
+{
+//    qDebug() << receivers(SIGNAL(wakeUp()));
+    emit wakeUp();
 }

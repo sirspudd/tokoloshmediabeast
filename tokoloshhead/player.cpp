@@ -131,7 +131,7 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     }
 
     d.dbusInterface = dbusInterface;
-    connect(dbusInterface, SIGNAL(wakeUpGui()), this, SLOT(wakeUp()));
+    qDebug() << connect(dbusInterface, SIGNAL(wakeUp()), this, SLOT(wakeUp()));
 
     if (!Config::isEnabled("titlebar", false)) {
         Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
@@ -564,6 +564,7 @@ void Player::editShortcuts()
 
 void Player::wakeUp()
 {
+    qDebug("%s %d: void Player::wakeUp()", __FILE__, __LINE__);
     activateWindow();
     raise();
 }

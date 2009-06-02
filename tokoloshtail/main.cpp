@@ -3,6 +3,20 @@
 #include "tokolosh_interface.h"
 #include <QtGui/QApplication>
 #include <QtDBus/QDBusConnection>
+#ifdef Q_WS_WIN
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+void sleep(int msec)
+{
+#ifdef Q_WS_WIN
+    Sleep(msec);
+#else
+    usleep(1000*msec);
+#endif
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -13,7 +27,15 @@ int main(int argc, char *argv[])
         TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
                                         "/TokoloshMediaPlayer",
                                         QDBusConnection::sessionBus());
-        dbusInterface.quit();
+        if (dbusInterface.QDBusAbstractInterface::isValid()) {
+            dbusInterface.quit();
+            for (int i=0; i<5; ++i) {
+                dbusInterface.ping();
+                if (dbusInterface.lastError().type() != QDBusError::NoError) {
+                    ::sleep(1000);
+                }
+            }
+        }
     }
 
     XineBackend daemon;
@@ -31,11 +53,12 @@ int main(int argc, char *argv[])
     Q_ASSERT(dbusInitSuccess);
     if (!dbusInitSuccess) {
         qDebug() << "Failed to register DBUS object/service, chances are "
-                    "you already have a tolokosh backend running, or someone has "
-                    "nicked our luscious name. Either way: ejected";
-        QCoreApplication::quit();
+            "you already have a tolokosh backend running, or someone has "
+            "nicked our luscious name. Either way: ejected";
+        return 1;
     }
-    return app.exec();
+    const bool ret = app.exec();
+    return ret;
 }
 /*
     Donald Carr (sirspudd_at_gmail.com) plays songs occasionally

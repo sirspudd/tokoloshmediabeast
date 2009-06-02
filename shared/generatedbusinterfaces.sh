@@ -1,8 +1,11 @@
-#!/bin/bash -x
+#!/bin/bash
 
-if xmllint -noout $1/tokolosh.xml; then
-    qdbusxml2cpp $1/tokolosh.xml -a $1/tokolosh_adaptor -c MediaAdaptor
-    qdbusxml2cpp -c TokoloshInterface -p $1/tokolosh_interface.h:$1/tokolosh_interface.cpp $1/tokolosh.xml
+dir="$1"
+test -z "$dir" && dir="."
+
+if xmllint -noout $dir/tokolosh.xml; then
+    qdbusxml2cpp $dir/tokolosh.xml -a $dir/tokolosh_adaptor -c MediaAdaptor
+    qdbusxml2cpp -c TokoloshInterface -p $dir/tokolosh_interface.h:$dir/tokolosh_interface.cpp $dir/tokolosh.xml
 else
-    xmllint $1/tokolosh.xml
+    xmllint $dir/tokolosh.xml
 fi
