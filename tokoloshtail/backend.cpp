@@ -13,6 +13,27 @@ Backend::Backend()
     inst = this;
 }
 
+void Backend::prev()
+{
+    if(!playlistData.tracks.size()) {
+        return;
+    }
+    setCurrentTrack((playlistData.current +
+                     playlistData.tracks.size() - 1) %
+                        playlistData.tracks.size());
+    play();
+}
+
+void Backend::next()
+{
+    if(!playlistData.tracks.size()) {
+        return;
+    }
+    setCurrentTrack((playlistData.current + 1) %
+                    playlistData.tracks.size());
+    play();
+}
+
 int Backend::count() const
 {
     return playlistData.tracks.size();
@@ -52,7 +73,9 @@ bool Backend::setCurrentTrack(int index)
 {
     if (index >= 0 && index < playlistData.tracks.size()) {
         playlistData.current = index;
-        emit currentTrackChanged(index, playlistData.tracks.at(index)); //, trackData(playlistData.tracks.at(index)));
+        const QString& filePath = playlistData.tracks.at(index);
+        loadFile(filePath);
+        emit currentTrackChanged(index, filePath); //, trackData(playlistData.tracks.at(index)));
         return true;
     } else {
         return false;
@@ -120,7 +143,7 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
                                                                                        : static_cast<QDir::Filter>(0)));
         foreach(const QFileInfo &f, list) {
             Q_ASSERT(!f.isDir() || recurse);
-            ::recursiveLoad(f, recurse, seen);
+            ret += ::recursiveLoad(f, recurse, seen);
         }
     } else if (file.isFile()) {
         const QString path = file.absoluteFilePath();

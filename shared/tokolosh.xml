@@ -13,6 +13,14 @@
         </method>
         <method name="play"/>
         <method name="pause"/>
+        <method name="prev"/>
+        <method name="next"/>
+        <method name="random">
+            <arg name="random" type="b" direction="out"/>
+        </method>
+        <method name="setRandom">
+            <arg name="random" type="b" direction="in"/>
+        </method>
         <method name="setProgress">
             <arg name="type" type="i" direction="in"/>
             <arg name="progress" type="i" direction="in"/>

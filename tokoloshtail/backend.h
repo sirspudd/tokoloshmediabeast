@@ -47,6 +47,8 @@ public slots:
     virtual bool isValid(const QString &fileName) const = 0;
     virtual void play() = 0;
     virtual void pause() = 0;
+    void prev();
+    void next();
     virtual void setProgress(int type, int progress) = 0;
     virtual int progress(int type) = 0;
     virtual void stop() = 0;
