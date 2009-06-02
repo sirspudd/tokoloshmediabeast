@@ -112,6 +112,32 @@
             <arg name="path" type="s" direction="in"/>
             <arg name="success" type="b" direction="out"/>
         </method>
+        <signal name="swapped">
+            <arg name="from" type="i" direction="out"/>
+            <arg name="to" type="i" direction="out"/>
+        </signal>
+        <signal name="trackData">
+            <arg name="path" type="s" direction="out"/>
+            <arg name="data" type="v" direction="out"/>
+        </signal>
+        <signal name="trackNames">
+            <arg name="index" type="i" direction="out"/>
+            <arg name="list" type="as" direction="out"/>
+        </signal>
+        <signal name="currentTrackChanged">
+            <arg name="index" type="i" direction="out"/>
+            <arg name="trackname" type="s" direction="out"/>
+        </signal>
+        <signal name="trackCountChanged">
+            <arg name="count" type="i" direction="out"/>
+        </signal>
+        <signal name="event">
+            <arg name="type" type="i" direction="out"/>
+            <arg name="data" type="v" direction="out"/>
+        </signal>
+        <signal name="statusChanged">
+            <arg name="status" type="i" direction="out"/>
+        </signal>
         <!--<method name="equalizerSettings">
         </method>
         <method name="setEqualizerSettings">

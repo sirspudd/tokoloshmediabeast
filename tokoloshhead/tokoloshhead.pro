@@ -6,27 +6,16 @@ HEADERS += player.h \
            widgets.h \
            shortcutdialog.h \
            skinselectiondialog.h \
-           tokolosh_interface.h \
            resizer.h
 
 SOURCES += main.cpp \
            player.cpp \
            widgets.cpp \
            shortcutdialog.cpp \
-           skinselectiondialog.cpp \
-           tokolosh_interface.cpp
+           skinselectiondialog.cpp 
 
 CONFIG += qdbus debug
 
-unix {
-    generateInterface.target = tokolosh_interface.cpp
-    generateInterface.commands = sh generateadaptorfiles.sh
-    QMAKE_EXTRA_TARGETS += generateInterface
-    PRE_TARGETDEPS += ../shared/tokolosh.xml tokolosh_interface.cpp
-    OBJECTS_DIR = .obj
-    MOC_DIR = .moc
-    UI_DIR = .ui
-}
 
 i18n.target = translations
 i18n.commands = lupdate tokoloshhead.pro

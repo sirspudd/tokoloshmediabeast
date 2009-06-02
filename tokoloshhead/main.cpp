@@ -114,12 +114,6 @@ static QVariant toVariant(const QVariant &dbusReply)
     return QVariant();
 }
 
-struct Balle
-{
-    int i1, i2;
-};
-
-enum Barf { One, Two, Three };
 int main(int argc, char *argv[])
 {
     QCoreApplication *coreApp = new QCoreApplication(argc, argv);
@@ -128,6 +122,16 @@ int main(int argc, char *argv[])
     TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
                                     "/TokoloshMediaPlayer",
                                     QDBusConnection::sessionBus());
+
+    if (!dbusInterface.QDBusAbstractInterface::isValid() || Config::isEnabled("restartbackend")) {
+#ifndef Q_OS_UNIX
+#warning Does this stuff work on windows?
+#endif
+        if (!QProcess::startDetached("tokoloshtail")) {
+            QProcess::startDetached("../tokoloshtail/tokoloshtail");
+        }
+    }
+
     if (argc > 1) {
         const QMetaObject *dbusInterfaceMetaObject = dbusInterface.metaObject();
         const QStringList args = Config::arguments();
@@ -207,7 +211,7 @@ int main(int argc, char *argv[])
     }
     // ### handle file args
     if (!startGui()) {
-//        dbusInterface.sendWakeUp();
+        dbusInterface.sendWakeUp();
         return 0;
     }
 
