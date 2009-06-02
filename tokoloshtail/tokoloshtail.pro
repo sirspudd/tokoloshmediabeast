@@ -14,7 +14,7 @@ unix {
     generateadaptor.target = tokolosh_adaptor.cpp
     generateadaptor.commands = sh generateadaptorfiles.sh
     QMAKE_EXTRA_TARGETS += generateadaptor
-    PRE_TARGETDEPS += tokolosh.xml
+    PRE_TARGETDEPS += tokolosh.xml tokolosh_adaptor.cpp
     OBJECTS_DIR = .obj
     MOC_DIR = .moc
     UI_DIR = .ui
