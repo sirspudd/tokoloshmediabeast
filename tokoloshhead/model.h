@@ -2,7 +2,9 @@
 #define MODEL_H
 
 #include <QtCore>
-#include <global.h>
+#include <QtDBus>
+#include "../shared/global.h"
+
 class TokoloshInterface;
 class TrackModel : public QAbstractTableModel
 {
@@ -23,7 +25,7 @@ public:
 
     void clearCache();
 public slots:
-    void onTrackDataReceived(const QVariant &data);
+    void onTrackDataReceived(const QDBusVariant &data);
     void onTracksInserted(int from, int count);
     void onTracksRemoved(int from, int count);
     void onTrackMoved(int from, int to);
@@ -33,7 +35,7 @@ private:
     int column(TrackInfo info) const { return d.columns.indexOf(info); }
     struct Private {
         mutable TokoloshInterface *interface;
-        QMap<int, TrackData> data; // sorted
+        mutable QMap<int, TrackData> data; // sorted
         QVector<TrackInfo> columns;
         int rowCount;
         // bool blockIncomingTrackData; Do I need to make sure everything is in sync?

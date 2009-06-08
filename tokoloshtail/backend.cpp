@@ -128,6 +128,7 @@ bool Backend::requestTrackData(int index, uint fields)
     }
     data.fields |= fields;
     emit trackData(qVariantFromValue(data));
+    qDebug() << "sending out trackdata for" << data.path;
     return true;
 }
 
@@ -157,9 +158,10 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
             ret += ::recursiveLoad(file.readLink(), recurse, seen);
     } else if (file.isDir()) {
         const QDir dir(file.absoluteFilePath());
-        const QFileInfoList list = dir.entryInfoList(QDir::Files|QDir::NoDotAndDotDot|(recurse
-                                                                                       ? QDir::Dirs
-                                                                                       : static_cast<QDir::Filter>(0)));
+        QDir::Filters filter = QDir::Files;
+        if (recurse)
+            filter |= QDir::NoDotAndDotDot|QDir::Dirs;
+        const QFileInfoList list = dir.entryInfoList(filter);
         foreach(const QFileInfo &f, list) {
             Q_ASSERT(!f.isDir() || recurse);
             ret += ::recursiveLoad(f, recurse, seen);
@@ -168,7 +170,7 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
         const QString path = file.absoluteFilePath();
         static QPointer<Backend> backend = Backend::instance(); // could just be a member function
         if (backend->isValid(path) || true) {
-            ret += path;
+            ret.append(path);
             // ### should I load song name here? Probably. Checking if
             // ### it's valid probably means parsing header anyway
         }
@@ -179,7 +181,6 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
 bool Backend::load(const QString &path, bool recurse)
 {
     const QFileInfo fi(path);
-    qDebug() << fi.absoluteFilePath() << recurse << fi.isDir();
     if (!fi.exists()) {
         qWarning("%s doesn't seem to exist", qPrintable(path));
         return false;
@@ -191,10 +192,9 @@ bool Backend::load(const QString &path, bool recurse)
         emit tracksInserted(playlistData.tracks.size() - songs.size(), songs.size());
         if (playlistData.current == -1)
             setCurrentTrack(0);
-        qDebug() << "loaded" << path << songs;
         return true;
     }
-    if (seen.size() == 1)
+    if (seen.size() == 1 && songs.isEmpty())
         qWarning("[%s] doesn't seem to be a valid file", qPrintable((*seen.begin()).absoluteFilePath()));
     return false;
 }
@@ -225,7 +225,7 @@ void Backend::sendWakeUp()
 bool Backend::removeTracks(int index, int count)
 {
     const int size = playlistData.tracks.size();
-    if (index < 0 || index >= size || index + count >= size || count <= 0) {
+    if (index < 0 || index >= size || index + count > size || count <= 0) {
         qWarning("removeTracks invalid arguments %d %d count %d", index, count, size);
         return false;
     }

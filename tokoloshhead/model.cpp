@@ -5,6 +5,17 @@ TrackModel::TrackModel(TokoloshInterface *interface, QObject *parent)
     : QAbstractTableModel(parent)
 {
     d.interface = interface;
+    d.rowCount = d.interface->count();
+    d.columns.append(PlaylistIndex);
+    d.columns.append(Title);
+    d.columns.append(FileName);
+    qDebug() << d.rowCount << columnCount();
+//    qDebug() << d.interface->list();
+    connect(interface, SIGNAL(trackData(QDBusVariant)), this, SLOT(onTrackDataReceived(QDBusVariant)));
+    connect(interface, SIGNAL(tracksInserted(int, int)), this, SLOT(onTracksInserted(int, int)));
+    connect(interface, SIGNAL(tracksRemoved(int, int)), this, SLOT(onTracksRemoved(int, int)));
+    connect(interface, SIGNAL(trackMoved(int, int)), this, SLOT(onTrackMoved(int, int)));
+    connect(interface, SIGNAL(tracksSwapped(int, int)), this, SLOT(onTracksSwapped(int, int)));
 }
 
 QModelIndex TrackModel::index(int row, int column, const QModelIndex &parent) const
@@ -15,14 +26,14 @@ QModelIndex TrackModel::index(int row, int column, const QModelIndex &parent) co
     return createIndex(row, column);
 }
 
-int TrackModel::rowCount(const QModelIndex &) const
+int TrackModel::rowCount(const QModelIndex &parent) const
 {
-    return d.rowCount;
+    return parent.isValid() ? 0 : d.rowCount;
 }
 
-int TrackModel::columnCount(const QModelIndex &) const
+int TrackModel::columnCount(const QModelIndex &parent) const
 {
-    return d.columns.size();
+    return parent.isValid() ? 0 : d.columns.size();
 }
 
 QVariant TrackModel::data(const QModelIndex &index, int role) const
@@ -34,14 +45,15 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
     }
 
     const TrackInfo info = d.columns.at(index.column());
-    const TrackData &data = d.data.value(index.row());
-    if (data.fields & info) {
-        return data.data(info);
-    }
+    TrackData &data = d.data[index.row()];
     static const QString fetchMessage = tr("Fetching data...");
 
-    d.interface->requestTrackData(index.row(), FilePath|Title|PlaylistIndex);
-    return fetchMessage;
+    if (!(data.fields & info)) {
+        data.setData(info, fetchMessage);
+        Q_ASSERT(data.fields & info);
+        d.interface->requestTrackData(index.row(), FilePath|Title|PlaylistIndex);
+    }
+    return data.data(info);
 }
 
 bool TrackModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -113,9 +125,10 @@ void TrackModel::onTracksRemoved(int from, int count)
     removeRows(from, count, QModelIndex());
 }
 
-void TrackModel::onTrackDataReceived(const QVariant &variant)
+void TrackModel::onTrackDataReceived(const QDBusVariant &dbusvariant)
 {
-    const TrackData data = qVariantValue<TrackData>(variant);
+    const TrackData data = qVariantValue<TrackData>(dbusvariant.variant());
+    qDebug() << "got some stuff" << data.playlistIndex << data.path;
     Q_ASSERT((data.fields & (PlaylistIndex|FilePath)) == (PlaylistIndex|FilePath));
     const int track = data.playlistIndex;
     Q_ASSERT(track < d.rowCount);

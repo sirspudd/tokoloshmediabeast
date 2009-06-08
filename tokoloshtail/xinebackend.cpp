@@ -25,11 +25,13 @@ static bool initStream(Node *node, const QString &fileName)
 {
     Q_ASSERT(node->stream);
     xine_close(node->stream);
-    if (!xine_open(node->stream, qPrintable(fileName))) {
-        printf("Unable to open path '%s'\n", qPrintable(fileName));
+
+    if (!xine_open(node->stream, fileName.toLocal8Bit().constData())) {
+//    if (!xine_open(node->stream, qPrintable(fileName))) {
+        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
         return false;
     }
-    qDebug() << "fileName" << fileName;
+//    qDebug() << "fileName" << fileName;
     Q_ASSERT(node->track != fileName);
     node->track = fileName;
     return true;

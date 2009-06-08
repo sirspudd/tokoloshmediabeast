@@ -2,9 +2,8 @@
 #include <QFileInfo>
 #include "player.h"
 #include "config.h"
-#include "global.h"
+#include "../shared/global.h"
 #include "tokolosh_interface.h"
-
 
 static inline bool startGui()
 {
@@ -23,6 +22,15 @@ static inline bool startGui()
         }
     }
     return true;
+}
+
+static inline QString toString(const QVariant &var)
+{
+    if (var.type() == QVariant::StringList) {
+        return var.toStringList().join(QLatin1String("\n"));
+    } else {
+        return var.toString();
+    }
 }
 
 static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
@@ -63,35 +71,42 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
     return best;
 }
 
-Q_DECLARE_METATYPE(QDBusReply<void>);
-Q_DECLARE_METATYPE(QDBusReply<int>);
-Q_DECLARE_METATYPE(QDBusReply<bool>);
-Q_DECLARE_METATYPE(QDBusReply<QString>);
-Q_DECLARE_METATYPE(QDBusReply<double>);
-Q_DECLARE_METATYPE(QDBusReply<QTime>);
-Q_DECLARE_METATYPE(QDBusReply<QDateTime>);
-Q_DECLARE_METATYPE(QDBusReply<QDate>);
-Q_DECLARE_METATYPE(QDBusReply<QStringList>);
-Q_DECLARE_METATYPE(QDBusReply<QRegExp>);
-Q_DECLARE_METATYPE(QDBusReply<QList<int> >);
+Q_DECLARE_METATYPE(QDBusPendingReply<void>);
+Q_DECLARE_METATYPE(QDBusPendingReply<int>);
+Q_DECLARE_METATYPE(QDBusPendingReply<bool>);
+Q_DECLARE_METATYPE(QDBusPendingReply<QString>);
+Q_DECLARE_METATYPE(QDBusPendingReply<double>);
+Q_DECLARE_METATYPE(QDBusPendingReply<QTime>);
+Q_DECLARE_METATYPE(QDBusPendingReply<QDateTime>);
+Q_DECLARE_METATYPE(QDBusPendingReply<QDate>);
+Q_DECLARE_METATYPE(QDBusPendingReply<QStringList>);
+//Q_DECLARE_METATYPE(QDBusPendingReply<QRegExp>);
+Q_DECLARE_METATYPE(QDBusPendingReply<QList<int> >);
 
 static QHash<int, int> registerMetaTypes()
 {
     static QHash<int, int> types;
     if (types.isEmpty()) {
-        types[qRegisterMetaType<QDBusReply<void> >("QDBusReply<void>")] = QMetaType::Void;
-        types[qRegisterMetaType<QDBusReply<int> >("QDBusReply<int>")] = QMetaType::Int;
-        types[qRegisterMetaType<QDBusReply<bool> >("QDBusReply<bool>")] = QMetaType::Bool;
-        types[qRegisterMetaType<QDBusReply<QString> >("QDBusReply<QString>")] = QMetaType::QString;
-        types[qRegisterMetaType<QDBusReply<double> >("QDBusReply<double>")] = QMetaType::Double;
-        types[qRegisterMetaType<QDBusReply<QTime> >("QDBusReply<QTime>")] = QMetaType::QTime;
-        types[qRegisterMetaType<QDBusReply<QDateTime> >("QDBusReply<QDateTime>")] = QMetaType::QDateTime;
-        types[qRegisterMetaType<QDBusReply<QDate> >("QDBusReply<QDate>")] = QMetaType::QDate;
-        types[qRegisterMetaType<QDBusReply<QStringList> >("QDBusReply<QStringList>")] = QMetaType::QStringList;
-        types[qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QRegExp>")] = QMetaType::QRegExp;
-        types[qRegisterMetaType<QDBusReply<QRegExp> >("QDBusReply<QList<int> >")] = QMetaType::QRegExp;
+        types[qRegisterMetaType<QDBusPendingReply<void> >("QDBusPendingReply<void>")] = QMetaType::Void;
+        types[qRegisterMetaType<QDBusPendingReply<int> >("QDBusPendingReply<int>")] = QMetaType::Int;
+        types[qRegisterMetaType<QDBusPendingReply<bool> >("QDBusPendingReply<bool>")] = QMetaType::Bool;
+        types[qRegisterMetaType<QDBusPendingReply<QString> >("QDBusPendingReply<QString>")] = QMetaType::QString;
+        types[qRegisterMetaType<QDBusPendingReply<double> >("QDBusPendingReply<double>")] = QMetaType::Double;
+        types[qRegisterMetaType<QDBusPendingReply<QTime> >("QDBusPendingReply<QTime>")] = QMetaType::QTime;
+        types[qRegisterMetaType<QDBusPendingReply<QDateTime> >("QDBusPendingReply<QDateTime>")] = QMetaType::QDateTime;
+        types[qRegisterMetaType<QDBusPendingReply<QDate> >("QDBusPendingReply<QDate>")] = QMetaType::QDate;
+        types[qRegisterMetaType<QDBusPendingReply<QStringList> >("QDBusPendingReply<QStringList>")] = QMetaType::QStringList;
+//        types[qRegisterMetaType<QDBusPendingReply<QRegExp> >("QDBusPendingReply<QRegExp>")] = QMetaType::QRegExp;
+        types[qRegisterMetaType<QDBusPendingReply<QRegExp> >("QDBusPendingReply<QList<int> >")] = QMetaType::QRegExp;
     }
     return types;
+}
+
+template <typename T> QVariant toVariant(const QVariant &variant)
+{
+    QDBusPendingReply<T> reply = qVariantValue<QDBusPendingReply<T> >(variant);
+    reply.waitForFinished();
+    return reply.value();
 }
 
 static QVariant toVariant(const QVariant &dbusReply)
@@ -100,15 +115,15 @@ static QVariant toVariant(const QVariant &dbusReply)
     const int type = types.value(dbusReply.userType());
     switch (type) {
     case QMetaType::Void: return QVariant();
-    case QMetaType::Int: return qVariantValue<QDBusReply<int> >(dbusReply).value();
-    case QMetaType::Bool: return qVariantValue<QDBusReply<bool> >(dbusReply).value();
-    case QMetaType::QString: return qVariantValue<QDBusReply<QString> >(dbusReply).value();
-    case QMetaType::Double: return qVariantValue<QDBusReply<double> >(dbusReply).value();
-    case QMetaType::QTime: return qVariantValue<QDBusReply<QTime> >(dbusReply).value();
-    case QMetaType::QDateTime: return qVariantValue<QDBusReply<QDateTime> >(dbusReply).value();
-    case QMetaType::QDate: return qVariantValue<QDBusReply<QDate> >(dbusReply).value();
-    case QMetaType::QStringList: return qVariantValue<QDBusReply<QStringList> >(dbusReply).value();
-    case QMetaType::QRegExp: return qVariantValue<QDBusReply<QRegExp> >(dbusReply).value();
+    case QMetaType::Int: return toVariant<int>(dbusReply);
+    case QMetaType::Bool: return toVariant<bool>(dbusReply);
+    case QMetaType::QString: return toVariant<QString>(dbusReply);
+    case QMetaType::Double: return toVariant<double>(dbusReply);
+    case QMetaType::QTime: return toVariant<QTime>(dbusReply);
+    case QMetaType::QDateTime: return toVariant<QDateTime>(dbusReply);
+    case QMetaType::QDate: return toVariant<QDate>(dbusReply);
+    case QMetaType::QStringList: return toVariant<QStringList>(dbusReply);
+//    case QMetaType::QRegExp: return qVariantValue<QDBusPendingReply<QRegExp> >(dbusReply).value();
     default: qWarning("Unknown type %d %d", dbusReply.userType(), types.value(dbusReply.userType()));
     }
     return QVariant();
@@ -134,6 +149,7 @@ int main(int argc, char *argv[])
 
     if (argc > 1) {
         const QMetaObject *dbusInterfaceMetaObject = dbusInterface.metaObject();
+        dbusInterface.setCWD(QDir::currentPath());
         const QStringList args = Config::arguments();
         for (int i=1; i<argc; ++i) {
             const QString &arg = args.at(i);
@@ -193,7 +209,9 @@ int main(int argc, char *argv[])
                 f.open(stdout, QIODevice::WriteOnly);
                 QDebug out(&f);
                 const QVariant var = ::toVariant(returnArg);
-                out << "Invoked" << method.signature() << "successfully" << returnArg << var << endl;
+                const QString ret = toString(var);
+                printf("%s\n", qPrintable(ret));
+//                out << "Invoked" << method.signature() << "successfully" << var << endl;
                 return 0;
             }
         }
@@ -204,6 +222,7 @@ int main(int argc, char *argv[])
         if (!fi.exists()) {
             if (!arg.startsWith("-")) {
                 qWarning("%s doesn't seem to exist", qPrintable(arg));
+                return 1;
             }
             continue;
         }
@@ -220,7 +239,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     ::initApp(&app, "tokoloshhead");
     Player player(&dbusInterface);
-//     const QDBusReply<int> vol = dbusInterface.volume();
+//     const QDBusPendingReply<int> vol = dbusInterface.volume();
 //     if (dbusInterface.lastError().type() != QDBusError::NoError) {
 //         if (!QProcess::startDetached("tokoloshtail")) {
 //             qWarning("Can't start tokoloshtail");

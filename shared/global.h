@@ -14,6 +14,7 @@ enum TrackInfo {
     Genre = 0x040,
     AlbumIndex = 0x080,
     PlaylistIndex = 0x100,
+    FileName = 0x200,
     All = 0xfff
 };
 
@@ -64,6 +65,7 @@ QVariant TrackData::data(TrackInfo info) const
     case Genre: return genre;
     case AlbumIndex: return albumIndex;
     case PlaylistIndex: return playlistIndex;
+    case FileName: return QFileInfo(path).fileName();
     case None:
     case All: break;
     }
@@ -74,7 +76,7 @@ QVariant TrackData::data(TrackInfo info) const
 void TrackData::setData(TrackInfo info, const QVariant &data)
 {
     switch (info) {
-    case FilePath: path = data.toString(); break;
+    case FilePath: fields |= FileName; path = data.toString(); break;
     case Title: title = data.toString(); break;
     case TrackLength: trackLength = data.toInt(); break;
     case Artist: artist = data.toInt(); break;
@@ -83,11 +85,13 @@ void TrackData::setData(TrackInfo info, const QVariant &data)
     case Genre: genre = data.toString(); break;
     case AlbumIndex: albumIndex = data.toInt(); break;
     case PlaylistIndex: playlistIndex = data.toInt(); break;
+    case FileName: break; //
     case None:
     case All:
         Q_ASSERT(0);
         break;
     }
+    fields |= info;
 }
 
 Q_DECLARE_METATYPE(TrackData);
@@ -95,7 +99,7 @@ Q_DECLARE_METATYPE(TrackData);
 static inline QDataStream &operator<<(QDataStream &ds, const TrackData &data)
 {
     enum { Version = 1 };
-    ds << quint8(Version) << data.path << data.albumIndex
+    ds << quint8(Version) << quint32(data.fields) << data.path << data.albumIndex
        << data.artist << data.album << data.genre
        << data.trackLength << data.albumIndex << data.year << data.playlistIndex;
     return ds;
@@ -110,6 +114,9 @@ static inline QDataStream &operator>>(QDataStream &ds, TrackData &data)
         qWarning("Unexpected version, got %d, expected %d", version, Version);
         return ds;
     }
+    quint32 fields;
+    ds >> fields;
+    data.fields = fields;
     ds >> data.path >> data.albumIndex
        >> data.artist >> data.album >> data.genre
        >> data.trackLength >> data.albumIndex

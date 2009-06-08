@@ -70,6 +70,7 @@ public slots:
     int count() const;
     QString currentTrackName() const;
     int currentTrackIndex() const;
+    QStringList list() const { return playlistData.tracks; }
     QStringList tracks(int start, int count) const;
     bool setCurrentTrack(int index);
     bool setCurrentTrack(const QString &name);
@@ -89,6 +90,7 @@ public slots:
     inline bool load(const QString &path) { return load(path, false); }
     inline bool loadRecursively(const QString &path) { return load(path, true); }
     bool removeTracks(int index, int count);
+    bool removeTrack(int index) { return removeTracks(index, 1); }
     bool swapTrack(int from, int to);
     bool moveTrack(int from, int to);
 

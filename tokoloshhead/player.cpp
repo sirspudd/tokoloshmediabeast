@@ -1,4 +1,6 @@
 #include "player.h"
+#include "playlist.h"
+#include "model.h"
 #include "widgets.h"
 #include "config.h"
 #include "shortcutdialog.h"
@@ -131,7 +133,10 @@ Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
     }
 
     d.dbusInterface = dbusInterface;
-    qDebug() << connect(dbusInterface, SIGNAL(wakeUp()), this, SLOT(wakeUp()));
+    d.model = new TrackModel(d.dbusInterface, this);
+    d.playlist = new PlaylistWidget(d.model);
+
+    connect(dbusInterface, SIGNAL(wakeUp()), this, SLOT(wakeUp()));
 
     if (!Config::isEnabled("titlebar", false)) {
         Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
@@ -673,4 +678,9 @@ QSize Player::sizeHint() const
 void Player::restoreDefaultSize()
 {
     resize(sizeHint());
+}
+
+void Player::playlist()
+{
+    d.playlist->setVisible(!d.playlist->isVisible());
 }

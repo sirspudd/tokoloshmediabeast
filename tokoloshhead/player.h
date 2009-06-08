@@ -61,6 +61,8 @@ class WidgetResizer;
 class Slider;
 class SliderStyle;
 class Button;
+class TrackModel;
+class PlaylistWidget;
 #ifdef QT_DEBUG
 class Overlay;
 #endif
@@ -87,6 +89,7 @@ public slots:
     void reloadSettings();
     void editShortcuts();
     void wakeUp();
+    void playlist();
 #ifdef QT_DEBUG
     void debugButton();
     void toggleOverlay(bool on);
@@ -117,6 +120,8 @@ private:
 
     struct Private {
         RenderObject main;
+        TrackModel *model;
+        PlaylistWidget *playlist;
         Button *buttons[ButtonCount];
         enum ChannelMode { Stereo, Mono } channelMode;
         RenderObject elements[ElementCount];

@@ -117,13 +117,16 @@
             <arg name="path" type="s" direction="in"/>
             <arg name="success" type="b" direction="out"/>
         </method>
+        <method name="list">
+            <arg name="tracks" type="as" direction="out"/>
+        </method>
+
         <signal name="wakeUp"/>
         <signal name="trackNames">
             <arg name="index" type="i" direction="out"/>
             <arg name="list" type="as" direction="out"/>
         </signal>
         <signal name="trackData">
-            <arg name="path" type="s" direction="out"/>
             <arg name="data" type="v" direction="out"/>
         </signal>
         <signal name="tracksSwapped">

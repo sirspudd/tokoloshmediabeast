@@ -2,12 +2,7 @@ TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
 
-HEADERS += player.h \
-           widgets.h \
-           shortcutdialog.h \
-           skinselectiondialog.h \
-           model.h \
-           resizer.h
+HEADERS += player.h widgets.h shortcutdialog.h skinselectiondialog.h model.h playlist.h resizer.h ../shared/global.h
 
 SOURCES += main.cpp \
            player.cpp \
