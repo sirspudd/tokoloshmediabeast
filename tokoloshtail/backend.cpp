@@ -15,7 +15,7 @@ Backend::Backend()
 
 void Backend::prev()
 {
-    if(!playlistData.tracks.size()) {
+    if (!playlistData.tracks.size()) {
         return;
     }
     setCurrentTrack((playlistData.current +
@@ -26,7 +26,7 @@ void Backend::prev()
 
 void Backend::next()
 {
-    if(!playlistData.tracks.size()) {
+    if (!playlistData.tracks.size()) {
         return;
     }
     setCurrentTrack((playlistData.current + 1) %
@@ -97,21 +97,40 @@ int Backend::indexOfTrack(const QString &name) const
     return playlistData.tracks.indexOf(name);
 }
 
-bool Backend::requestTrackData(const QString &filepath, uint trackInfo)
+bool Backend::requestTrackData(const QString &filepath, uint fields)
 {
-    TrackData data;
-    if (trackInfo & FilePath)
-        data.path = filepath;
-    if (trackInfo & PlaylistIndex)
-        data.playlistIndex = indexOfTrack(filepath);
-    enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|TrackNumber };
-    if (trackInfo & BackendTypes) {
-        trackData(&data, filepath, trackInfo); // ### check return value?
+    const int index = indexOfTrack(filepath);
+    if (index == -1) {
+        qWarning("I don't have %s in my list of files", qPrintable(filepath));
+        return false;
     }
-    emit trackData(filepath, qVariantFromValue(data));
-    // ### should check if the file exists in list??
-    return indexOfTrack(filepath) != -1;
+    return requestTrackData(index, fields);
 }
+
+bool Backend::requestTrackData(int index, uint fields)
+{
+    if (index < 0 || index >= playlistData.tracks.size()) {
+        qWarning("Invalid index %d, needs to be between 0-%d", index, playlistData.tracks.size() - 1);
+        return false;
+    }
+    // ### this should maybe cache data
+    TrackData data;
+    if (fields & FilePath) {
+        data.path = playlistData.tracks.at(index);
+    }
+    if (fields & PlaylistIndex)
+        data.playlistIndex = index;
+
+    enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
+    const uint backendTypes = fields & BackendTypes;
+    if (backendTypes) {
+        trackData(&data, playlistData.tracks.at(index), backendTypes); // ### check return value?
+    }
+    data.fields |= fields;
+    emit trackData(qVariantFromValue(data));
+    return true;
+}
+
 
 bool Backend::requestTracknames(int start, int count)
 {
@@ -169,7 +188,7 @@ bool Backend::load(const QString &path, bool recurse)
     const QStringList songs = ::recursiveLoad(path, recurse, &seen);
     if (!songs.isEmpty()) {
         playlistData.tracks.append(songs);
-        emit trackCountChanged(playlistData.tracks.size());
+        emit tracksInserted(playlistData.tracks.size() - songs.size(), songs.size());
         if (playlistData.current == -1)
             setCurrentTrack(0);
         qDebug() << "loaded" << path << songs;
@@ -177,18 +196,6 @@ bool Backend::load(const QString &path, bool recurse)
     }
     if (seen.size() == 1)
         qWarning("[%s] doesn't seem to be a valid file", qPrintable((*seen.begin()).absoluteFilePath()));
-    return false;
-}
-
-bool Backend::removeTrack(int index)
-{
-    qWarning("%s not implemented", __FUNCTION__);
-    return false;
-}
-
-bool Backend::swap(int from, int to)
-{
-    qWarning("%s not implemented", __FUNCTION__);
     return false;
 }
 
@@ -202,15 +209,6 @@ QString Backend::CWD() const
     return QDir::currentPath();
 }
 
-void Backend::clear()
-{
-    if (!playlistData.tracks.isEmpty()) {
-        playlistData.tracks.clear();
-        playlistData.current = -1;
-        emit trackCountChanged(0);
-        emit currentTrackChanged(-1, QString());
-    }
-}
 
 void Backend::quit()
 {
@@ -222,4 +220,69 @@ void Backend::sendWakeUp()
 {
 //    qDebug() << receivers(SIGNAL(wakeUp()));
     emit wakeUp();
+}
+
+bool Backend::removeTracks(int index, int count)
+{
+    const int size = playlistData.tracks.size();
+    if (index < 0 || index >= size || index + count >= size || count <= 0) {
+        qWarning("removeTracks invalid arguments %d %d count %d", index, count, size);
+        return false;
+    }
+    enum Action { Nothing, EmitCurrentChanged, Next } action = Nothing;
+    if (playlistData.current >= index) {
+        if (index + count <= playlistData.current) { // current song is still in list, only index changed
+            playlistData.current -= count;
+            action = EmitCurrentChanged;
+        } else { // current song was removed, skip to next, we could have shuffle on
+            action = Next;
+        }
+    }
+    if (!playlistData.cache.isEmpty()) {
+        for (int i=index; i<index + count; ++i) {
+            const QString &track = playlistData.tracks.at(i);
+            playlistData.cache.remove(track);
+        }
+    }
+
+    const QStringList::iterator it = playlistData.tracks.begin() + index;
+    playlistData.tracks.erase(it, it + count);
+    emit tracksRemoved(index, count);
+    switch (action) {
+    case Nothing:
+        break;
+    case EmitCurrentChanged:
+        emit currentTrackChanged(playlistData.current, playlistData.tracks.at(playlistData.current));
+        break;
+    case Next:
+        next();
+        break;
+    }
+    return true;
+}
+
+bool Backend::swapTrack(int from, int to)
+{
+    const int size = playlistData.tracks.size();
+    if (from < 0 || from >= size || to < 0 || to >= size) {
+        qWarning("swapTracks invalid arguments %d %d count %d", from, to, size);
+        return false;
+    }
+
+    playlistData.tracks.swap(from, to);
+    emit tracksSwapped(from, to);
+    return true;
+}
+
+bool Backend::moveTrack(int from, int to)
+{
+    const int size = playlistData.tracks.size();
+    if (from < 0 || from >= size || to < 0 || to >= size) {
+        qWarning("moveTrack invalid arguments %d %d count %d", from, to, size);
+        return false;
+    }
+
+    playlistData.tracks.move(from, to);
+    emit trackMoved(from, to);
+    return true;
 }

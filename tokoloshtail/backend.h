@@ -75,27 +75,33 @@ public slots:
     bool setCurrentTrack(const QString &name);
     int indexOfTrack(const QString &name) const;
     bool requestTrackData(const QString &filepath, uint trackInfo = All);
+    bool requestTrackData(int index, uint trackInfo = All);
     bool requestTracknames(int from, int size);
-    bool swap(int from, int to);
-    inline bool load(const QString &path) { return load(path, false); }
-    inline bool loadRecursively(const QString &path) { return load(path, true); }
-    bool removeTrack(int index);
     bool setCWD(const QString &path);
     QString CWD() const;
-    void clear();
+    void clear() { if (count() > 0) removeTracks(0, count()); }
     void quit();
     void sendWakeUp();
     void prev();
     void next();
-
     void ping() {}
+
+    inline bool load(const QString &path) { return load(path, false); }
+    inline bool loadRecursively(const QString &path) { return load(path, true); }
+    bool removeTracks(int index, int count);
+    bool swapTrack(int from, int to);
+    bool moveTrack(int from, int to);
+
 signals:
     void wakeUp();
-    void swapped(int from, int to);
-    void trackData(const QString &path, const QVariant &data);
+    void trackData(const QVariant &variant);
     void trackNames(int from, const QStringList &list);
     void currentTrackChanged(int index, const QString &string);
-    void trackCountChanged(int count);
+
+    void tracksInserted(int from, int count);
+    void tracksRemoved(int from, int count);
+    void trackMoved(int from, int to);
+    void tracksSwapped(int from, int to);
     // need to emit this if e.g. the command line client changes the
     // volume on us. The other clients need to know to move their
     // slider etc
@@ -108,7 +114,7 @@ protected:
         PlaylistData() : current(-1), seenPaths(0) {}
         int current;
         QStringList tracks;
-        // QMap<QString, QByteArray> cachedData; // ### ???
+        QMap<QString, TrackData> cache;
         QSet<QString> *seenPaths;
     } playlistData;
 private:

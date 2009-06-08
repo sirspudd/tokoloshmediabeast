@@ -6,13 +6,15 @@ HEADERS += player.h \
            widgets.h \
            shortcutdialog.h \
            skinselectiondialog.h \
+           model.h \
            resizer.h
 
 SOURCES += main.cpp \
            player.cpp \
            widgets.cpp \
            shortcutdialog.cpp \
-           skinselectiondialog.cpp 
+           model.cpp \
+           skinselectiondialog.cpp
 
 CONFIG += qdbus debug
 

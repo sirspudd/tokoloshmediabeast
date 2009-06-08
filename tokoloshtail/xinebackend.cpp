@@ -240,7 +240,7 @@ bool XineBackend::trackData(TrackData *data, const QString &path, uint mask) con
 {
     if (status() == Uninitalized)
         return false;
-    enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|TrackNumber };
+    enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
     if (!(mask & BackendTypes)) // shouldn't really happen
         return true;
 
@@ -260,7 +260,7 @@ bool XineBackend::trackData(TrackData *data, const QString &path, uint mask) con
         { Artist, XINE_META_INFO_ARTIST, xine_get_meta_data, Setter<QString>::set, &data->artist },
         { Year, XINE_META_INFO_YEAR, xine_get_meta_data, Setter<int>::set, &data->year },
         { Genre, XINE_META_INFO_GENRE, xine_get_meta_data, Setter<QString>::set, &data->genre },
-        { TrackNumber, XINE_META_INFO_TRACK_NUMBER, xine_get_meta_data, Setter<int>::set, &data->trackNumber },
+        { AlbumIndex, XINE_META_INFO_TRACK_NUMBER, xine_get_meta_data, Setter<int>::set, &data->albumIndex },
         { None, -1, 0, 0, 0 }
     };
 

@@ -1,27 +1,43 @@
+#ifndef MODEL_H
+#define MODEL_H
+
+#include <QtCore>
+#include <global.h>
+class TokoloshInterface;
 class TrackModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-
-    void setColumns(const QList<Playlist::Field> &columns);
-    TrackModel(QObject *parent = 0);
+    TrackModel(TokoloshInterface *info, QObject *parent = 0);
+    void setColumns(const QList<TrackInfo> &columns);
     virtual QModelIndex index(int row, int column,
                               const QModelIndex &parent = QModelIndex()) const;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-public slots:
-    void onCountChanged(int count);
-    void onTrackDataReceived(int track, TrackInfo info, const QVariant &data);
+    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
+    virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    virtual bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex());
+
     void clearCache();
+public slots:
+    void onTrackDataReceived(const QVariant &data);
+    void onTracksInserted(int from, int count);
+    void onTracksRemoved(int from, int count);
+    void onTrackMoved(int from, int to);
+    void onTracksSwapped(int from, int to);
 private:
+    void emitDataChanged(int row);
     int column(TrackInfo info) const { return d.columns.indexOf(info); }
     struct Private {
-        QHash<int, QSet<TrackInfo, QVariant> > data;
-//        QHash<int, QList<QPair<TrackInfo, QVariant> > > data; // ### is this faster? Do we care here?
+        mutable TokoloshInterface *interface;
+        QMap<int, TrackData> data; // sorted
         QVector<TrackInfo> columns;
         int rowCount;
         // bool blockIncomingTrackData; Do I need to make sure everything is in sync?
     } d;
 };
+
+#endif

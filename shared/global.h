@@ -12,11 +12,12 @@ enum TrackInfo {
     Album = 0x010,
     Year = 0x020,
     Genre = 0x040,
-    TrackNumber = 0x080,
+    AlbumIndex = 0x080,
     PlaylistIndex = 0x100,
     All = 0xfff
 };
 
+static const TrackInfo indexes[] = { FilePath, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
 static inline void initApp(QCoreApplication *app, const QString &appname)
 {
     app->setApplicationName(appname);
@@ -26,20 +27,77 @@ static inline void initApp(QCoreApplication *app, const QString &appname)
 
 struct TrackData
 {
-    TrackData() : trackLength(-1), trackNumber(-1), year(-1), playlistIndex(-1) {}
+    TrackData() : trackLength(-1), albumIndex(-1), year(-1), playlistIndex(-1), fields(None) {}
 
     QString path, title, artist, album, genre;
-    int trackLength, trackNumber, year, playlistIndex; // seconds
+    int trackLength, albumIndex, year, playlistIndex; // seconds
+
+    uint fields; // this means which fields have been queried. values
+                 // might still be null if we don't know about them
+                 // but there's no reason to ask again.
+
+    inline QVariant data(TrackInfo info) const;
+    inline void setData(TrackInfo info, const QVariant &data);
+    TrackData &operator|=(const TrackData &other)
+    {
+        for (int i=0; indexes[i] != None; ++i) {
+            const TrackInfo info = indexes[i];
+            if (other.fields & info) {
+                setData(info, other.data(info));
+            }
+        }
+        return *this;
+    }
 };
+
+QVariant TrackData::data(TrackInfo info) const
+{
+    if (!(info & fields))
+        return QVariant();
+    switch (info) {
+    case FilePath: return path;
+    case Title: return title;
+    case TrackLength: return trackLength;
+    case Artist: return artist;
+    case Album: return album;
+    case Year: return year;
+    case Genre: return genre;
+    case AlbumIndex: return albumIndex;
+    case PlaylistIndex: return playlistIndex;
+    case None:
+    case All: break;
+    }
+    Q_ASSERT(0);
+    return QVariant();
+}
+
+void TrackData::setData(TrackInfo info, const QVariant &data)
+{
+    switch (info) {
+    case FilePath: path = data.toString(); break;
+    case Title: title = data.toString(); break;
+    case TrackLength: trackLength = data.toInt(); break;
+    case Artist: artist = data.toInt(); break;
+    case Album: album = data.toString(); break;
+    case Year: year = data.toInt(); break;
+    case Genre: genre = data.toString(); break;
+    case AlbumIndex: albumIndex = data.toInt(); break;
+    case PlaylistIndex: playlistIndex = data.toInt(); break;
+    case None:
+    case All:
+        Q_ASSERT(0);
+        break;
+    }
+}
 
 Q_DECLARE_METATYPE(TrackData);
 
 static inline QDataStream &operator<<(QDataStream &ds, const TrackData &data)
 {
     enum { Version = 1 };
-    ds << quint8(Version) << data.path << data.trackNumber
+    ds << quint8(Version) << data.path << data.albumIndex
        << data.artist << data.album << data.genre
-       << data.trackLength << data.trackNumber << data.year << data.playlistIndex;
+       << data.trackLength << data.albumIndex << data.year << data.playlistIndex;
     return ds;
 }
 
@@ -52,9 +110,9 @@ static inline QDataStream &operator>>(QDataStream &ds, TrackData &data)
         qWarning("Unexpected version, got %d, expected %d", version, Version);
         return ds;
     }
-    ds >> data.path >> data.trackNumber
+    ds >> data.path >> data.albumIndex
        >> data.artist >> data.album >> data.genre
-       >> data.trackLength >> data.trackNumber
+       >> data.trackLength >> data.albumIndex
        >> data.year >> data.playlistIndex;
     return ds;
 }

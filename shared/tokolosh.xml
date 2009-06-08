@@ -90,6 +90,11 @@
             <arg name="fields" type="u" direction="in"/>
             <arg name="success" type="b" direction="out"/>
         </method>
+        <method name="requestTrackData">
+            <arg name="index" type="i" direction="in"/>
+            <arg name="fields" type="u" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
         <method name="requestTracknames">
             <arg name="start" type="i" direction="in"/>
             <arg name="count" type="i" direction="in"/>
@@ -113,23 +118,32 @@
             <arg name="success" type="b" direction="out"/>
         </method>
         <signal name="wakeUp"/>
-        <signal name="swapped">
-            <arg name="from" type="i" direction="out"/>
-            <arg name="to" type="i" direction="out"/>
+        <signal name="trackNames">
+            <arg name="index" type="i" direction="out"/>
+            <arg name="list" type="as" direction="out"/>
         </signal>
         <signal name="trackData">
             <arg name="path" type="s" direction="out"/>
             <arg name="data" type="v" direction="out"/>
         </signal>
-        <signal name="trackNames">
-            <arg name="index" type="i" direction="out"/>
-            <arg name="list" type="as" direction="out"/>
+        <signal name="tracksSwapped">
+            <arg name="from" type="i" direction="out"/>
+            <arg name="to" type="i" direction="out"/>
         </signal>
         <signal name="currentTrackChanged">
             <arg name="index" type="i" direction="out"/>
             <arg name="trackname" type="s" direction="out"/>
         </signal>
-        <signal name="trackCountChanged">
+        <signal name="tracksInserted">
+            <arg name="from" type="i" direction="out"/>
+            <arg name="count" type="i" direction="out"/>
+        </signal>
+        <signal name="trackMoved">
+            <arg name="from" type="i" direction="out"/>
+            <arg name="to" type="i" direction="out"/>
+        </signal>
+        <signal name="tracksRemoved">
+            <arg name="from" type="i" direction="out"/>
             <arg name="count" type="i" direction="out"/>
         </signal>
         <signal name="event">
