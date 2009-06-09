@@ -151,6 +151,7 @@ QByteArray Backend::trackData(int index, int fields) const
     QByteArray ba;
     QDataStream ds(&ba, QIODevice::WriteOnly);
     ds << data;
+    ::sleep(250);
     return ba;
 //    return qVariantFromValue(data);
 }
