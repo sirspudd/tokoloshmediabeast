@@ -61,12 +61,9 @@ public slots:
     Q_SCRIPTABLE virtual QByteArray equalizerSettings() const { return QByteArray(); }
     Q_SCRIPTABLE virtual void setEqualizerSettings(const QByteArray &) {}
 
-    // do all of this through a generic QVariant value(int
-    // type)/setValue(int type, QVariant) interface so I can be binary
-    // compatible etc? Would anyone in their right mind need us to be
-    // bc?
-
     // playlist stuff
+    Q_SCRIPTABLE QVariant trackData(int idx, uint fields = All) const;
+    Q_SCRIPTABLE QVariant trackData(const QString &path, uint fields = All) const;
     Q_SCRIPTABLE int count() const;
     Q_SCRIPTABLE QString currentTrackName() const;
     Q_SCRIPTABLE int currentTrackIndex() const;
@@ -75,9 +72,6 @@ public slots:
     Q_SCRIPTABLE bool setCurrentTrack(int index);
     Q_SCRIPTABLE bool setCurrentTrack(const QString &name);
     Q_SCRIPTABLE int indexOfTrack(const QString &name) const;
-    Q_SCRIPTABLE bool requestTrackData(const QString &filepath, uint trackInfo = All);
-    Q_SCRIPTABLE bool requestTrackData(int index, uint trackInfo = All);
-    Q_SCRIPTABLE bool requestTracknames(int from, int size);
     Q_SCRIPTABLE bool setCWD(const QString &path);
     Q_SCRIPTABLE QString CWD() const;
     Q_SCRIPTABLE void clear() { if (count() > 0) removeTracks(0, count()); }
@@ -94,20 +88,19 @@ public slots:
     Q_SCRIPTABLE bool swapTrack(int from, int to);
     Q_SCRIPTABLE bool moveTrack(int from, int to);
 signals:
-    void wakeUp();
-    void trackData(const QVariant &variant);
-    void trackNames(int from, const QStringList &list);
-    void currentTrackChanged(int index, const QString &string);
+    Q_SCRIPTABLE void wakeUp();
+    Q_SCRIPTABLE void trackNames(int from, const QStringList &list);
+    Q_SCRIPTABLE void currentTrackChanged(int index, const QString &string);
 
-    void tracksInserted(int from, int count);
-    void tracksRemoved(int from, int count);
-    void trackMoved(int from, int to);
-    void tracksSwapped(int from, int to);
+    Q_SCRIPTABLE void tracksInserted(int from, int count);
+    Q_SCRIPTABLE void tracksRemoved(int from, int count);
+    Q_SCRIPTABLE void trackMoved(int from, int to);
+    Q_SCRIPTABLE void tracksSwapped(int from, int to);
     // need to emit this if e.g. the command line client changes the
     // volume on us. The other clients need to know to move their
     // slider etc
-    void event(int type, const QVariant &data);
-    void statusChanged(Status status);
+    Q_SCRIPTABLE void event(int type, const QVariant &data);
+    Q_SCRIPTABLE void statusChanged(Status status);
 protected:
     Backend();
     virtual ~Backend() {}
@@ -121,5 +114,7 @@ protected:
 private:
     static Backend *inst;
 };
+
+Q_DECLARE_METATYPE(QVariant);
 
 #endif

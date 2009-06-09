@@ -2,20 +2,6 @@
 #include "../shared/global.h"
 #include <QtCore>
 #include <QtDBus>
-#ifdef Q_WS_WIN
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-void sleep(int msec)
-{
-#ifdef Q_WS_WIN
-    Sleep(msec);
-#else
-    usleep(1000*msec);
-#endif
-}
-
 
 int main(int argc, char *argv[])
 {
@@ -41,7 +27,7 @@ int main(int argc, char *argv[])
             registered = true;
             break;
         }
-        sleep(500);
+        ::sleep(500);
     }
     if (!registered) {
         qWarning("Can't seem to register service %s", qPrintable(QDBusConnection::sessionBus().lastError().message()));
@@ -53,7 +39,7 @@ int main(int argc, char *argv[])
         qWarning() << daemon.errorCode() << daemon.errorMessage();
         return 1;
     }
-    QDBusConnection::sessionBus().registerObject("/", &daemon, QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportScriptableSignals);
+    QDBusConnection::sessionBus().registerObject("/", &daemon, QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportAllSignals);
 
     return app.exec();
 }

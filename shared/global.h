@@ -26,6 +26,7 @@ static inline void initApp(QCoreApplication *app, const QString &appname)
     app->setApplicationName(appname);
     app->setOrganizationName(QLatin1String("Donders"));
 //    app->setOrganizationDomain(QLatin1String("/github.com/sirspudd/tokoloshmediabeast/tree/master"));
+    qRegisterMetaType<QVariant>("QVariant");
 }
 
 struct TrackData
@@ -101,6 +102,7 @@ Q_DECLARE_METATYPE(TrackData);
 static inline QDataStream &operator<<(QDataStream &ds, const TrackData &data)
 {
     enum { Version = 1 };
+    qDebug() << "streaming out" << data.path << data.fields;
     ds << quint8(Version) << quint32(data.fields) << data.path << data.albumIndex
        << data.artist << data.album << data.genre
        << data.trackLength << data.albumIndex << data.year << data.playlistIndex;
@@ -123,6 +125,8 @@ static inline QDataStream &operator>>(QDataStream &ds, TrackData &data)
        >> data.artist >> data.album >> data.genre
        >> data.trackLength >> data.albumIndex
        >> data.year >> data.playlistIndex;
+    qDebug() << "streaming in" << data.path << data.fields;
+
     return ds;
 }
 
@@ -143,5 +147,18 @@ static inline QHash<int, int> toEq(const QByteArray &ba)
 }
 
 
+#ifdef Q_WS_WIN
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+static inline void sleep(int msec)
+{
+#ifdef Q_WS_WIN
+    Sleep(msec);
+#else
+    usleep(1000*msec);
+#endif
+}
 
 #endif

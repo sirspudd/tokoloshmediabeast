@@ -4,7 +4,6 @@
 #include <QtGui>
 #include <config.h>
 
-class TokoloshInterface;
 struct RenderObject
 {
     RenderObject() {}
@@ -57,20 +56,21 @@ public:
     QHash<QChar, QRect> sourceRects;
 };
 
+#ifdef QT_DEBUG
+class Overlay;
+#endif
+class QDBusInterface;
 class WidgetResizer;
 class Slider;
 class SliderStyle;
 class Button;
 class TrackModel;
 class PlaylistWidget;
-#ifdef QT_DEBUG
-class Overlay;
-#endif
 class Player : public QWidget
 {
     Q_OBJECT
 public:
-    Player(TokoloshInterface* dbusInterface, QWidget *parent = 0);
+    Player(QDBusInterface *dbusInterface, QWidget *parent = 0);
     ~Player();
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
@@ -125,7 +125,7 @@ private:
         Button *buttons[ButtonCount];
         enum ChannelMode { Stereo, Mono } channelMode;
         RenderObject elements[ElementCount];
-        TokoloshInterface *dbusInterface;
+        QDBusInterface *dbusInterface;
         TextObject numbers, numbersEx, text;
         QPoint dragOffset;
         Slider *posBarSlider;

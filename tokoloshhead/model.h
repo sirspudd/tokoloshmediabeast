@@ -10,7 +10,7 @@ class TrackModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    TrackModel(TokoloshInterface *info, QObject *parent = 0);
+    TrackModel(QDBusInterface *interface, QObject *parent = 0);
     void setColumns(const QList<TrackInfo> &columns);
     virtual QModelIndex index(int row, int column,
                               const QModelIndex &parent = QModelIndex()) const;
@@ -25,7 +25,8 @@ public:
 
     void clearCache();
 public slots:
-    void onTrackDataReceived(const QDBusVariant &data);
+    void onTrackDataReceived(const QVariant &data);
+    void onTrackCountChanged(int count);
     void onTracksInserted(int from, int count);
     void onTracksRemoved(int from, int count);
     void onTrackMoved(int from, int to);
@@ -34,7 +35,7 @@ private:
     void emitDataChanged(int row);
     int column(TrackInfo info) const { return d.columns.indexOf(info); }
     struct Private {
-        mutable TokoloshInterface *interface;
+        mutable QDBusInterface *interface;
         mutable QMap<int, TrackData> data; // sorted
         QVector<TrackInfo> columns;
         int rowCount;

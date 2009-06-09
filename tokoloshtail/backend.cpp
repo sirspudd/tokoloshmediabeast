@@ -36,6 +36,7 @@ void Backend::next()
 
 int Backend::count() const
 {
+    qDebug() << "calling count" << playlistData.tracks.size();
     return playlistData.tracks.size();
 }
 
@@ -97,21 +98,22 @@ int Backend::indexOfTrack(const QString &name) const
     return playlistData.tracks.indexOf(name);
 }
 
-bool Backend::requestTrackData(const QString &filepath, uint fields)
+QVariant Backend::trackData(const QString &filepath, uint fields) const
 {
+    qDebug("%s %d: QVariant Backend::trackData(const QString &filepath, uint fields) const", __FILE__, __LINE__);
     const int index = indexOfTrack(filepath);
     if (index == -1) {
         qWarning("I don't have %s in my list of files", qPrintable(filepath));
         return false;
     }
-    return requestTrackData(index, fields);
+    return trackData(index, fields);
 }
 
-bool Backend::requestTrackData(int index, uint fields)
+QVariant Backend::trackData(int index, uint fields) const
 {
     if (index < 0 || index >= playlistData.tracks.size()) {
         qWarning("Invalid index %d, needs to be between 0-%d", index, playlistData.tracks.size() - 1);
-        return false;
+        return QVariant();
     }
     // ### this should maybe cache data
     TrackData data;
@@ -121,26 +123,17 @@ bool Backend::requestTrackData(int index, uint fields)
     if (fields & PlaylistIndex)
         data.playlistIndex = index;
 
+
+
     enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
     const uint backendTypes = fields & BackendTypes;
     if (backendTypes) {
         trackData(&data, playlistData.tracks.at(index), backendTypes); // ### check return value?
     }
     data.fields |= fields;
-    emit trackData(qVariantFromValue(data));
+    qDebug() << "trackData" << data.path << fields;
     qDebug() << "sending out trackdata for" << data.path;
-    return true;
-}
-
-
-bool Backend::requestTracknames(int start, int count)
-{
-    QStringList ret;
-    if (::tracks(playlistData.tracks, start, count, &ret)) {
-        emit trackNames(start, ret);
-        return true;
-    }
-    return false;
+    return qVariantFromValue(data);
 }
 
 static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }

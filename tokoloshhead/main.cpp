@@ -1,9 +1,8 @@
-#include <QApplication>
-#include <QFileInfo>
+#include <QtGui>
+#include <QtDBus>
 #include "player.h"
 #include "config.h"
 #include "../shared/global.h"
-#include "tokolosh_interface.h"
 
 static inline bool startGui()
 {
@@ -33,12 +32,8 @@ static inline QString toString(const QVariant &var)
     }
 }
 
-static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
+static inline QMetaMethod findMethod(const QMetaObject *metaObject, const QString &arg)
 {
-    // ### need to translate
-//     QRegExp rx("^-*");
-//     arg.remove(rx);
-
     QMetaMethod best;
 
     const int methodCount = metaObject->methodCount();
@@ -71,151 +66,75 @@ static inline QMetaMethod findMethod(QString arg, const QMetaObject *metaObject)
     return best;
 }
 
-Q_DECLARE_METATYPE(QDBusPendingReply<void>);
-Q_DECLARE_METATYPE(QDBusPendingReply<int>);
-Q_DECLARE_METATYPE(QDBusPendingReply<bool>);
-Q_DECLARE_METATYPE(QDBusPendingReply<QString>);
-Q_DECLARE_METATYPE(QDBusPendingReply<double>);
-Q_DECLARE_METATYPE(QDBusPendingReply<QTime>);
-Q_DECLARE_METATYPE(QDBusPendingReply<QDateTime>);
-Q_DECLARE_METATYPE(QDBusPendingReply<QDate>);
-Q_DECLARE_METATYPE(QDBusPendingReply<QStringList>);
-//Q_DECLARE_METATYPE(QDBusPendingReply<QRegExp>);
-Q_DECLARE_METATYPE(QDBusPendingReply<QList<int> >);
-
-static QHash<int, int> registerMetaTypes()
-{
-    static QHash<int, int> types;
-    if (types.isEmpty()) {
-        types[qRegisterMetaType<QDBusPendingReply<void> >("QDBusPendingReply<void>")] = QMetaType::Void;
-        types[qRegisterMetaType<QDBusPendingReply<int> >("QDBusPendingReply<int>")] = QMetaType::Int;
-        types[qRegisterMetaType<QDBusPendingReply<bool> >("QDBusPendingReply<bool>")] = QMetaType::Bool;
-        types[qRegisterMetaType<QDBusPendingReply<QString> >("QDBusPendingReply<QString>")] = QMetaType::QString;
-        types[qRegisterMetaType<QDBusPendingReply<double> >("QDBusPendingReply<double>")] = QMetaType::Double;
-        types[qRegisterMetaType<QDBusPendingReply<QTime> >("QDBusPendingReply<QTime>")] = QMetaType::QTime;
-        types[qRegisterMetaType<QDBusPendingReply<QDateTime> >("QDBusPendingReply<QDateTime>")] = QMetaType::QDateTime;
-        types[qRegisterMetaType<QDBusPendingReply<QDate> >("QDBusPendingReply<QDate>")] = QMetaType::QDate;
-        types[qRegisterMetaType<QDBusPendingReply<QStringList> >("QDBusPendingReply<QStringList>")] = QMetaType::QStringList;
-//        types[qRegisterMetaType<QDBusPendingReply<QRegExp> >("QDBusPendingReply<QRegExp>")] = QMetaType::QRegExp;
-        types[qRegisterMetaType<QDBusPendingReply<QRegExp> >("QDBusPendingReply<QList<int> >")] = QMetaType::QRegExp;
-    }
-    return types;
-}
-
-template <typename T> QVariant toVariant(const QVariant &variant)
-{
-    QDBusPendingReply<T> reply = qVariantValue<QDBusPendingReply<T> >(variant);
-    reply.waitForFinished();
-    return reply.value();
-}
-
-static QVariant toVariant(const QVariant &dbusReply)
-{
-    const QHash<int, int> types = registerMetaTypes();
-    const int type = types.value(dbusReply.userType());
-    switch (type) {
-    case QMetaType::Void: return QVariant();
-    case QMetaType::Int: return toVariant<int>(dbusReply);
-    case QMetaType::Bool: return toVariant<bool>(dbusReply);
-    case QMetaType::QString: return toVariant<QString>(dbusReply);
-    case QMetaType::Double: return toVariant<double>(dbusReply);
-    case QMetaType::QTime: return toVariant<QTime>(dbusReply);
-    case QMetaType::QDateTime: return toVariant<QDateTime>(dbusReply);
-    case QMetaType::QDate: return toVariant<QDate>(dbusReply);
-    case QMetaType::QStringList: return toVariant<QStringList>(dbusReply);
-//    case QMetaType::QRegExp: return qVariantValue<QDBusPendingReply<QRegExp> >(dbusReply).value();
-    default: qWarning("Unknown type %d %d", dbusReply.userType(), types.value(dbusReply.userType()));
-    }
-    return QVariant();
-}
-
 int main(int argc, char *argv[])
 {
     QCoreApplication *coreApp = new QCoreApplication(argc, argv);
     ::initApp(coreApp, "tokoloshhead");
-    const QHash<int, int> types = registerMetaTypes();
-    TokoloshInterface dbusInterface("com.TokoloshXineBackend.TokoloshMediaPlayer",
-                                    "/TokoloshMediaPlayer",
-                                    QDBusConnection::sessionBus());
+    if (!QDBusConnection::sessionBus().isConnected()) {
+        fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
+                "To start it, run:\n"
+                "\teval `dbus-launch --auto-syntax`\n");
+        return 1;
+    }
 
-    if (!dbusInterface.QDBusAbstractInterface::isValid() || Config::isEnabled("restartbackend")) {
-#ifndef Q_OS_UNIX
-#warning Does this stuff work on windows?
-#endif
+    QDBusInterface *iface = new QDBusInterface(SERVICE_NAME, "/", "", QDBusConnection::sessionBus());
+    if (!iface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
         if (!QProcess::startDetached("tokoloshtail")) {
             QProcess::startDetached("../tokoloshtail/tokoloshtail");
         }
     }
 
+    int max = 10;
+    while (!iface->isValid() && max--) {
+        delete iface;
+        iface = new QDBusInterface(SERVICE_NAME, "/", "", QDBusConnection::sessionBus());
+        // ### nasty way of doing it
+        printf("Waiting for tokoloshtail...\n");
+        ::sleep(1000);
+    }
+
     if (argc > 1) {
-        const QMetaObject *dbusInterfaceMetaObject = dbusInterface.metaObject();
-        dbusInterface.setCWD(QDir::currentPath());
+        iface->call("setCWD", QDir::currentPath());
         const QStringList args = Config::arguments();
         for (int i=1; i<argc; ++i) {
             const QString &arg = args.at(i);
             if (arg == "--list-methods") {
+                const QMetaObject *dbusInterfaceMetaObject = iface->metaObject();
                 for (int j=dbusInterfaceMetaObject->methodOffset(); j<dbusInterfaceMetaObject->methodCount(); ++j) {
                     printf("%s\n", dbusInterfaceMetaObject->method(j).signature());
                 }
+                delete iface;
                 return 0;
             }
-            const QMetaMethod method = ::findMethod(arg, dbusInterfaceMetaObject);
+            const QMetaMethod method = findMethod(iface->metaObject(), arg);
             if (!method.signature())
                 continue;
 
-            QVariant returnArg(static_cast<QVariant::Type>(QMetaType::type(method.typeName())));
             const QList<QByteArray> parameterTypes = method.parameterTypes();
-            bool ret = false;
-            if (parameterTypes.isEmpty()) {
-                ret = method.invoke(&dbusInterface, Qt::DirectConnection,
-                                    QGenericReturnArgument(returnArg.typeName(), returnArg.type() ? returnArg.data() : 0));
-            } else if (argc - i - 1 < parameterTypes.size()) {
+            if (argc - i - 1 < parameterTypes.size()) {
                 qWarning("Not enough arguments specified for %s needed %d, got %d",
                          method.signature(), parameterTypes.size(), argc - i - 1);
                 return 1; // ### ???
-            } else {
-                QVariant arguments[10];
-                for (int j=0; j<parameterTypes.size(); ++j) {
-                    const int type = QMetaType::type(parameterTypes.at(j).constData());
-                    arguments[j] = args.at(++i);
-                    if (!arguments[j].convert(static_cast<QVariant::Type>(type))) {
-                        qWarning("Can't convert %s to %s", qPrintable(args.at(i)), parameterTypes.at(i).constData());
-                        return 1; // ### ???
-                    }
+            }
+            QList<QVariant> arguments;
+            for (int j=0; j<parameterTypes.size(); ++j) {
+                const int type = QMetaType::type(parameterTypes.at(j).constData());
+                QVariant variant = args.at(++i);
+                if (!variant.convert(static_cast<QVariant::Type>(type))) {
+                    qWarning("Can't convert %s to %s", qPrintable(args.at(i)), parameterTypes.at(i).constData());
+                    return 1; // ### ???
                 }
-                ret = method.invoke(&dbusInterface, Qt::DirectConnection,
-                                    QGenericReturnArgument(returnArg.typeName(), returnArg.type() ? returnArg.data() : 0),
-                                    QGenericArgument(parameterTypes.value(0).constData(), arguments[0].data()),
-                                    QGenericArgument(parameterTypes.value(1).constData(), arguments[1].data()),
-                                    QGenericArgument(parameterTypes.value(2).constData(), arguments[2].data()),
-                                    QGenericArgument(parameterTypes.value(3).constData(), arguments[3].data()),
-                                    QGenericArgument(parameterTypes.value(4).constData(), arguments[4].data()),
-                                    QGenericArgument(parameterTypes.value(5).constData(), arguments[5].data()),
-                                    QGenericArgument(parameterTypes.value(6).constData(), arguments[6].data()),
-                                    QGenericArgument(parameterTypes.value(7).constData(), arguments[7].data()),
-                                    QGenericArgument(parameterTypes.value(8).constData(), arguments[8].data()),
-                                    QGenericArgument(parameterTypes.value(9).constData(), arguments[9].data()));
+                arguments.append(variant);
             }
-            if (!ret) {
-                qWarning("Can't invoke %s", method.signature());
-                return 1;
-            } else if (dbusInterface.lastError().type() != QDBusError::NoError) {
-                qWarning("Couldn't invoke %s %s %s", method.signature(),
-                         qPrintable(dbusInterface.lastError().name()),
-                         qPrintable(dbusInterface.lastError().message()));
-                return 1;
-            } else {
-                QFile f;
-                f.open(stdout, QIODevice::WriteOnly);
-                QDebug out(&f);
-                const QVariant var = ::toVariant(returnArg);
-                const QString ret = toString(var);
-                printf("%s\n", qPrintable(ret));
-//                out << "Invoked" << method.signature() << "successfully" << var << endl;
-                return 0;
-            }
+            QString methodName = QString::fromLatin1(method.signature());
+            methodName.chop(methodName.size() - methodName.indexOf('('));
+            const QDBusMessage ret = iface->callWithArgumentList(QDBus::Block, methodName, arguments);
+            if (!ret.arguments().isEmpty())
+                printf("%s\n", qPrintable(toString(ret.arguments().first())));
+            return 0;
         }
     }
+
 
     foreach(QString arg, Config::unusedArguments()) {
         const QFileInfo fi(arg);
@@ -226,11 +145,11 @@ int main(int argc, char *argv[])
             }
             continue;
         }
-        dbusInterface.load(arg);
+//        dbusInterface.load(arg);
     }
     // ### handle file args
     if (!startGui()) {
-        dbusInterface.sendWakeUp();
+        iface->call("sendWakeUp");
         return 0;
     }
 
@@ -238,7 +157,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     ::initApp(&app, "tokoloshhead");
-    Player player(&dbusInterface);
+    Player player(iface);
 //     const QDBusPendingReply<int> vol = dbusInterface.volume();
 //     if (dbusInterface.lastError().type() != QDBusError::NoError) {
 //         if (!QProcess::startDetached("tokoloshtail")) {
@@ -252,5 +171,7 @@ int main(int argc, char *argv[])
         Q_UNUSED(ret);
     }
     player.show();
-    return app.exec();
+    const bool ret = app.exec();
+    delete iface;
+    return ret;
 }

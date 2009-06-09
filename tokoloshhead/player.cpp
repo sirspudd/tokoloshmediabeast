@@ -5,7 +5,6 @@
 #include "config.h"
 #include "shortcutdialog.h"
 #include <QDebug>
-#include "tokolosh_interface.h"
 #include "resizer.h"
 #include "skinselectiondialog.h"
 
@@ -99,7 +98,7 @@ template <class T> static void setShortcuts(T *t)
     }
 } // use this for both buttons and actions
 
-Player::Player(TokoloshInterface *dbusInterface, QWidget *parent)
+Player::Player(QDBusInterface *dbusInterface, QWidget *parent)
     : QWidget(parent)
 {
     d.moving = false;
@@ -513,8 +512,9 @@ void Player::open()
     if (list.isEmpty())
         return;
     Config::setValue("lastDirectory", QFileInfo(list.first()).absolutePath());
-    foreach(QString path, list) {
-        d.dbusInterface->load(path);
+    foreach(const QString &path, list) {
+        d.dbusInterface->asyncCall("load", path);
+        // ### do I warn if it can't load it?
     }
 
     // ### need to query these extensions
