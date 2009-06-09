@@ -13,7 +13,7 @@ public:
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
-    virtual bool trackData(TrackData *data, const QString &path, uint types = All) const;
+    virtual bool trackData(TrackData *data, const QString &path, int types = All) const;
     virtual bool isValid(const QString &fileName) const;
     virtual void play();
     virtual void pause();

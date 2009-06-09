@@ -238,7 +238,7 @@ public:
     }
 };
 
-bool XineBackend::trackData(TrackData *data, const QString &path, uint mask) const
+bool XineBackend::trackData(TrackData *data, const QString &path, int mask) const
 {
     if (status() == Uninitalized)
         return false;

@@ -11,6 +11,7 @@ Backend::Backend()
 {
     Q_ASSERT(!inst);
     inst = this;
+    startTimer(500);
 }
 
 void Backend::prev()
@@ -36,7 +37,6 @@ void Backend::next()
 
 int Backend::count() const
 {
-    qDebug() << "calling count" << playlistData.tracks.size();
     return playlistData.tracks.size();
 }
 
@@ -98,9 +98,8 @@ int Backend::indexOfTrack(const QString &name) const
     return playlistData.tracks.indexOf(name);
 }
 
-QVariant Backend::trackData(const QString &filepath, uint fields) const
+QByteArray Backend::trackData(const QString &filepath, int fields) const
 {
-    qDebug("%s %d: QVariant Backend::trackData(const QString &filepath, uint fields) const", __FILE__, __LINE__);
     const int index = indexOfTrack(filepath);
     if (index == -1) {
         qWarning("I don't have %s in my list of files", qPrintable(filepath));
@@ -109,11 +108,11 @@ QVariant Backend::trackData(const QString &filepath, uint fields) const
     return trackData(index, fields);
 }
 
-QVariant Backend::trackData(int index, uint fields) const
+QByteArray Backend::trackData(int index, int fields) const
 {
     if (index < 0 || index >= playlistData.tracks.size()) {
         qWarning("Invalid index %d, needs to be between 0-%d", index, playlistData.tracks.size() - 1);
-        return QVariant();
+        return QByteArray();
     }
     // ### this should maybe cache data
     TrackData data;
@@ -123,17 +122,17 @@ QVariant Backend::trackData(int index, uint fields) const
     if (fields & PlaylistIndex)
         data.playlistIndex = index;
 
-
-
     enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
     const uint backendTypes = fields & BackendTypes;
     if (backendTypes) {
         trackData(&data, playlistData.tracks.at(index), backendTypes); // ### check return value?
     }
     data.fields |= fields;
-    qDebug() << "trackData" << data.path << fields;
-    qDebug() << "sending out trackdata for" << data.path;
-    return qVariantFromValue(data);
+    QByteArray ba;
+    QDataStream ds(&ba, QIODevice::WriteOnly);
+    ds << data;
+    return ba;
+//    return qVariantFromValue(data);
 }
 
 static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }
@@ -162,7 +161,7 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
     } else if (file.isFile()) {
         const QString path = file.absoluteFilePath();
         static QPointer<Backend> backend = Backend::instance(); // could just be a member function
-        if (backend->isValid(path) || true) {
+        if (backend->isValid(path)) {
             ret.append(path);
             // ### should I load song name here? Probably. Checking if
             // ### it's valid probably means parsing header anyway
@@ -211,7 +210,6 @@ void Backend::quit()
 
 void Backend::sendWakeUp()
 {
-//    qDebug() << receivers(SIGNAL(wakeUp()));
     emit wakeUp();
 }
 

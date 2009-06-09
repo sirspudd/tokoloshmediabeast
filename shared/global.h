@@ -3,7 +3,7 @@
 
 #include <QtCore>
 
-#define SERVICE_NAME  "com.TokoloshXineBackend.TokoloshMediaPlayer"
+#define SERVICE_NAME  "com.TokoloshMediaPlayer"
 
 enum TrackInfo {
     None = 0x000,
@@ -20,13 +20,13 @@ enum TrackInfo {
     All = 0xfff
 };
 
-static const TrackInfo indexes[] = { FilePath, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
+static const TrackInfo trackInfos[] = { FilePath, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
 static inline void initApp(QCoreApplication *app, const QString &appname)
 {
     app->setApplicationName(appname);
     app->setOrganizationName(QLatin1String("Donders"));
-//    app->setOrganizationDomain(QLatin1String("/github.com/sirspudd/tokoloshmediabeast/tree/master"));
-    qRegisterMetaType<QVariant>("QVariant");
+//     app->setOrganizationDomain(QLatin1String("www.github.com/sirspudd/tokoloshmediabeast/tree/master"));
+//    qRegisterMetaType<QVariant>("QVariant");
 }
 
 struct TrackData
@@ -36,7 +36,7 @@ struct TrackData
     QString path, title, artist, album, genre;
     int trackLength, albumIndex, year, playlistIndex; // seconds
 
-    uint fields; // this means which fields have been queried. values
+    int fields; // this means which fields have been queried. values
                  // might still be null if we don't know about them
                  // but there's no reason to ask again.
 
@@ -44,8 +44,8 @@ struct TrackData
     inline void setData(TrackInfo info, const QVariant &data);
     TrackData &operator|=(const TrackData &other)
     {
-        for (int i=0; indexes[i] != None; ++i) {
-            const TrackInfo info = indexes[i];
+        for (int i=0; trackInfos[i] != None; ++i) {
+            const TrackInfo info = trackInfos[i];
             if (other.fields & info) {
                 setData(info, other.data(info));
             }
@@ -102,8 +102,8 @@ Q_DECLARE_METATYPE(TrackData);
 static inline QDataStream &operator<<(QDataStream &ds, const TrackData &data)
 {
     enum { Version = 1 };
-    qDebug() << "streaming out" << data.path << data.fields;
-    ds << quint8(Version) << quint32(data.fields) << data.path << data.albumIndex
+//    qDebug() << "streaming out" << data.path << data.fields;
+    ds << quint8(Version) << qint32(data.fields) << data.path << data.albumIndex
        << data.artist << data.album << data.genre
        << data.trackLength << data.albumIndex << data.year << data.playlistIndex;
     return ds;
@@ -118,14 +118,14 @@ static inline QDataStream &operator>>(QDataStream &ds, TrackData &data)
         qWarning("Unexpected version, got %d, expected %d", version, Version);
         return ds;
     }
-    quint32 fields;
+    qint32 fields;
     ds >> fields;
     data.fields = fields;
     ds >> data.path >> data.albumIndex
        >> data.artist >> data.album >> data.genre
        >> data.trackLength >> data.albumIndex
        >> data.year >> data.playlistIndex;
-    qDebug() << "streaming in" << data.path << data.fields;
+//    qDebug() << "streaming in" << data.path << data.fields;
 
     return ds;
 }

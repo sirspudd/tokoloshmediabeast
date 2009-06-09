@@ -192,6 +192,7 @@ public:
 
     static QStringList unusedArguments();
     static QStringList arguments();
+    static void init(int argc, char **argv);
 private:
     static QSettings *settings();
     static void initUnused();
@@ -199,7 +200,7 @@ private:
     Config() {}
     static QVariant valueFromCommandLine(const QString &key);
     static void useArg(int index);
-    static QStringList unused;
+    static QStringList unused, args;
     static QSettings *instance;
 };
 

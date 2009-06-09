@@ -39,8 +39,14 @@ public:
 
     bool load(const QString &path, bool recursive);
     static Backend *instance();
-    virtual bool trackData(TrackData *data, const QString &path, uint types = All) const = 0;
+    virtual bool trackData(TrackData *data, const QString &path, int types = All) const = 0;
     virtual void shutdown() = 0;
+    void timerEvent(QTimerEvent *)
+    {
+        static int val = 0;
+        emit foo(++val);
+    }
+
 public slots:
     Q_SCRIPTABLE virtual int capabilities() const { return None; }
     Q_SCRIPTABLE virtual bool isValid(const QString &fileName) const = 0;
@@ -62,8 +68,8 @@ public slots:
     Q_SCRIPTABLE virtual void setEqualizerSettings(const QByteArray &) {}
 
     // playlist stuff
-    Q_SCRIPTABLE QVariant trackData(int idx, uint fields = All) const;
-    Q_SCRIPTABLE QVariant trackData(const QString &path, uint fields = All) const;
+    Q_SCRIPTABLE QByteArray trackData(int idx, int fields = All) const;
+    Q_SCRIPTABLE QByteArray trackData(const QString &path, int fields = All) const;
     Q_SCRIPTABLE int count() const;
     Q_SCRIPTABLE QString currentTrackName() const;
     Q_SCRIPTABLE int currentTrackIndex() const;
@@ -101,6 +107,7 @@ signals:
     // slider etc
     Q_SCRIPTABLE void event(int type, const QVariant &data);
     Q_SCRIPTABLE void statusChanged(Status status);
+    Q_SCRIPTABLE void foo(int);
 protected:
     Backend();
     virtual ~Backend() {}

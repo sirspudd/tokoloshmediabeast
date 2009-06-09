@@ -98,7 +98,7 @@ template <class T> static void setShortcuts(T *t)
     }
 } // use this for both buttons and actions
 
-Player::Player(QDBusInterface *dbusInterface, QWidget *parent)
+Player::Player(QDBusInterface *interface, QWidget *parent)
     : QWidget(parent)
 {
     d.moving = false;
@@ -131,11 +131,11 @@ Player::Player(QDBusInterface *dbusInterface, QWidget *parent)
         setGeometry(r);
     }
 
-    d.dbusInterface = dbusInterface;
-    d.model = new TrackModel(d.dbusInterface, this);
+    d.interface = interface;
+    d.model = new TrackModel(d.interface, this);
     d.playlist = new PlaylistWidget(d.model);
 
-    connect(dbusInterface, SIGNAL(wakeUp()), this, SLOT(wakeUp()));
+    d.interface->connection().connect(SERVICE_NAME, "/", QString(), "wakeUp", this, SLOT(wakeUp()));
 
     if (!Config::isEnabled("titlebar", false)) {
         Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
@@ -157,15 +157,15 @@ Player::Player(QDBusInterface *dbusInterface, QWidget *parent)
         const QKeySequence shortcut;
     } const buttonInfo[] = {
         // prev, pause, pause, stop, next
-        { QT_TRANSLATE_NOOP("Player", "Previous"), d.dbusInterface, SLOT(prev()),
+        { QT_TRANSLATE_NOOP("Player", "Previous"), d.interface, SLOT(prev()),
           QRect(16, 88, 23, 18), false, true, Qt::Key_Z },
-        { QT_TRANSLATE_NOOP("Player", "Play"), d.dbusInterface, SLOT(play()),
+        { QT_TRANSLATE_NOOP("Player", "Play"), d.interface, SLOT(play()),
           QRect(39, 88, 23, 18), false, true, Qt::Key_X },
-        { QT_TRANSLATE_NOOP("Player", "Pause"), d.dbusInterface, SLOT(pause()),
+        { QT_TRANSLATE_NOOP("Player", "Pause"), d.interface, SLOT(pause()),
           QRect(62, 88, 23, 18), false, true, Qt::Key_C },
-        { QT_TRANSLATE_NOOP("Player", "Stop"), d.dbusInterface, SLOT(stop()),
+        { QT_TRANSLATE_NOOP("Player", "Stop"), d.interface, SLOT(stop()),
           QRect(85, 88, 23, 18), false, true, Qt::Key_V },
-        { QT_TRANSLATE_NOOP("Player", "Next"), d.dbusInterface, SLOT(next()),
+        { QT_TRANSLATE_NOOP("Player", "Next"), d.interface, SLOT(next()),
           QRect(108, 88, 22, 18), false, true, Qt::Key_B },
         { 0, 0, separator, QRect(), false, false, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Open"), this, SLOT(open()),
@@ -173,9 +173,9 @@ Player::Player(QDBusInterface *dbusInterface, QWidget *parent)
         { QT_TRANSLATE_NOOP("Player", "OpenSkin"), this, SLOT(openSkin()),
           QRect(), false, false, Qt::ControlModifier + Qt::Key_S },
         { 0, 0, separator, QRect(), false, false, QKeySequence() },
-        { QT_TRANSLATE_NOOP("Player", "Shuffle"), d.dbusInterface, SLOT(toggleShuffle()),
+        { QT_TRANSLATE_NOOP("Player", "Shuffle"), d.interface, SLOT(toggleShuffle()),
           QRect(164, 89, 46, 15), true, true, Qt::ControlModifier + Qt::Key_Z }, // is there a shortcut for this one?
-        { QT_TRANSLATE_NOOP("Player", "Repeat"), d.dbusInterface, SLOT(repeat()),
+        { QT_TRANSLATE_NOOP("Player", "Repeat"), d.interface, SLOT(repeat()),
           QRect(210, 89, 28, 15), true, true, Qt::Key_R }, // is there a shortcut for this one?
         { 0, 0, separator, QRect(), false, false, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Equalizer"), this, SLOT(equalizer()),
@@ -513,7 +513,7 @@ void Player::open()
         return;
     Config::setValue("lastDirectory", QFileInfo(list.first()).absolutePath());
     foreach(const QString &path, list) {
-        d.dbusInterface->asyncCall("load", path);
+        d.interface->asyncCall("load", path);
         // ### do I warn if it can't load it?
     }
 
@@ -569,7 +569,6 @@ void Player::editShortcuts()
 
 void Player::wakeUp()
 {
-    qDebug("%s %d: void Player::wakeUp()", __FILE__, __LINE__);
     activateWindow();
     raise();
 }

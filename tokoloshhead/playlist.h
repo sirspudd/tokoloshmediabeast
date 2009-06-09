@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <model.h>
+#include "../shared/config.h"
 class PlaylistWidget : public QWidget
 {
     Q_OBJECT
@@ -12,14 +13,48 @@ public:
     {
         setAttribute(Qt::WA_DeleteOnClose, false);
         d.model = model;
+	connect(d.model, SIGNAL(rowsInserted(QModelIndex, int, int)),
+                this, SLOT(onRowsInserted(QModelIndex, int, int)));
         QVBoxLayout *l = new QVBoxLayout(this);
-        l->addWidget(d.treeView = new QTreeView);
-        d.treeView->setModel(model);
+        l->addWidget(d.tableView = new QTableView);
+        d.tableView->setModel(model);
+        d.tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    }
+
+    void closeEvent(QCloseEvent *e)
+    {
+        Config::setValue("playlist/geometry", saveGeometry());
+        QWidget::closeEvent(e);
+    }
+
+    void showEvent(QShowEvent *e)
+    {
+        if (!Config::isEnabled("ignorelastgeometry", false)) {
+            const QByteArray g = Config::value<QByteArray>("playlist/geometry");
+            if (!g.isEmpty()) {
+                restoreGeometry(g);
+                if (!QApplication::desktop()->availableGeometry(this).intersects(geometry())) {
+                    QRect r(QPoint(), sizeHint());
+                    r.moveCenter(QApplication::desktop()->availableGeometry(this).center());
+                    setGeometry(r);
+                }
+            }
+        } else {
+            QRect r(QPoint(), sizeHint());
+            r.moveCenter(QApplication::desktop()->availableGeometry(this).center());
+            setGeometry(r);
+        }
+        QWidget::showEvent(e);
+    }
+public slots:
+    void onRowsInserted(const QModelIndex &parent, int first, int last)
+    {
+        qDebug() << first << last << d.model->index(first, 0).data() << d.model->rowCount();
     }
 private:
     struct Data {
         TrackModel *model;
-        QTreeView *treeView;
+        QTableView *tableView;
     } d;
 };
 

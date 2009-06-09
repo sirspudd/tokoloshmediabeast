@@ -70,7 +70,7 @@ class Player : public QWidget
 {
     Q_OBJECT
 public:
-    Player(QDBusInterface *dbusInterface, QWidget *parent = 0);
+    Player(QDBusInterface *interface, QWidget *parent = 0);
     ~Player();
     void paintEvent(QPaintEvent *e);
     void mousePressEvent(QMouseEvent *e);
@@ -125,7 +125,7 @@ private:
         Button *buttons[ButtonCount];
         enum ChannelMode { Stereo, Mono } channelMode;
         RenderObject elements[ElementCount];
-        QDBusInterface *dbusInterface;
+        QDBusInterface *interface;
         TextObject numbers, numbersEx, text;
         QPoint dragOffset;
         Slider *posBarSlider;

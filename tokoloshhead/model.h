@@ -18,6 +18,7 @@ public:
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
     virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
     virtual bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex());
     virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
@@ -25,7 +26,7 @@ public:
 
     void clearCache();
 public slots:
-    void onTrackDataReceived(const QVariant &data);
+    void onTrackDataReceived(const QByteArray &data);
     void onTrackCountChanged(int count);
     void onTracksInserted(int from, int count);
     void onTracksRemoved(int from, int count);

@@ -68,8 +68,17 @@ static inline QMetaMethod findMethod(const QMetaObject *metaObject, const QStrin
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication *coreApp = new QCoreApplication(argc, argv);
-    ::initApp(coreApp, "tokoloshhead");
+    Config::init(argc, argv);
+    const bool gui = startGui();
+    if (gui) {
+        new QApplication(argc, argv);
+    } else {
+        new QCoreApplication(argc, argv);
+    }
+
+    QObject interfaceManager; // so the interface gets deleted
+    ::initApp(qApp, "tokoloshhead");
+
     if (!QDBusConnection::sessionBus().isConnected()) {
         fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
                 "To start it, run:\n"
@@ -77,36 +86,39 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    QDBusInterface *iface = new QDBusInterface(SERVICE_NAME, "/", "", QDBusConnection::sessionBus());
-    if (!iface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
+    QDBusInterface *interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
+    if (!interface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
         if (!QProcess::startDetached("tokoloshtail")) {
             QProcess::startDetached("../tokoloshtail/tokoloshtail");
         }
     }
 
     int max = 10;
-    while (!iface->isValid() && max--) {
-        delete iface;
-        iface = new QDBusInterface(SERVICE_NAME, "/", "", QDBusConnection::sessionBus());
+    while (!interface->isValid() && max--) {
+        delete interface;
+        interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
         // ### nasty way of doing it
         printf("Waiting for tokoloshtail...\n");
         ::sleep(1000);
     }
 
+    if (!interface->isValid()) {
+        qWarning("Can't connect to backend");
+        return 1;
+    }
+    interface->call("setCWD", QDir::currentPath());
     if (argc > 1) {
-        iface->call("setCWD", QDir::currentPath());
         const QStringList args = Config::arguments();
         for (int i=1; i<argc; ++i) {
             const QString &arg = args.at(i);
             if (arg == "--list-methods") {
-                const QMetaObject *dbusInterfaceMetaObject = iface->metaObject();
-                for (int j=dbusInterfaceMetaObject->methodOffset(); j<dbusInterfaceMetaObject->methodCount(); ++j) {
-                    printf("%s\n", dbusInterfaceMetaObject->method(j).signature());
+                const QMetaObject *metaObject = interface->metaObject();
+                for (int j=metaObject->methodOffset(); j<metaObject->methodCount(); ++j) {
+                    printf("%s\n", metaObject->method(j).signature());
                 }
-                delete iface;
                 return 0;
             }
-            const QMetaMethod method = findMethod(iface->metaObject(), arg);
+            const QMetaMethod method = findMethod(interface->metaObject(), arg);
             if (!method.signature())
                 continue;
 
@@ -128,13 +140,12 @@ int main(int argc, char *argv[])
             }
             QString methodName = QString::fromLatin1(method.signature());
             methodName.chop(methodName.size() - methodName.indexOf('('));
-            const QDBusMessage ret = iface->callWithArgumentList(QDBus::Block, methodName, arguments);
+            const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, methodName, arguments);
             if (!ret.arguments().isEmpty())
                 printf("%s\n", qPrintable(toString(ret.arguments().first())));
             return 0;
         }
     }
-
 
     foreach(QString arg, Config::unusedArguments()) {
         const QFileInfo fi(arg);
@@ -145,33 +156,22 @@ int main(int argc, char *argv[])
             }
             continue;
         }
-//        dbusInterface.load(arg);
+        interface->call("load", fi.absoluteFilePath()); // ### should this rely on where the
     }
     // ### handle file args
-    if (!startGui()) {
-        iface->call("sendWakeUp");
+    if (!gui) {
+        interface->call("sendWakeUp");
         return 0;
     }
 
-    delete coreApp;
-
-    QApplication app(argc, argv);
-    ::initApp(&app, "tokoloshhead");
-    Player player(iface);
-//     const QDBusPendingReply<int> vol = dbusInterface.volume();
-//     if (dbusInterface.lastError().type() != QDBusError::NoError) {
-//         if (!QProcess::startDetached("tokoloshtail")) {
-//             qWarning("Can't start tokoloshtail");
-//         }
-//     }
-//    qDebug() << dbusInterface.lastError() << dbusInterface.lastError().type();
+    Player player(interface);
     if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
         const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
         Q_ASSERT(ret);
         Q_UNUSED(ret);
     }
     player.show();
-    const bool ret = app.exec();
-    delete iface;
+    const bool ret = qApp->exec();
+    delete qApp;
     return ret;
 }

@@ -1,6 +1,8 @@
 #include "config.h"
 QSettings *Config::instance = 0;
 QStringList Config::unused;
+QStringList Config::args;
+
 QStringList Config::unusedArguments()
 {
     initUnused();
@@ -82,6 +84,15 @@ bool Config::store()
 
 QStringList Config::arguments()
 {
-    static const QStringList ret = QCoreApplication::arguments();
-    return ret;
+    if (args.isEmpty())
+        args = QCoreApplication::arguments();
+    return args;
+}
+
+void Config::init(int argc, char **argv)
+{
+    args.clear();
+    for (int i=0; i<argc; ++i) {
+        args.append(QString::fromLocal8Bit(argv[i]));
+    }
 }

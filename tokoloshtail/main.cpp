@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     }
 
     {
-        QDBusInterface iface(SERVICE_NAME, "/", "", QDBusConnection::sessionBus());
+        QDBusInterface iface(SERVICE_NAME, "/");
         if (iface.isValid()) {
             iface.call("quit");
         }
