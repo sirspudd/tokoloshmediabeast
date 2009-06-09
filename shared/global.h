@@ -3,6 +3,8 @@
 
 #include <QtCore>
 
+#define SERVICE_NAME  "com.TokoloshXineBackend.TokoloshMediaPlayer"
+
 enum TrackInfo {
     None = 0x000,
     FilePath = 0x001,
@@ -23,7 +25,7 @@ static inline void initApp(QCoreApplication *app, const QString &appname)
 {
     app->setApplicationName(appname);
     app->setOrganizationName(QLatin1String("Donders"));
-    app->setOrganizationDomain(QLatin1String("http://github.com/sirspudd/tokoloshmediabeast/tree/master"));
+//    app->setOrganizationDomain(QLatin1String("/github.com/sirspudd/tokoloshmediabeast/tree/master"));
 }
 
 struct TrackData
