@@ -13,8 +13,6 @@ public:
     {
         setAttribute(Qt::WA_DeleteOnClose, false);
         d.model = model;
-	connect(d.model, SIGNAL(rowsInserted(QModelIndex, int, int)),
-                this, SLOT(onRowsInserted(QModelIndex, int, int)));
         QVBoxLayout *l = new QVBoxLayout(this);
         l->addWidget(d.tableView = new QTableView);
         d.tableView->setModel(model);
@@ -45,11 +43,6 @@ public:
             setGeometry(r);
         }
         QWidget::showEvent(e);
-    }
-public slots:
-    void onRowsInserted(const QModelIndex &parent, int first, int last)
-    {
-        qDebug() << first << last << d.model->index(first, 0).data() << d.model->rowCount();
     }
 private:
     struct Data {

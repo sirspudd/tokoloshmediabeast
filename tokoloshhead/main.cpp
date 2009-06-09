@@ -75,107 +75,109 @@ int main(int argc, char *argv[])
     } else {
         new QCoreApplication(argc, argv);
     }
+    bool ret; // for QApplication::exec()
+    {
+        QObject interfaceManager; // so the interface gets deleted
 
-    QObject interfaceManager; // so the interface gets deleted
-
-    if (!QDBusConnection::sessionBus().isConnected()) {
-        fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
-                "To start it, run:\n"
-                "\teval `dbus-launch --auto-syntax`\n");
-        return 1;
-    }
-
-    QDBusInterface *interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
-    if (!interface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
-        if (!QProcess::startDetached("tokoloshtail")
-            && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../tokoloshtail/tokoloshtail")
-            && !interface->isValid()) {
-            qWarning("Can't start tokoloshtail");
+        if (!QDBusConnection::sessionBus().isConnected()) {
+            fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
+                    "To start it, run:\n"
+                    "\teval `dbus-launch --auto-syntax`\n");
             return 1;
         }
-    }
 
-    int max = 10;
-    while (!interface->isValid() && max--) {
-        delete interface;
-        interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
-        // ### nasty way of doing it
-        printf("Waiting for tokoloshtail...\n");
-        ::sleep(1000);
-    }
-
-    if (!interface->isValid()) {
-        qWarning("Can't connect to backend");
-        return 1;
-    }
-    interface->call("setCWD", QDir::currentPath());
-    if (argc > 1) {
-        const QStringList args = Config::arguments();
-        for (int i=1; i<argc; ++i) {
-            const QString &arg = args.at(i);
-            if (arg == "--list-methods") {
-                const QMetaObject *metaObject = interface->metaObject();
-                for (int j=metaObject->methodOffset(); j<metaObject->methodCount(); ++j) {
-                    printf("%s\n", metaObject->method(j).signature());
-                }
-                return 0;
-            }
-            const QMetaMethod method = findMethod(interface->metaObject(), arg);
-            if (!method.signature())
-                continue;
-
-            const QList<QByteArray> parameterTypes = method.parameterTypes();
-            if (argc - i - 1 < parameterTypes.size()) {
-                qWarning("Not enough arguments specified for %s needed %d, got %d",
-                         method.signature(), parameterTypes.size(), argc - i - 1);
-                return 1; // ### ???
-            }
-            QList<QVariant> arguments;
-            for (int j=0; j<parameterTypes.size(); ++j) {
-                const int type = QMetaType::type(parameterTypes.at(j).constData());
-                QVariant variant = args.at(++i);
-                if (!variant.convert(static_cast<QVariant::Type>(type))) {
-                    qWarning("Can't convert %s to %s", qPrintable(args.at(i)), parameterTypes.at(i).constData());
-                    return 1; // ### ???
-                }
-                arguments.append(variant);
-            }
-            QString methodName = QString::fromLatin1(method.signature());
-            methodName.chop(methodName.size() - methodName.indexOf('('));
-            const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, methodName, arguments);
-            if (!ret.arguments().isEmpty())
-                printf("%s\n", qPrintable(toString(ret.arguments().first())));
-            return 0;
-        }
-    }
-
-    foreach(QString arg, Config::unusedArguments()) {
-        const QFileInfo fi(arg);
-        if (!fi.exists()) {
-            if (!arg.startsWith("-")) {
-                qWarning("%s doesn't seem to exist", qPrintable(arg));
+        QDBusInterface *interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
+        if (!interface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
+            if (!QProcess::startDetached("tokoloshtail")
+                && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../tokoloshtail/tokoloshtail")
+                && !interface->isValid()) {
+                qWarning("Can't start tokoloshtail");
                 return 1;
             }
-            continue;
         }
-        interface->call("load", fi.absoluteFilePath()); // ### should this rely on where the
-    }
-    // ### handle file args
-    if (!gui) {
-        interface->call("sendWakeUp");
-        return 0;
-    }
 
-    Player player(interface);
-    if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
-        const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
-        Q_ASSERT(ret);
-        Q_UNUSED(ret);
-    }
-    player.show();
-    const bool ret = qApp->exec();
-    if (Config::isEnabled("pauseonexit", true)) {
-        interface->call("pause");
+        int max = 10;
+        while (!interface->isValid() && max--) {
+            delete interface;
+            interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
+            // ### nasty way of doing it
+            printf("Waiting for tokoloshtail...\n");
+            ::sleep(1000);
+        }
+
+        if (!interface->isValid()) {
+            qWarning("Can't connect to backend");
+            return 1;
+        }
+        interface->call("setCWD", QDir::currentPath());
+        if (argc > 1) {
+            const QStringList args = Config::arguments();
+            for (int i=1; i<argc; ++i) {
+                const QString &arg = args.at(i);
+                if (arg == "--list-methods") {
+                    const QMetaObject *metaObject = interface->metaObject();
+                    for (int j=metaObject->methodOffset(); j<metaObject->methodCount(); ++j) {
+                        printf("%s\n", metaObject->method(j).signature());
+                    }
+                    return 0;
+                }
+                const QMetaMethod method = findMethod(interface->metaObject(), arg);
+                if (!method.signature())
+                    continue;
+
+                const QList<QByteArray> parameterTypes = method.parameterTypes();
+                if (argc - i - 1 < parameterTypes.size()) {
+                    qWarning("Not enough arguments specified for %s needed %d, got %d",
+                             method.signature(), parameterTypes.size(), argc - i - 1);
+                    return 1; // ### ???
+                }
+                QList<QVariant> arguments;
+                for (int j=0; j<parameterTypes.size(); ++j) {
+                    const int type = QMetaType::type(parameterTypes.at(j).constData());
+                    QVariant variant = args.at(++i);
+                    if (!variant.convert(static_cast<QVariant::Type>(type))) {
+                        qWarning("Can't convert %s to %s", qPrintable(args.at(i)), parameterTypes.at(i).constData());
+                        return 1; // ### ???
+                    }
+                    arguments.append(variant);
+                }
+                QString methodName = QString::fromLatin1(method.signature());
+                methodName.chop(methodName.size() - methodName.indexOf('('));
+                const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, methodName, arguments);
+                if (!ret.arguments().isEmpty())
+                    printf("%s\n", qPrintable(toString(ret.arguments().first())));
+                return 0;
+            }
+        }
+
+        foreach(QString arg, Config::unusedArguments()) {
+            const QFileInfo fi(arg);
+            if (!fi.exists()) {
+                if (!arg.startsWith("-")) {
+                    qWarning("%s doesn't seem to exist", qPrintable(arg));
+                    return 1;
+                }
+                continue;
+            }
+            interface->call("load", fi.absoluteFilePath()); // ### should this rely on where the
+        }
+        // ### handle file args
+        if (!gui) {
+            interface->call("sendWakeUp");
+            return 0;
+        }
+
+        Player player(interface);
+        if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
+            const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
+            Q_ASSERT(ret);
+            Q_UNUSED(ret);
+        }
+        player.show();
+        ret = qApp->exec();
+        if (Config::isEnabled("pauseonexit", true)) {
+            interface->call("pause");
+        }
     }
     delete qApp;
     return ret;

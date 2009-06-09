@@ -46,6 +46,7 @@ private:
     struct Private {
         mutable QDBusInterface *interface;
         mutable QMap<int, TrackData> data; // sorted
+        mutable QHash<int, int> pendingFields;
         QVector<TrackInfo> columns;
         int rowCount;
         // bool blockIncomingTrackData; Do I need to make sure everything is in sync?

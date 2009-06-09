@@ -4,9 +4,9 @@ TrackModel::TrackModel(QDBusInterface *interface, QObject *parent)
     : QAbstractTableModel(parent)
 {
     d.interface = interface;
-    d.rowCount = QDBusReply<int>(interface->call("count")).value();
+    d.rowCount = 0; //QDBusReply<int>(interface->call("count")).value();
 
-//    interface->callWithCallback("count", QList<QVariant>(), this, SLOT(onTrackCountChanged(int)));
+    interface->callWithCallback("count", QList<QVariant>(), this, SLOT(onTrackCountChanged(int)));
 
     d.columns.append(PlaylistIndex);
     d.columns.append(Title);
@@ -50,13 +50,23 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
 
     if (!(data.fields & info)) {
 //         QDBusMessage msg(d.interface->call("trackData", index.row(), All));
-//         QDBusPendingCall
+//         QDBusPendingReply<QByteArray> reply = d.interface->call("trackData", index.row(), All);
+//         QDBusPendingCallWatcher *watcher;
+//         watcher->QDBusPendingCall::operator=(reply);
+//        QDBusPendingCallWatcher *watcher(reply);
 //         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(msg);
 //        reply.waitForFinished();
 //        const_cast<TrackModel*>(this)->onTrackDataReceived(reply.value());
-//         d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
-//                                       SLOT(onTrackDataReceived(QVariant)));
-//        return fetchMessage;
+        int &val = d.pendingFields[index.row()];
+        if ((val & info) != info) {
+            QList<QVariant> args;
+            const int fields = All;
+            args << index.row() << fields; // do I want all?
+            d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
+                                          SLOT(onTrackDataReceived(QByteArray)));
+            val |= fields;
+        }
+        return fetchMessage;
     }
     return data.data(info);
 }
@@ -161,8 +171,13 @@ void TrackModel::onTrackDataReceived(const QByteArray &ba)
     TrackData data;
     QDataStream ds(ba);
     ds >> data;
-    Q_ASSERT((data.fields & (PlaylistIndex|FilePath)) == (PlaylistIndex|FilePath));
+    Q_ASSERT(data.fields & PlaylistIndex);
     const int track = data.playlistIndex;
+    int &ref = d.pendingFields[track];
+    ref &= ~data.fields;
+    if (!ref) {
+        d.pendingFields.remove(track);
+    }
     Q_ASSERT(track < d.rowCount);
     d.data[track] = data;
     emit dataChanged(index(track, 0), index(track, d.columns.size() - 1));
