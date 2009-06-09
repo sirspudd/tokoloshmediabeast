@@ -5,8 +5,8 @@
 
 int main(int argc, char *argv[])
 {
+    ::initApp(QLatin1String("tokoloshtail"), argc, argv);
     QCoreApplication app(argc, argv);
-    ::initApp(&app, QLatin1String("tokoloshtail"));
     if (!QDBusConnection::sessionBus().isConnected()) {
         fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
                 "To start it, run:\n"

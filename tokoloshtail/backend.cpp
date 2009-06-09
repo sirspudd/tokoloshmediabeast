@@ -1,5 +1,8 @@
 #include "backend.h"
 #include <config.h>
+#ifdef Q_OS_UNIX
+#include <signal.h>
+#endif
 
 Backend *Backend::inst = 0;
 Backend *Backend::instance()
@@ -11,8 +14,25 @@ Backend::Backend()
 {
     Q_ASSERT(!inst);
     inst = this;
-    startTimer(500);
+    playlistData.tracks = Config::value<QStringList>("playlist", QStringList());
+    for (int i=playlistData.tracks.size() - 1; i>=0; --i) {
+        if (!QFile::exists(playlistData.tracks.at(i))) {
+            playlistData.tracks.removeAt(i);
+        }
+    }
+    playlistData.current = qMin(playlistData.tracks.size() - 1, Config::value<int>("current"));
+#ifdef Q_OS_UNIX
+//    QCoreApplication::watchUnixSignal(SIGINT, true); // doesn't seem to work
+    connect(QCoreApplication::instance(), SIGNAL(unixSignal(int)), this, SLOT(onUnixSignal(int)));
+#endif
 }
+
+Backend::~Backend()
+{
+    Config::setValue("playlist", playlistData.tracks);
+    Config::setValue("current", playlistData.current);
+}
+
 
 void Backend::prev()
 {
@@ -21,7 +41,7 @@ void Backend::prev()
     }
     setCurrentTrack((playlistData.current +
                      playlistData.tracks.size() - 1) %
-                        playlistData.tracks.size());
+                    playlistData.tracks.size());
     play();
 }
 
@@ -277,3 +297,14 @@ bool Backend::moveTrack(int from, int to)
     emit trackMoved(from, to);
     return true;
 }
+
+#ifdef Q_OS_UNIX
+void Backend::onUnixSignal(int)
+{
+    qDebug("%s %d: void Backend::onUnixSignal(int)", __FILE__, __LINE__);
+    Config::setValue("playlist", playlistData.tracks);
+    Config::setValue("current", playlistData.current);
+    exit(0);
+}
+
+#endif

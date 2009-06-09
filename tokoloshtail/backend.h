@@ -108,9 +108,13 @@ signals:
     Q_SCRIPTABLE void event(int type, const QVariant &data);
     Q_SCRIPTABLE void statusChanged(Status status);
     Q_SCRIPTABLE void foo(int);
+private slots:
+#ifdef Q_OS_UNIX
+    void onUnixSignal(int signal);
+#endif
 protected:
     Backend();
-    virtual ~Backend() {}
+    virtual ~Backend();
     struct PlaylistData {
         PlaylistData() : current(-1), seenPaths(0) {}
         int current;

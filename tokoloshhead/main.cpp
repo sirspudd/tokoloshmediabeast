@@ -68,7 +68,7 @@ static inline QMetaMethod findMethod(const QMetaObject *metaObject, const QStrin
 
 int main(int argc, char *argv[])
 {
-    Config::init(argc, argv);
+    ::initApp(QLatin1String("tokoloshhead"), argc, argv);
     const bool gui = startGui();
     if (gui) {
         new QApplication(argc, argv);
@@ -77,7 +77,6 @@ int main(int argc, char *argv[])
     }
 
     QObject interfaceManager; // so the interface gets deleted
-    ::initApp(qApp, "tokoloshhead");
 
     if (!QDBusConnection::sessionBus().isConnected()) {
         fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
@@ -88,8 +87,11 @@ int main(int argc, char *argv[])
 
     QDBusInterface *interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
     if (!interface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
-        if (!QProcess::startDetached("tokoloshtail")) {
-            QProcess::startDetached("../tokoloshtail/tokoloshtail");
+        if (!QProcess::startDetached("tokoloshtail")
+            && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../tokoloshtail/tokoloshtail")
+            && !interface->isValid()) {
+            qWarning("Can't start tokoloshtail");
+            return 1;
         }
     }
 
@@ -172,6 +174,9 @@ int main(int argc, char *argv[])
     }
     player.show();
     const bool ret = qApp->exec();
+    if (Config::isEnabled("pauseonexit", true)) {
+        interface->call("pause");
+    }
     delete qApp;
     return ret;
 }

@@ -2,6 +2,7 @@
 #define GLOBAL_H
 
 #include <QtCore>
+#include <config.h>
 
 #define SERVICE_NAME  "com.TokoloshMediaPlayer"
 
@@ -21,10 +22,11 @@ enum TrackInfo {
 };
 
 static const TrackInfo trackInfos[] = { FilePath, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
-static inline void initApp(QCoreApplication *app, const QString &appname)
+static inline void initApp(const QString &appname, int argc, char **argv)
 {
-    app->setApplicationName(appname);
-    app->setOrganizationName(QLatin1String("Donders"));
+    QCoreApplication::setApplicationName(appname);
+    QCoreApplication::setOrganizationName(QLatin1String("Donders"));
+    Config::init(argc, argv);
 //     app->setOrganizationDomain(QLatin1String("www.github.com/sirspudd/tokoloshmediabeast/tree/master"));
 //    qRegisterMetaType<QVariant>("QVariant");
 }

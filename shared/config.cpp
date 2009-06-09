@@ -53,7 +53,7 @@ QSettings * Config::settings()
             instance = new QSettings(fileName, QSettings::IniFormat);
         } else {
             instance = new QSettings(QSettings::IniFormat, QSettings::UserScope,
-                                     QLatin1String("Donders"), QLatin1String("TokoloshUI"));
+                                     QCoreApplication::organizationName(), QCoreApplication::applicationName());
         }
     }
     return instance;
@@ -95,4 +95,5 @@ void Config::init(int argc, char **argv)
     for (int i=0; i<argc; ++i) {
         args.append(QString::fromLocal8Bit(argv[i]));
     }
+    (void)settings();
 }

@@ -72,6 +72,7 @@ CONFIG_TYPE(double);
 
 CONFIG_TYPE(QChar);
 CONFIG_TYPE(QString);
+CONFIG_TYPE(QStringList);
 CONFIG_TYPE(QByteArray);
 
 CONFIG_TYPE(QPoint);
