@@ -5,6 +5,14 @@
 #include <QtDBus>
 #include "../shared/global.h"
 
+// class PendingCall : public QDBusPendingCallWatcher
+// {
+//     Q_OBJECT
+// public:
+//     PendingCall(
+
+
+// };
 class TokoloshInterface;
 class TrackModel : public QAbstractTableModel
 {

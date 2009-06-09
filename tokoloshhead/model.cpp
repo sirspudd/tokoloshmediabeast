@@ -49,9 +49,11 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
     static const QString fetchMessage = tr("Fetching data...");
 
     if (!(data.fields & info)) {
-        QDBusPendingReply<QByteArray> reply = d.interface->call("trackData", index.row(), All);
-        reply.waitForFinished();
-        const_cast<TrackModel*>(this)->onTrackDataReceived(reply.value());
+//         QDBusMessage msg(d.interface->call("trackData", index.row(), All));
+//         QDBusPendingCall
+//         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(msg);
+//        reply.waitForFinished();
+//        const_cast<TrackModel*>(this)->onTrackDataReceived(reply.value());
 //         d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
 //                                       SLOT(onTrackDataReceived(QVariant)));
 //        return fetchMessage;
