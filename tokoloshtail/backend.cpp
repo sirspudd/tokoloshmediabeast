@@ -55,6 +55,49 @@ void Backend::next()
     play();
 }
 
+void Backend::crop(int index)
+{
+    if (playlistData.tracks.size() <= 1)
+        return;
+    Q_ASSERT(playlistData.current != -1);
+    if (index == -1)
+        index = playlistData.current;
+    if (index < 0 || index >= playlistData.tracks.size()) {
+        qWarning("crop. Invalid index %d (0-%d)", index, playlistData.tracks.size());
+        return;
+    }
+    if (index + 1 < playlistData.tracks.size())
+        removeTracks(index + 1, playlistData.tracks.size() - 1 - index);
+    if (index > 0)
+        removeTracks(0, index);
+}
+
+
+QMap<QString, QString> Backend::aliases() const
+{
+    static QMap<QString, QString> ret; // cached ### if we start threading this thing this is not threadsafe
+    if (ret.isEmpty()) {
+        const QMetaObject *meta = metaObject();
+        const int count = meta->methodCount();
+        for (int i=meta->methodOffset(); i<count; ++i) {
+            const QMetaMethod method = meta->method(i);
+            if (method.attributes() & QMetaMethod::Scriptable) {
+                QString name = method.signature();
+                name.chop(name.indexOf('('));
+                const QString translated = tr(qPrintable(name));
+                if (translated != name)
+                    ret.insertMulti(name, translated);
+                const QStringList aliases = Config::value<QString>(QLatin1String("Aliases/") + name).split(' ');
+                foreach(const QString &alias, aliases) {
+                    ret.insertMulti(name, alias);
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+
 int Backend::count() const
 {
     return playlistData.tracks.size();
@@ -69,6 +112,17 @@ int Backend::currentTrackIndex() const
 {
     return playlistData.current;
 }
+
+QStringList Backend::list() const
+{
+    QStringList ret = playlistData.tracks;
+    for (int i=0; i<ret.size(); ++i) {
+        QString &ref = ret[i];
+        ref.prepend(QString("%1 ").arg(i + 1));
+    }
+    return ret;
+}
+
 
 static inline bool tracks(const QStringList &list, int from, int size, QStringList *out)
 {

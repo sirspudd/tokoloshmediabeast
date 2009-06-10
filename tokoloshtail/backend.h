@@ -73,7 +73,7 @@ public slots:
     Q_SCRIPTABLE int count() const;
     Q_SCRIPTABLE QString currentTrackName() const;
     Q_SCRIPTABLE int currentTrackIndex() const;
-    Q_SCRIPTABLE QStringList list() const { return playlistData.tracks; }
+    Q_SCRIPTABLE QStringList list() const;
     Q_SCRIPTABLE QStringList tracks(int start, int count) const;
     Q_SCRIPTABLE bool setCurrentTrack(int index);
     Q_SCRIPTABLE bool setCurrentTrack(const QString &name);
@@ -85,7 +85,9 @@ public slots:
     Q_SCRIPTABLE void sendWakeUp();
     Q_SCRIPTABLE void prev();
     Q_SCRIPTABLE void next();
+    Q_SCRIPTABLE void crop(int index = -1);
     Q_SCRIPTABLE void ping() {}
+    Q_SCRIPTABLE QMap<QString, QString> aliases() const;
 
     Q_SCRIPTABLE inline bool load(const QString &path) { return load(path, false); }
     Q_SCRIPTABLE inline bool loadRecursively(const QString &path) { return load(path, true); }

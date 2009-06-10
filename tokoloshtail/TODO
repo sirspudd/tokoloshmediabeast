@@ -1,4 +1,6 @@
 - Make it store playlist in an m3u. Temporary one unless told to store somewhere?
+- Need to have all the function names added to translations somehow
+- People can probably current
 
 - Make tail run as a daemon (using QtService?)
 - Should the backend be threaded? Could there be a multi-user
