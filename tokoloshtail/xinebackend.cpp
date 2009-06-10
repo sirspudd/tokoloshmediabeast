@@ -361,6 +361,7 @@ void XineBackend::setVolume(int vol)
 
 void XineBackend::setMute(bool on)
 {
+#warning should we just handle mute ourselves using setVolume?
     xine_set_param(d->main.stream, XINE_PARAM_AUDIO_MUTE, on ? 1 : 0);
     d->updateError(d->main.stream);
 }
