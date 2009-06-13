@@ -133,7 +133,7 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
 
     d.interface = interface;
     d.model = new TrackModel(d.interface, this);
-    d.playlist = new PlaylistWidget(d.model);
+    d.playlist = new PlaylistWidget(d.interface, d.model);
 
     d.interface->connection().connect(SERVICE_NAME, "/", QString(), "wakeUp", this, SLOT(wakeUp()));
 
