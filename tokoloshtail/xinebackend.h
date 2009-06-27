@@ -29,8 +29,8 @@ public:
     virtual void setMute(bool on);
     virtual bool isMute() const;
     virtual int flags() const;
-    virtual QByteArray equalizerSettings() const;
-    virtual void setEqualizerSettings(const QByteArray &data);
+    virtual QVariant equalizerSettings() const;
+    virtual void setEqualizerSettings(const QVariant &data);
 private:
     Private *d;
 };

@@ -34,7 +34,7 @@ public:
 
     void clearCache();
 public slots:
-    void onTrackDataReceived(const QByteArray &data);
+    void onTrackDataReceived(const QVariant &data);
     void onTrackCountChanged(int count);
     void onTracksInserted(int from, int count);
     void onTracksRemoved(int from, int count);

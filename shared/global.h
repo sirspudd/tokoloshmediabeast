@@ -132,22 +132,8 @@ static inline QDataStream &operator>>(QDataStream &ds, TrackData &data)
     return ds;
 }
 
-static inline QByteArray fromEq(const QHash<int, int> &eq)
-{
-    QByteArray ba;
-    QDataStream ds(&ba, QIODevice::WriteOnly);
-    ds << eq;
-    return ba;
-}
-
-static inline QHash<int, int> toEq(const QByteArray &ba)
-{
-    QDataStream ds(ba);
-    QHash<int, int> ret;
-    ds >> ret;
-    return ret;
-}
-
+typedef QHash<int, int> IntHash;
+Q_DECLARE_METATYPE(IntHash);
 
 #ifdef Q_WS_WIN
 #include <windows.h>

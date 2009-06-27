@@ -50,7 +50,7 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
 
     if (!(data.fields & info)) {
 //         QDBusMessage msg(d.interface->call("trackData", index.row(), All));
-//         QDBusPendingReply<QByteArray> reply = d.interface->call("trackData", index.row(), All);
+//         QDBusPendingReply<QVariant> reply = d.interface->call("trackData", index.row(), All);
 //         QDBusPendingCallWatcher *watcher;
 //         watcher->QDBusPendingCall::operator=(reply);
 //        QDBusPendingCallWatcher *watcher(reply);
@@ -63,7 +63,7 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
             const int fields = All;
             args << index.row() << fields; // do I want all?
             d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
-                                          SLOT(onTrackDataReceived(QByteArray)));
+                                          SLOT(onTrackDataReceived(QVariant)));
             val |= fields;
         }
         return fetchMessage;
@@ -166,11 +166,9 @@ void TrackModel::onTracksRemoved(int from, int count)
     removeRows(from, count, QModelIndex());
 }
 
-void TrackModel::onTrackDataReceived(const QByteArray &ba)
+void TrackModel::onTrackDataReceived(const QVariant &var)
 {
-    TrackData data;
-    QDataStream ds(ba);
-    ds >> data;
+    TrackData data = qVariantValue<TrackData>(var);
     Q_ASSERT(data.fields & PlaylistIndex);
     const int track = data.playlistIndex;
     int &ref = d.pendingFields[track];

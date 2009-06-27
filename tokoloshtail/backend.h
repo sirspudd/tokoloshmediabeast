@@ -64,12 +64,12 @@ public slots:
     Q_SCRIPTABLE virtual int errorCode() const { return 0; }
     Q_SCRIPTABLE virtual void setMute(bool on) = 0;
     Q_SCRIPTABLE virtual bool isMute() const = 0;
-    Q_SCRIPTABLE virtual QByteArray equalizerSettings() const { return QByteArray(); }
-    Q_SCRIPTABLE virtual void setEqualizerSettings(const QByteArray &) {}
+    Q_SCRIPTABLE virtual QVariant equalizerSettings() const { return QVariant(); }
+    Q_SCRIPTABLE virtual void setEqualizerSettings(const QVariant &) {}
 
     // playlist stuff
-    Q_SCRIPTABLE QByteArray trackData(int idx, int fields = All) const;
-    Q_SCRIPTABLE QByteArray trackData(const QString &path, int fields = All) const;
+    Q_SCRIPTABLE QVariant trackData(int idx, int fields = All) const;
+    Q_SCRIPTABLE QVariant trackData(const QString &path, int fields = All) const;
     Q_SCRIPTABLE int count() const;
     Q_SCRIPTABLE QString currentTrackName() const;
     Q_SCRIPTABLE int currentTrackIndex() const;
