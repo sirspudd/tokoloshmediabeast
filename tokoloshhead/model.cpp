@@ -49,21 +49,20 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
     static const QString fetchMessage = tr("Fetching data...");
 
     if (!(data.fields & info)) {
-//         QDBusMessage msg(d.interface->call("trackData", index.row(), All));
-//         QDBusPendingReply<QVariant> reply = d.interface->call("trackData", index.row(), All);
-//         QDBusPendingCallWatcher *watcher;
-//         watcher->QDBusPendingCall::operator=(reply);
-//        QDBusPendingCallWatcher *watcher(reply);
-//         QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(msg);
-//        reply.waitForFinished();
-//        const_cast<TrackModel*>(this)->onTrackDataReceived(reply.value());
         int &val = d.pendingFields[index.row()];
         if ((val & info) != info) {
             QList<QVariant> args;
             const int fields = All;
             args << index.row() << fields; // do I want all?
+#if 1
             d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
-                                          SLOT(onTrackDataReceived(QVariant)));
+                                          SLOT(onTrackDataReceived(TrackData)));
+#else
+            const TrackData trackData = ::readDBusMessage<TrackData>(d.interface->call("trackData", index.row(), fields));
+            if (trackData.fields != 0) {
+                const_cast<TrackModel*>(this)->onTrackDataReceived(trackData);
+            }
+#endif
             val |= fields;
         }
         return fetchMessage;
@@ -166,9 +165,8 @@ void TrackModel::onTracksRemoved(int from, int count)
     removeRows(from, count, QModelIndex());
 }
 
-void TrackModel::onTrackDataReceived(const QVariant &var)
+void TrackModel::onTrackDataReceived(const TrackData &data)
 {
-    TrackData data = qVariantValue<TrackData>(var);
     Q_ASSERT(data.fields & PlaylistIndex);
     const int track = data.playlistIndex;
     int &ref = d.pendingFields[track];

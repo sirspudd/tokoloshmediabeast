@@ -172,21 +172,22 @@ int Backend::indexOfTrack(const QString &name) const
     return playlistData.tracks.indexOf(name);
 }
 
-QVariant Backend::trackData(const QString &filepath, int fields) const
+TrackData Backend::trackData(const QString &filepath, int fields) const
 {
     const int index = indexOfTrack(filepath);
     if (index == -1) {
         qWarning("I don't have %s in my list of files", qPrintable(filepath));
-        return false;
+        return TrackData();
     }
     return trackData(index, fields);
 }
 
-QVariant Backend::trackData(int index, int fields) const
+TrackData Backend::trackData(int index, int fields) const
 {
+    qDebug() << "trackData" << index << fields;
     if (index < 0 || index >= playlistData.tracks.size()) {
         qWarning("Invalid index %d, needs to be between 0-%d", index, playlistData.tracks.size() - 1);
-        return QVariant();
+        return TrackData();
     }
     // ### this should maybe cache data
     TrackData data;
@@ -203,7 +204,7 @@ QVariant Backend::trackData(int index, int fields) const
     }
     data.fields |= fields;
 //    ::sleep(250);
-    return qVariantFromValue<TrackData>(data);
+    return data;
 }
 
 static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }

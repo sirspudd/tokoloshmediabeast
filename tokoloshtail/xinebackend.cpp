@@ -430,7 +430,7 @@ int XineBackend::flags() const
     return SupportsEqualizer;
 }
 
-QVariant XineBackend::equalizerSettings() const
+QHash<int, int> XineBackend::equalizerSettings() const
 {
     QHash<int, int> ret;
     static const int hz[] = { 30, 60, 126, 250, 500, 1000, 2000, 4000, 8000, 16000, -1 };
@@ -438,12 +438,11 @@ QVariant XineBackend::equalizerSettings() const
         ret[hz[i]] = xine_get_param(d->main.stream, XINE_PARAM_EQ_30HZ + i);
     }
     d->updateError(d->main.stream);
-    return qVariantFromValue<QHash<int, int> >(ret);
+    return ret;
 }
 
-void XineBackend::setEqualizerSettings(const QVariant &variant)
+void XineBackend::setEqualizerSettings(const QHash<int, int> &eq)
 {
-    QHash<int, int> eq = qVariantValue<QHash<int, int> >(variant);
     static const int hz[] = { 30, 60, 126, 250, 500, 1000, 2000, 4000, 8000, 16000, -1 };
     for (int i=0; hz[i] != -1; ++i) {
         const int val = eq.value(hz[i], -INT_MAX);

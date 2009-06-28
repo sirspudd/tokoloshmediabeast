@@ -64,12 +64,12 @@ public slots:
     Q_SCRIPTABLE virtual int errorCode() const { return 0; }
     Q_SCRIPTABLE virtual void setMute(bool on) = 0;
     Q_SCRIPTABLE virtual bool isMute() const = 0;
-    Q_SCRIPTABLE virtual QVariant equalizerSettings() const { return QVariant(); }
-    Q_SCRIPTABLE virtual void setEqualizerSettings(const QVariant &) {}
+    Q_SCRIPTABLE virtual QHash<int, int> equalizerSettings() const { return QHash<int, int>(); }
+    Q_SCRIPTABLE virtual void setEqualizerSettings(const QHash<int, int> &) {}
 
     // playlist stuff
-    Q_SCRIPTABLE QVariant trackData(int idx, int fields = All) const;
-    Q_SCRIPTABLE QVariant trackData(const QString &path, int fields = All) const;
+    Q_SCRIPTABLE TrackData trackData(int idx, int fields = All) const;
+    Q_SCRIPTABLE TrackData trackData(const QString &path, int fields = All) const;
     Q_SCRIPTABLE int count() const;
     Q_SCRIPTABLE QString currentTrackName() const;
     Q_SCRIPTABLE int currentTrackIndex() const;
@@ -107,7 +107,7 @@ signals:
     // need to emit this if e.g. the command line client changes the
     // volume on us. The other clients need to know to move their
     // slider etc
-    Q_SCRIPTABLE void event(int type, const QVariant &data);
+    Q_SCRIPTABLE void event(int type, const QList<QVariant> &data);
     Q_SCRIPTABLE void statusChanged(Status status);
     Q_SCRIPTABLE void foo(int);
 private slots:
@@ -127,7 +127,5 @@ protected:
 private:
     static Backend *inst;
 };
-
-Q_DECLARE_METATYPE(QVariant);
 
 #endif

@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
     bool registered = false;
     for (int i=0; i<5; ++i) {
-        if (QDBusConnection::sessionBus().registerService(SERVICE_NAME)) {\
+        if (QDBusConnection::sessionBus().registerService(SERVICE_NAME)) {
             registered = true;
             break;
         }
