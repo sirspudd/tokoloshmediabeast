@@ -6,6 +6,7 @@ void initApp(const QString &appname, int argc, char **argv)
     QCoreApplication::setOrganizationName(QLatin1String("Donders"));
     qDBusRegisterMetaType<TrackData>();
     qDBusRegisterMetaType<IntHash>();
+    qDBusRegisterMetaType<Function>();
     Config::init(argc, argv);
 //     app->setOrganizationDomain(QLatin1String("www.github.com/sirspudd/tokoloshmediabeast/tree/master"));
 //    qRegisterMetaType<QVariant>("QVariant");
@@ -65,37 +66,6 @@ void TrackData::setData(TrackInfo info, const QVariant &data)
     fields |= info;
 }
 
-QDataStream &operator<<(QDataStream &ds, const TrackData &data)
-{
-    enum { Version = 1 };
-//    qDebug() << "streaming out" << data.path << data.fields;
-    ds << quint8(Version) << qint32(data.fields)
-       << data.path << data.artist << data.album << data.genre
-       << data.trackLength << data.albumIndex << data.year << data.playlistIndex;
-    return ds;
-}
-
-QDataStream &operator>>(QDataStream &ds, TrackData &data)
-{
-    enum { Version = 1 };
-    quint8 version;
-    ds >> version;
-    if (version != Version) {
-        qWarning("Unexpected version, got %d, expected %d", version, Version);
-        return ds;
-    }
-    qint32 fields;
-    ds >> fields;
-    data.fields = fields;
-    ds >> data.path >> data.artist >> data.album
-       >> data.genre >> data.trackLength
-       >> data.albumIndex >> data.year
-       >> data.playlistIndex;
-//    qDebug() << "streaming in" << data.path << data.fields;
-
-    return ds;
-}
-
 void operator<<(QDBusArgument &arg, const TrackData &trackData)
 {
     arg.beginStructure();
@@ -146,6 +116,30 @@ void operator>>(const QDBusArgument &arg, IntHash &hash)
         qint32 key, val;
         arg >> key >> val;
         hash[key] = val;
+    }
+    arg.endStructure();
+}
+
+void operator<<(QDBusArgument &arg, const Function &func)
+{
+    arg.beginStructure();
+    arg << func.name << func.args.size();
+    foreach(int type, func.args)
+        arg << type;
+    arg.endStructure();
+}
+
+void operator>>(const QDBusArgument &arg, Function &func)
+{
+    arg.beginStructure();
+    arg >> func.name;
+    int count;
+    arg >> count;
+    func.args.clear();
+    for (int i=0; i<count; ++i) {
+        int tmp;
+        arg >> tmp;
+        func.args.append(tmp);
     }
     arg.endStructure();
 }

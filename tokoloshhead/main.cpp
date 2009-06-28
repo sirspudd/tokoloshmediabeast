@@ -32,40 +32,6 @@ static inline QString toString(const QVariant &var)
     }
 }
 
-static inline QMetaMethod findMethod(const QMetaObject *metaObject, const QString &arg)
-{
-    QMetaMethod best;
-
-    const int methodCount = metaObject->methodCount();
-    for (int i=metaObject->methodOffset(); i<methodCount; ++i) {
-        const QMetaMethod method = metaObject->method(i);
-        if (method.methodType() != QMetaMethod::Slot
-            && method.methodType() != QMetaMethod::Method)
-            continue;
-
-        const QString methodName = QString::fromLatin1(method.signature());
-        if (!methodName.startsWith(arg))
-            continue;
-
-        if (methodName.size() != arg.size()) {
-            // if the argument part is not specified that's still an exact match
-            const int index = methodName.lastIndexOf("(");
-            if (arg.size() < index) {
-                if (best.signature()) {
-                    qWarning("Ambigious request. Could match either %s or %s", best.signature(), method.signature());
-                    // could maybe match more as well, should we print that as well?
-                    return QMetaMethod();
-                }
-                best = method;
-                continue;
-            }
-        }
-        best = method;
-        break;
-    }
-    return best;
-}
-
 int main(int argc, char *argv[])
 {
     ::initApp(QLatin1String("tokoloshhead"), argc, argv);
@@ -121,31 +87,42 @@ int main(int argc, char *argv[])
                     }
                     return 0;
                 }
-                const QMetaMethod method = findMethod(interface->metaObject(), arg);
-                if (!method.signature())
-                    continue;
+                const QList<Function> functions = readDBusMessage<QList<Function> >(interface->call("findFunctions", arg));;
+//                 const QVariant funcs =
+//                 const QList<Function> functions = qVariantValue<QList<Function> >(funcs);
 
-                const QList<QByteArray> parameterTypes = method.parameterTypes();
-                if (argc - i - 1 < parameterTypes.size()) {
-                    qWarning("Not enough arguments specified for %s needed %d, got %d",
-                             method.signature(), parameterTypes.size(), argc - i - 1);
-                    return 1; // ### ???
-                }
-                QList<QVariant> arguments;
-                for (int j=0; j<parameterTypes.size(); ++j) {
-                    const int type = QMetaType::type(parameterTypes.at(j).constData());
-                    QVariant variant = args.at(++i);
-                    if (!variant.convert(static_cast<QVariant::Type>(type))) {
-                        qWarning("Can't convert %s to %s", qPrintable(args.at(i)), parameterTypes.at(i).constData());
-                        return 1; // ### ???
+                QString error;
+                foreach(const Function &f, functions) {
+                    if (argc - i - 1 < f.args.size()) {
+                        error = QString("Not enough arguments specified for %1 needed %2, got %3").
+                                arg(f.name).arg(f.args.size()).arg(argc - i - 1);
+                        continue;
                     }
-                    arguments.append(variant);
+
+                    QList<QVariant> arguments;
+                    int ii = i;
+                    for (int j=0; j<f.args.size(); ++j) {
+                        QVariant variant = args.at(++ii);
+                        if (!variant.convert(static_cast<QVariant::Type>(f.args.at(j)))) {
+                            error = QString("Can't convert %1 to %2").arg(args.at(ii)).arg(QMetaType::typeName(f.args.at(j)));
+                            break;
+                        }
+                        arguments.append(variant);
+                    }
+                    if (!error.isEmpty())
+                        continue;
+                    i = ii;
+                    const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, f.name, arguments);
+                    qDebug() << f.name << interface->lastError();
+                    // ### what if it can't call the function?
+                    if (!ret.arguments().isEmpty())
+                        printf("%s\n", qPrintable(toString(ret.arguments().first())));
+                    break;
                 }
-                QString methodName = QString::fromLatin1(method.signature());
-                methodName.chop(methodName.size() - methodName.indexOf('('));
-                const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, methodName, arguments);
-                if (!ret.arguments().isEmpty())
-                    printf("%s\n", qPrintable(toString(ret.arguments().first())));
+                if (!error.isEmpty()) {
+                    qWarning("%s", qPrintable(error));
+                    return 1;
+                }
                 return 0;
             }
         }

@@ -4,6 +4,18 @@
 #include <signal.h>
 #endif
 
+struct FunctionNode
+{
+    ~FunctionNode() { qDeleteAll(nodes); }
+    QMap<QChar, FunctionNode*> nodes;
+    QList<Function> functions;
+};
+
+struct RootNode : public FunctionNode
+{
+    QStringList all;
+};
+
 Backend *Backend::inst = 0;
 Backend *Backend::instance()
 {
@@ -14,6 +26,7 @@ Backend::Backend()
 {
     Q_ASSERT(!inst);
     inst = this;
+    delete playlistData.root;
     playlistData.tracks = Config::value<QStringList>("playlist", QStringList());
     for (int i=playlistData.tracks.size() - 1; i>=0; --i) {
         if (!QFile::exists(playlistData.tracks.at(i))) {
@@ -72,29 +85,80 @@ void Backend::crop(int index)
         removeTracks(0, index);
 }
 
-
-QMap<QString, QString> Backend::aliases() const
+static void addFunction(FunctionNode *node, const QString &string, const Function &function)
 {
-    static QMap<QString, QString> ret; // cached ### if we start threading this thing this is not threadsafe
-    if (ret.isEmpty()) {
+    Q_ASSERT(node);
+    if (string.isEmpty()) {
+        node->functions.append(function);
+        return;
+    }
+    FunctionNode *&n = node->nodes[string.at(0)];
+    if (!n) {
+        n = new FunctionNode;
+    }
+    addFunction(n, string.mid(1), function);
+}
+
+static QList<Function> findFunctions(FunctionNode *node, const QString &name)
+{
+    if (name.isEmpty()) {
+        while (node->functions.isEmpty() && node->nodes.size() == 1) {
+            node = node->nodes.values().first();
+        }
+
+        return node->functions;
+    }
+
+    FunctionNode *n = node->nodes.value(name.at(0));
+    if (!n) {
+        return QList<Function>();
+    }
+    return findFunctions(n, name.mid(1));
+}
+
+
+QList<Function> Backend::findFunctions(const QString &functionName) const
+{
+    if (!playlistData.root) {
+        playlistData.root = new RootNode;
         const QMetaObject *meta = metaObject();
         const int count = meta->methodCount();
-        for (int i=meta->methodOffset(); i<count; ++i) {
+        for (int i=0; i<count; ++i) {
             const QMetaMethod method = meta->method(i);
             if (method.attributes() & QMetaMethod::Scriptable) {
-                QString name = method.signature();
-                name.chop(name.indexOf('('));
-                const QString translated = tr(qPrintable(name));
-                if (translated != name)
-                    ret.insertMulti(name, translated);
-                const QStringList aliases = Config::value<QString>(QLatin1String("Aliases/") + name).split(' ');
-                foreach(const QString &alias, aliases) {
-                    ret.insertMulti(name, alias);
+                Function func;
+                func.name = method.signature();
+                func.name.chop(func.name.size() - func.name.indexOf('('));
+                ::addFunction(playlistData.root, func.name, func);
+                QSet<QString> used;
+                used.insert(func.name);
+                const QString translated = tr(qPrintable(func.name)); // ### need to make sure this is translated
+                if (translated.isEmpty() && translated != func.name) {
+                    used.insert(translated);
+                    ::addFunction(playlistData.root, translated, func);
                 }
+                const QStringList aliases = Config::value<QString>(QLatin1String("Aliases/") + func.name).split(' ', QString::SkipEmptyParts);
+                qDebug() << func.name << aliases;
+                foreach(const QString &alias, aliases) {
+                    if (used.contains(alias)) { // ### warn about dupe alias?
+                        used.insert(alias);
+                        ::addFunction(playlistData.root, alias, func);
+                    }
+                }
+                playlistData.root->all += used.toList();
             }
         }
     }
+    QList<Function> ret = ::findFunctions(playlistData.root, functionName);
     return ret;
+}
+
+QStringList Backend::functions() const
+{
+    if (!playlistData.root) {
+        findFunctions(QString());
+    }
+    return playlistData.root->all;
 }
 
 

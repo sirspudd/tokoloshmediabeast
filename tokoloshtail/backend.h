@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <global.h>
 
+struct RootNode;
 class Backend : public QObject
 {
     Q_OBJECT
@@ -86,8 +87,8 @@ public slots:
     Q_SCRIPTABLE void prev();
     Q_SCRIPTABLE void next();
     Q_SCRIPTABLE void crop(int index = -1);
-    Q_SCRIPTABLE void ping() {}
-    Q_SCRIPTABLE QMap<QString, QString> aliases() const;
+    Q_SCRIPTABLE QList<Function> findFunctions(const QString &functionName) const;
+    Q_SCRIPTABLE QStringList functions() const;
 
     Q_SCRIPTABLE inline bool load(const QString &path) { return load(path, false); }
     Q_SCRIPTABLE inline bool loadRecursively(const QString &path) { return load(path, true); }
@@ -118,11 +119,12 @@ protected:
     Backend();
     virtual ~Backend();
     struct PlaylistData {
-        PlaylistData() : current(-1), seenPaths(0) {}
+        PlaylistData() : current(-1), seenPaths(0), root(0) {}
         int current;
         QStringList tracks;
         QMap<QString, TrackData> cache;
         QSet<QString> *seenPaths;
+        mutable RootNode *root;
     } playlistData;
 private:
     static Backend *inst;

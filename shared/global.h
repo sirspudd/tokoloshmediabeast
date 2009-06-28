@@ -40,23 +40,36 @@ struct TrackData
     TrackData &operator|=(const TrackData &other);
 };
 Q_DECLARE_METATYPE(TrackData);
-Q_DECLARE_METATYPE(QVariant);
-
-QDataStream &operator<<(QDataStream &ds, const TrackData &data);
-QDataStream &operator>>(QDataStream &ds, TrackData &data);
-
 void operator<<(QDBusArgument &arg, const TrackData &trackData);
 void operator>>(const QDBusArgument &arg, TrackData &trackData);
 typedef QHash<int, int> IntHash;
 Q_DECLARE_METATYPE(IntHash);
-
 void operator<<(QDBusArgument &arg, const IntHash &ih);
 void operator>>(const QDBusArgument &arg, IntHash &ih);
+
+struct Function
+{
+    QString name;
+    QList<int> args;
+};
+
+Q_DECLARE_METATYPE(Function);
+void operator<<(QDBusArgument &arg, const Function &f);
+void operator>>(const QDBusArgument &arg, Function &f);
+
+static inline bool operator==(const Function &left, const Function &right)
+{
+    return left.name == right.name && left.args == right.args;
+}
+
+static inline bool operator!=(const Function &left, const Function &right)
+{
+    return left.name != right.name || left.args != right.args;
+}
 
 template <typename T>
 static inline T readDBusMessage(const QDBusMessage &msg)
 {
-    // ### should I sanity check this? Probably
     if (msg.arguments().isEmpty() || msg.arguments().at(0).isNull()) {
         qWarning("Can't read this stuff");
         return T();
