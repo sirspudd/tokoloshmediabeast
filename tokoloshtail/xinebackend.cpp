@@ -164,7 +164,7 @@ bool XineBackend::initBackend()
         node = &((*node)->next);
     }
 
-    d->status = Idle;
+    d->status = Stopped;
 
     return true;
 }
@@ -285,8 +285,10 @@ bool XineBackend::isValid(const QString &fileName) const
 
 void XineBackend::play()
 {
-    qDebug() << "status" << status() << Idle << d->main.track;
-    if (status() == Idle) {
+    if (status() != Uninitalized) {
+        if (status() == Paused) {
+            qWarning("%s:%d unimplemented. Needs to restart at the right time", __FILE__, __LINE__);
+        }
         const bool ok = xine_play(d->main.stream, 0, 0);
         if (ok) {
             d->pollTimer.start(500, this);
@@ -307,7 +309,7 @@ void XineBackend::pause()
         d->pollTimer.stop();
         xine_stop(d->main.stream);
         d->updateError(d->main.stream);
-        d->status = Idle;
+        d->status = Paused;
         emit statusChanged(d->status);
     }
 }
@@ -320,7 +322,7 @@ void XineBackend::stop()
         xine_stop(d->main.stream);
         d->updateError(d->main.stream);
         d->pollTimer.stop();
-        d->status = Idle;
+        d->status = Stopped;
         emit statusChanged(d->status);
     }
 

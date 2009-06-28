@@ -3,7 +3,7 @@
 #define PHONONBACKEND_H
 
 #include <QtCore>
-#include <QtPhonon>
+#include <phonon>
 #include "backend.h"
 
 struct Private;

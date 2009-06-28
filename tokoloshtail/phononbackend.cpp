@@ -4,11 +4,11 @@
 struct Private
 {
     Private()
+        : audioOutput(0)
     {}
 
-    MediaObject main, aux;
-    Backend::ProgressType progressType;
-    int pendingProgress;
+    Phonon::MediaObject main, aux;
+    Phonon::AudioOutput *audioOutput;
 };
 
 PhononBackend::PhononBackend()
@@ -40,7 +40,7 @@ bool PhononBackend::trackData(TrackData *data, const QString &path, int mask) co
 
     struct {
         const TrackInfo field;
-        const Phonon::MetaData metaData
+        const Phonon::MetaData metaData;
     } static const fields[] = {
         { Title, Phonon::TitleMetaData },
         { Artist, Phonon::ArtistMetaData },
@@ -51,21 +51,21 @@ bool PhononBackend::trackData(TrackData *data, const QString &path, int mask) co
         { None, (Phonon::MetaData)-1 }
     };
 
-    const MediaObject *objects[] = { &d->main, &d->aux, 0 };
-    MediaObject *object = 0;
+    Phonon::MediaObject *const objects[] = { &d->main, &d->aux, 0 };
+    Phonon::MediaObject *object = 0;
     QUrl url = path;
     if (url.scheme().isEmpty())
         url = QUrl::fromLocalFile(path);
 
     for (int i=0; objects[i]; ++i) {
-        const MediaSource source = objects[i]->currentSource();
+        const Phonon::MediaSource source = objects[i]->currentSource();
         if (source.url() == url) {
             object = objects[i];
             break;
         }
     }
     if (!object) {
-        d->aux.setCurrentSource(MediaSource(url));
+        d->aux.setCurrentSource(Phonon::MediaSource(url));
         if (!d->aux.isValid()) {
             return false;
         }
@@ -76,7 +76,7 @@ bool PhononBackend::trackData(TrackData *data, const QString &path, int mask) co
         if (mask & fields[i].field) {
             const QString v = object->metaData(fields[i].metaData).value(0);
             if (!v.isNull())
-                fields[i].setData(fields[i].target, v);
+                data->setData(fields[i].field, v);
         }
     }
 
@@ -85,13 +85,13 @@ bool PhononBackend::trackData(TrackData *data, const QString &path, int mask) co
 
 bool PhononBackend::isValid(const QString &fileName) const
 {
-    return status() != Uninitalized && d->main.isValid();
+//    return status() != Uninitalized && d->main.isValid();
 }
 
 
 void PhononBackend::play()
 {
-//     if (status() == Idle) {
+//     if (status() != Uninitalized) {
 //         const bool ok = xine_play(d->main.stream, 0, 0);
 //         if (ok) {
 //             d->pollTimer.start(500, this);
@@ -148,92 +148,100 @@ bool PhononBackend::loadFile(const QString &fileName)
 
 int PhononBackend::status() const
 {
-    // could use xine_get_status
-    return d->status;
+    switch (d->main.state()) {
+    case Phonon::PausedState:
+        return Paused;
+    case Phonon::StoppedState:
+    case Phonon::LoadingState:
+    case Phonon::ErrorState:
+        return Stopped;
+    case Phonon::PlayingState:
+    case Phonon::BufferingState:
+        return Playing;
+    }
 }
 
 int PhononBackend::volume() const
 {
-    const int ret = xine_get_param(d->main.stream, XINE_PARAM_AUDIO_VOLUME);
-    d->updateError(d->main.stream);
-    return ret;
+//     return d->audioOutput ? d->audioOutput->volume()2
+//     return ret;
 }
 
 void PhononBackend::setVolume(int vol)
 {
-    xine_set_param(d->main.stream, XINE_PARAM_AUDIO_VOLUME, vol);
-    d->updateError(d->main.stream);
+//     xine_set_param(d->main.stream, XINE_PARAM_AUDIO_VOLUME, vol);
+//     d->updateError(d->main.stream);
 }
 
 void PhononBackend::setMute(bool on)
 {
-    xine_set_param(d->main.stream, XINE_PARAM_AUDIO_MUTE, on ? 1 : 0);
-    d->updateError(d->main.stream);
+//     xine_set_param(d->main.stream, XINE_PARAM_AUDIO_MUTE, on ? 1 : 0);
+//     d->updateError(d->main.stream);
 }
 
 bool PhononBackend::isMute() const
 {
-    const int ret = xine_get_param(d->main.stream, XINE_PARAM_AUDIO_MUTE);
-    d->updateError(d->main.stream);
-    return ret == 1;
+//     const int ret = xine_get_param(d->main.stream, XINE_PARAM_AUDIO_MUTE);
+//     d->updateError(d->main.stream);
+//     return ret == 1;
 }
 
 void PhononBackend::setProgress(int type, int progress)
 {
-    if (status() != Playing) {
-        d->progressType = static_cast<ProgressType>(type);
-        d->pendingProgress = progress;
-    } else {
-        d->progressType = Seconds;
-        d->pendingProgress = 0;
-        int start_pos = 0;
-        int start_time = 0;
-        if (type == Seconds) {
-            start_time = progress * 1000;
-        } else {
-            start_pos = int(double(progress) / 10000.0 * 65535.0);
-        }
-        xine_play(d->main.stream, start_pos, start_time);
-        d->updateError(d->main.stream);
-    }
+//     if (status() != Playing) {
+//         d->progressType = static_cast<ProgressType>(type);
+//         d->pendingProgress = progress;
+//     } else {
+//         d->progressType = Seconds;
+//         d->pendingProgress = 0;
+//         int start_pos = 0;
+//         int start_time = 0;
+//         if (type == Seconds) {
+//             start_time = progress * 1000;
+//         } else {
+//             start_pos = int(double(progress) / 10000.0 * 65535.0);
+//         }
+//         xine_play(d->main.stream, start_pos, start_time);
+//         d->updateError(d->main.stream);
+//     }
 }
 
 int PhononBackend::progress(int type)
 {
-    const QVariant var = ::xine_get_track_length(d->main.stream, type == Seconds ? 1 : 0);
-    if (var.isNull())
-        return -1;
-    if (type == Seconds) {
-        return var.toInt() * 1000;
-    } else {
-        return int(double(var.toInt()) * 10000.0 / 65535.0);
-        // 100th of a percent
-    }
+//     const QVariant var = ::xine_get_track_length(d->main.stream, type == Seconds ? 1 : 0);
+//     if (var.isNull())
+//         return -1;
+//     if (type == Seconds) {
+//         return var.toInt() * 1000;
+//     } else {
+//         return int(double(var.toInt()) * 10000.0 / 65535.0);
+//         // 100th of a percent
+//     }
 }
 QString PhononBackend::errorMessage() const
 {
-    switch (errorCode()) {
-    case XINE_ERROR_NONE: return QString();
-    case -1: return QLatin1String("Unknown error");
-    case XINE_ERROR_NO_INPUT_PLUGIN: return QLatin1String("XINE_ERROR_NO_INPUT_PLUGIN");
-    case XINE_ERROR_NO_DEMUX_PLUGIN: return QLatin1String("XINE_ERROR_NO_DEMUX_PLUGIN");
-    case XINE_ERROR_DEMUX_FAILED: return QLatin1String("XINE_ERROR_DEMUX_FAILED");
-    case XINE_ERROR_MALFORMED_MRL: return QLatin1String("XINE_ERROR_MALFORMED_MRL");
-    case XINE_ERROR_INPUT_FAILED: return QLatin1String("XINE_ERROR_INPUT_FAILED");
-    default:
-        break;
-    }
-    Q_ASSERT(0);
-    return QString();
+//     switch (errorCode()) {
+//     case XINE_ERROR_NONE: return QString();
+//     case -1: return QLatin1String("Unknown error");
+//     case XINE_ERROR_NO_INPUT_PLUGIN: return QLatin1String("XINE_ERROR_NO_INPUT_PLUGIN");
+//     case XINE_ERROR_NO_DEMUX_PLUGIN: return QLatin1String("XINE_ERROR_NO_DEMUX_PLUGIN");
+//     case XINE_ERROR_DEMUX_FAILED: return QLatin1String("XINE_ERROR_DEMUX_FAILED");
+//     case XINE_ERROR_MALFORMED_MRL: return QLatin1String("XINE_ERROR_MALFORMED_MRL");
+//     case XINE_ERROR_INPUT_FAILED: return QLatin1String("XINE_ERROR_INPUT_FAILED");
+//     default:
+//         break;
+//     }
+//     Q_ASSERT(0);
+//     return QString();
 }
 int PhononBackend::errorCode() const
 {
-    return d->error;
+//    return d->error;
 }
 
 int PhononBackend::flags() const
 {
-    return 0; //SupportsEqualizer;
+    return NoCapabilities;
 }
 
 #if 0

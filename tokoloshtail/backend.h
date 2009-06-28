@@ -12,7 +12,8 @@ public:
     enum Status {
         Uninitalized,
         Playing,
-        Idle
+        Paused,
+        Stopped
     };
 
     enum ProgressType {
