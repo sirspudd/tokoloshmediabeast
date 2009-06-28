@@ -1,0 +1,2 @@
+QT += phonon
+DEFINES += BACKEND=PhononBackend PHONONBACKEND

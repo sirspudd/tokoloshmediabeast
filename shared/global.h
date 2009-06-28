@@ -44,8 +44,8 @@ void operator<<(QDBusArgument &arg, const TrackData &trackData);
 void operator>>(const QDBusArgument &arg, TrackData &trackData);
 typedef QHash<int, int> IntHash;
 Q_DECLARE_METATYPE(IntHash);
-void operator<<(QDBusArgument &arg, const IntHash &ih);
-void operator>>(const QDBusArgument &arg, IntHash &ih);
+void operator<<(QDBusArgument &arg, const QHash<int, int> &ih);
+void operator>>(const QDBusArgument &arg, QHash<int, int> &ih);
 
 struct Function
 {
@@ -57,15 +57,23 @@ Q_DECLARE_METATYPE(Function);
 void operator<<(QDBusArgument &arg, const Function &f);
 void operator>>(const QDBusArgument &arg, Function &f);
 
-static inline bool operator==(const Function &left, const Function &right)
+static inline void operator<<(QDBusArgument &arg, const QList<Function> &f)
 {
-    return left.name == right.name && left.args == right.args;
+    arg << f;
 }
 
-static inline bool operator!=(const Function &left, const Function &right)
+static inline void operator>>(const QDBusArgument &arg, QList<Function> &f)
 {
-    return left.name != right.name || left.args != right.args;
+    f.clear();
+    arg >> f;
 }
+
+
+static inline bool operator==(const Function &left, const Function &right)
+{ return left.name == right.name && left.args == right.args; }
+
+static inline bool operator!=(const Function &left, const Function &right)
+{ return left.name != right.name || left.args != right.args; }
 
 template <typename T>
 static inline T readDBusMessage(const QDBusMessage &msg)

@@ -1,102 +1,10 @@
-#ifdef XINEBACKEND
-#include "xinebackend.h"
-#include <xine.h>
-#include <xine/xineutils.h>
-
-#ifndef XINE_STREAM_COUNT
-#define XINE_STREAM_COUNT 3
-#endif
-
-struct Node {
-    Node() : stream(0), next(0) {}
-
-    xine_stream_t *stream;
-    QString track;
-    Node *next;
-};
-
-void swap(Node *left, Node *right)
-{
-    qSwap(left->stream, right->stream);
-    qSwap(left->track, right->track);
-    qSwap(left->next, right->next);
-}
-
-static bool initStream(Node *node, const QString &fileName)
-{
-    Q_ASSERT(node->stream);
-    xine_close(node->stream);
-
-    if (!xine_open(node->stream, fileName.toLocal8Bit().constData())) {
-//    if (!xine_open(node->stream, qPrintable(fileName))) {
-        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
-        return false;
-    }
-//    qDebug() << "fileName" << fileName;
-    Q_ASSERT(node->track != fileName);
-    node->track = fileName;
-    return true;
-}
+#ifdef PHONONBACKEND
+#include "phononbackend.h"
 
 struct Private
 {
-    Private() : xine(0), first(0), ao_port(0), event_queue(0),
-                status(Backend::Uninitalized), error(XINE_ERROR_NONE),
-                progressType(Backend::Seconds), pendingProgress(0)
+    Private()
     {}
-
-    xine_stream_t *stream(const QString &fileName, Node **out = 0)
-    {
-        if (main.track == fileName) {
-            if (out)
-                *out = &main;
-            return main.stream;
-        } else if (!first) {
-            if (!::initStream(&main, fileName)) {
-                if (out)
-                    *out = 0;
-                return 0;
-            }
-            if (out)
-                *out = &main;
-            return main.stream;
-        }
-        Node *last = 0;
-        Node *node = first;
-        Q_ASSERT(first);
-        forever {
-            if (node->track == fileName) {
-                if (out)
-                    *out = node;
-                return node->stream;
-            } else if (node->next) {
-                last = node;
-                node = node->next;
-            } else {
-                break;
-            }
-        }
-
-        Q_ASSERT(node);
-        if (!::initStream(node, fileName)) {
-            if (out)
-                *out = 0;
-            return 0;
-        }
-        last->next = 0;
-        node->next = first;
-        first = node;
-        if (out)
-            *out = node;
-        return node->stream;
-    }
-
-    inline void updateError(xine_stream_t *stream)
-    {
-        if (!stream)
-            return;
-        error = xine_get_error(stream);
-    }
 
     xine_t *xine;
     Node main;

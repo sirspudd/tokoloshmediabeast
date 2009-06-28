@@ -1,4 +1,5 @@
 #include "xinebackend.h"
+#include "phononbackend.h"
 #include "../shared/global.h"
 #include <QtCore>
 #include <QtDBus>
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    XineBackend daemon;
+    BACKEND daemon;
     if (!daemon.initBackend()) {
         qWarning() << daemon.errorCode() << daemon.errorMessage();
         return 1;

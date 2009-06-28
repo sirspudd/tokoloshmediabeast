@@ -11,7 +11,7 @@ unix {
 
 mac:CONFIG -= app_bundle
 unix {
-    LIBS += -L/usr/lib -lxine -lz -lnsl -lpthread -lrt
+    #LIBS += -L/usr/lib -lxine -lz -lnsl -lpthread -lrt
     #generateadaptor.target = $$PWD/tokolosh_adaptor.h 
     #generateadaptor.commands = sh $$PWD/generatedbusinterfaces.sh $$PWD
     #generateinterface.target = $$PWD/tokolosh_interface.h 

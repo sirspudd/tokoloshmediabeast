@@ -5,7 +5,7 @@ void initApp(const QString &appname, int argc, char **argv)
     QCoreApplication::setApplicationName(appname);
     QCoreApplication::setOrganizationName(QLatin1String("Donders"));
     qDBusRegisterMetaType<TrackData>();
-    qDBusRegisterMetaType<IntHash>();
+    qDBusRegisterMetaType<QHash<int, int> >();
     qDBusRegisterMetaType<Function>();
     Config::init(argc, argv);
 //     app->setOrganizationDomain(QLatin1String("www.github.com/sirspudd/tokoloshmediabeast/tree/master"));
@@ -96,7 +96,7 @@ void operator>>(const QDBusArgument &arg, TrackData &trackData)
 }
 
 
-void operator<<(QDBusArgument &arg, const IntHash &hash)
+void operator<<(QDBusArgument &arg, const QHash<int, int> &hash)
 {
     arg.beginStructure();
     arg << qint32(hash.size());
@@ -106,7 +106,7 @@ void operator<<(QDBusArgument &arg, const IntHash &hash)
     arg.endStructure();
 }
 
-void operator>>(const QDBusArgument &arg, IntHash &hash)
+void operator>>(const QDBusArgument &arg, QHash<int, int> &hash)
 {
     arg.beginStructure();
     hash.clear();

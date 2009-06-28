@@ -1,17 +1,18 @@
-#ifdef XINEBACKEND
-#ifndef XINEBACKEND_H
-#define XINEBACKEND_H
+#ifdef PHONONBACKEND
+#ifndef PHONONBACKEND_H
+#define PHONONBACKEND_H
 
 #include <QtCore>
+#include <QtPhonon>
 #include "backend.h"
 
 struct Private;
-class XineBackend : public Backend
+class PhononBackend : public Backend
 {
     Q_OBJECT
 public:
-    XineBackend();
-    virtual ~XineBackend();
+    PhononBackend();
+    virtual ~PhononBackend();
     virtual bool initBackend();
     virtual void shutdown();
     virtual bool trackData(TrackData *data, const QString &path, int types = All) const;
