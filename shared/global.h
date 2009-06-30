@@ -54,6 +54,7 @@ struct Function
 };
 
 Q_DECLARE_METATYPE(Function);
+Q_DECLARE_METATYPE(QList<Function>);
 void operator<<(QDBusArgument &arg, const Function &f);
 void operator>>(const QDBusArgument &arg, Function &f);
 
@@ -82,7 +83,6 @@ static inline T readDBusMessage(const QDBusMessage &msg)
         qWarning("Can't read this stuff");
         return T();
     }
-    qDebug() << msg.arguments();
     QDBusArgument arg = qVariantValue<QDBusArgument>(msg.arguments().value(0));
     T t;
     arg >> t;

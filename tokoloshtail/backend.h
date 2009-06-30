@@ -43,11 +43,7 @@ public:
     static Backend *instance();
     virtual bool trackData(TrackData *data, const QString &path, int types = All) const = 0;
     virtual void shutdown() = 0;
-    void timerEvent(QTimerEvent *)
-    {
-        static int val = 0;
-        emit foo(++val);
-    }
+    QList<Function> findFunctions(const QString &functionName) const;
 
 public slots:
     Q_SCRIPTABLE virtual int capabilities() const { return None; }
@@ -88,7 +84,7 @@ public slots:
     Q_SCRIPTABLE void prev();
     Q_SCRIPTABLE void next();
     Q_SCRIPTABLE void crop(int index = -1);
-    Q_SCRIPTABLE QList<Function> findFunctions(const QString &functionName) const;
+    Q_SCRIPTABLE Function findFunction(const QString &functionName) const;
     Q_SCRIPTABLE QStringList functions() const;
 
     Q_SCRIPTABLE inline bool load(const QString &path) { return load(path, false); }

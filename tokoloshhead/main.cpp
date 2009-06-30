@@ -87,20 +87,24 @@ int main(int argc, char *argv[])
                     }
                     return 0;
                 }
-                const QList<Function> functions = readDBusMessage<QList<Function> >(interface->call("findFunctions", arg));;
-//                 const QVariant funcs =
-//                 const QList<Function> functions = qVariantValue<QList<Function> >(funcs);
-
+//                const QList<Function> functions = readDBusMessage<QList<Function> >(interface->call("findFunctions", arg));;
+                QList<Function> functions;
+                functions.append(readDBusMessage<Function>(interface->call("findFunction", arg)));
                 QString error;
+                qDebug() << functions.value(0).name;
                 foreach(const Function &f, functions) {
+                    qDebug() << f.name;
                     if (argc - i - 1 < f.args.size()) {
                         error = QString("Not enough arguments specified for %1 needed %2, got %3").
                                 arg(f.name).arg(f.args.size()).arg(argc - i - 1);
+                        qDebug() << error;
                         continue;
                     }
+                    qDebug() << f.args.size();
 
                     QList<QVariant> arguments;
                     int ii = i;
+                    qDebug() << f.args;
                     for (int j=0; j<f.args.size(); ++j) {
                         QVariant variant = args.at(++ii);
                         if (!variant.convert(static_cast<QVariant::Type>(f.args.at(j)))) {
@@ -112,15 +116,15 @@ int main(int argc, char *argv[])
                     if (!error.isEmpty())
                         continue;
                     i = ii;
+                    qDebug() << arguments;
                     const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, f.name, arguments);
-                    qDebug() << f.name << interface->lastError();
                     // ### what if it can't call the function?
                     if (!ret.arguments().isEmpty())
                         printf("%s\n", qPrintable(toString(ret.arguments().first())));
                     break;
                 }
                 if (!error.isEmpty()) {
-                    qWarning("%s", qPrintable(error));
+                    qWarning("Error: %s", qPrintable(error));
                     return 1;
                 }
                 return 0;

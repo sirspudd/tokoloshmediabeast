@@ -24,6 +24,7 @@ Backend *Backend::instance()
 
 Backend::Backend()
 {
+    startTimer(1000);
     Q_ASSERT(!inst);
     inst = this;
     delete playlistData.root;
@@ -138,7 +139,7 @@ QList<Function> Backend::findFunctions(const QString &functionName) const
                     ::addFunction(playlistData.root, translated, func);
                 }
                 const QStringList aliases = Config::value<QString>(QLatin1String("Aliases/") + func.name).split(' ', QString::SkipEmptyParts);
-                qDebug() << func.name << aliases;
+//                qDebug() << func.name << aliases;
                 foreach(const QString &alias, aliases) {
                     if (used.contains(alias)) { // ### warn about dupe alias?
                         used.insert(alias);
@@ -152,6 +153,12 @@ QList<Function> Backend::findFunctions(const QString &functionName) const
     QList<Function> ret = ::findFunctions(playlistData.root, functionName);
     return ret;
 }
+
+Function Backend::findFunction(const QString &functionName) const
+{
+    return findFunctions(functionName).value(0);
+}
+
 
 QStringList Backend::functions() const
 {
@@ -184,6 +191,7 @@ QStringList Backend::list() const
         QString &ref = ret[i];
         ref.prepend(QString("%1 ").arg(i + 1));
     }
+    qDebug() << ret;
     return ret;
 }
 
@@ -309,6 +317,7 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
 bool Backend::load(const QString &path, bool recurse)
 {
     const QFileInfo fi(path);
+    qDebug() << path << recurse << fi.absoluteFilePath();
     if (!fi.exists()) {
         qWarning("%s doesn't seem to exist", qPrintable(path));
         return false;

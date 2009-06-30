@@ -7,6 +7,8 @@ void initApp(const QString &appname, int argc, char **argv)
     qDBusRegisterMetaType<TrackData>();
     qDBusRegisterMetaType<QHash<int, int> >();
     qDBusRegisterMetaType<Function>();
+    qDBusRegisterMetaType<QList<Function> >();
+
     Config::init(argc, argv);
 //     app->setOrganizationDomain(QLatin1String("www.github.com/sirspudd/tokoloshmediabeast/tree/master"));
 //    qRegisterMetaType<QVariant>("QVariant");
