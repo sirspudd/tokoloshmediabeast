@@ -16,19 +16,9 @@ struct RootNode : public FunctionNode
     QStringList all;
 };
 
-Backend *Backend::inst = 0;
-Backend *Backend::instance()
-{
-    return inst;
-}
-
 Backend::Backend(QObject *parent)
     : QObject(parent)
 {
-    startTimer(1000);
-    Q_ASSERT(!inst);
-    inst = this;
-    delete playlistData.root;
     playlistData.tracks = Config::value<QStringList>("playlist", QStringList());
     for (int i=playlistData.tracks.size() - 1; i>=0; --i) {
         if (!QFile::exists(playlistData.tracks.at(i))) {
@@ -44,6 +34,7 @@ Backend::Backend(QObject *parent)
 
 Backend::~Backend()
 {
+    delete playlistData.root;
     Config::setValue("playlist", playlistData.tracks);
     Config::setValue("current", playlistData.current);
 }
@@ -194,7 +185,6 @@ QStringList Backend::list() const
         QString &ref = ret[i];
         ref.prepend(QString("%1 ").arg(i + 1));
     }
-    qDebug() << ret;
     return ret;
 }
 
@@ -282,8 +272,8 @@ TrackData Backend::trackData(int index, int fields) const
 }
 
 static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }
-static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSet<QFileInfo> *seen)
-{
+static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSet<QFileInfo> *seen, Backend *backend)
+{ // if backend is 0 it's being run in a thread
     QStringList ret;
     if (seen->contains(file)) {
         qWarning("Recursive symlink detected %s", qPrintable(file.absoluteFilePath()));
@@ -293,7 +283,7 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
     if (file.isSymLink()) {
         static const bool resolveSymlinks = Config::isEnabled("resolvesymlinks", true);
         if (resolveSymlinks)
-            ret += ::recursiveLoad(file.readLink(), recurse, seen);
+            ret += ::recursiveLoad(file.readLink(), recurse, seen, backend);
     } else if (file.isDir()) {
         const QDir dir(file.absoluteFilePath());
         QDir::Filters filter = QDir::Files;
@@ -302,12 +292,25 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
         const QFileInfoList list = dir.entryInfoList(filter);
         foreach(const QFileInfo &f, list) {
             Q_ASSERT(!f.isDir() || recurse);
-            ret += ::recursiveLoad(f, recurse, seen);
+            ret += ::recursiveLoad(f, recurse, seen, backend);
         }
     } else if (file.isFile()) {
         const QString path = file.absoluteFilePath();
-        static QPointer<Backend> backend = Backend::instance(); // could just be a member function
-        if (backend->isValid(path)) {
+        if (backend) {
+            // this code is not threadsafe but it's never called in a separate thread
+            static const QSet<QString> validExtensions = Config::value<QStringList>("extensions",
+                                                                                    (QStringList() << "mp3" << "ogg" << "flac"
+                                                                                     << "acc" << "m4a" << "mp4")).
+                                                         toSet();
+            static const bool ignoreExtension = Config::isEnabled("ignore-extension", false);
+            if (!ignoreExtension) {
+                const QString extension = file.suffix().toLower();
+                if (!validExtensions.contains(extension))
+                    return ret;
+            }
+        }
+
+        if (!backend || backend->isValid(path)) {
             ret.append(path);
             // ### should I load song name here? Probably. Checking if
             // ### it's valid probably means parsing header anyway
@@ -315,6 +318,50 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
     }
     return ret;
 }
+
+#ifdef THREADED_RECURSIVE_LOAD
+class DirectoryThread : public QThread
+{
+    Q_OBJECT
+public:
+    DirectoryThread(const QString &dir, QObject *parent)
+        : QThread(parent), directory(dir)
+    {
+    }
+
+    virtual void run()
+    {
+        QSet<QFileInfo> seen;
+        songs = ::recursiveLoad(directory, true, &seen, 0);
+    }
+
+    const QString directory;
+    QStringList songs;
+};
+
+#include "backend.moc"
+
+void Backend::onThreadFinished()
+{
+    DirectoryThread *thread = qobject_cast<DirectoryThread*>(sender());
+    QStringList valid;
+    foreach(const QString &file, thread->songs) {
+        if (isValid(file)) {
+            valid.append(file);
+        }
+    }
+    if (!valid.isEmpty()) {
+        playlistData.tracks.append(valid);
+        emit tracksInserted(playlistData.tracks.size() - valid.size(), valid.size());
+        if (playlistData.current == -1)
+            setCurrentTrack(0);
+    }
+    thread->deleteLater();
+}
+
+#endif
+
+
 
 bool Backend::load(const QString &path, bool recurse)
 {
@@ -324,8 +371,18 @@ bool Backend::load(const QString &path, bool recurse)
         qWarning("%s doesn't seem to exist", qPrintable(path));
         return false;
     }
+
+#ifdef THREADED_RECURSIVE_LOAD
+    if (recurse && fi.isDir()) {
+        DirectoryThread *thread = new DirectoryThread(path, this);
+        connect(thread, SIGNAL(finished()), this, SLOT(onThreadFinished()));
+        thread->start();
+        return true;
+    }
+
+#endif
     QSet<QFileInfo> seen;
-    const QStringList songs = ::recursiveLoad(path, recurse, &seen);
+    const QStringList songs = ::recursiveLoad(path, recurse, &seen, this);
     if (!songs.isEmpty()) {
         playlistData.tracks.append(songs);
         emit tracksInserted(playlistData.tracks.size() - songs.size(), songs.size());

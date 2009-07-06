@@ -101,7 +101,9 @@ int main(int argc, char *argv[])
         qWarning("%s:%d", qPrintable(errorMessage), errorCode);
         return 1;
     }
+    QDBusConnection::sessionBus().registerObject("/", backend, QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportScriptableSignals);
     printf("Using %s\n", backend->metaObject()->className());
+
     const int appReturnValue = app.exec();
     delete backend;
     library->unload();

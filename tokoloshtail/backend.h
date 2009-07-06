@@ -40,7 +40,6 @@ public:
     };
 
     bool load(const QString &path, bool recursive);
-    static Backend *instance();
     virtual bool trackData(TrackData *data, const QString &path, int types = All) const = 0;
     virtual void shutdown() = 0;
     QList<Function> findFunctions(const QString &functionName) const;
@@ -109,6 +108,9 @@ signals:
     Q_SCRIPTABLE void statusChanged(Status status);
     Q_SCRIPTABLE void foo(int);
 private slots:
+#ifdef THREADED_RECURSIVE_LOAD
+    void onThreadFinished();
+#endif
 #ifdef Q_OS_UNIX
     void onUnixSignal(int signal);
 #endif
@@ -123,8 +125,6 @@ protected:
         QSet<QString> *seenPaths;
         mutable RootNode *root;
     } playlistData;
-private:
-    static Backend *inst;
 };
 
 #endif
