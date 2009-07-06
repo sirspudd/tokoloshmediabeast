@@ -1,10 +1,13 @@
 #include "log.h"
+#include "config.h"
 
 class DevNull : public QIODevice
 {
 public:
     static DevNull *instance()
     {
+        static QMutex mutex;
+        QMutexLocker locker(&mutex);
         static DevNull *instance = new DevNull;
         return instance;
     }
@@ -16,26 +19,48 @@ private:
     {}
 };
 
+QIODevice *Log::Private::logDevice = 0;
+QMutex Log::Private::logDeviceMutex;
 
-QIODevice *Log::logDevice = 0;
 QDebug Log::log(int verbosity)
 {
-    return qDebug();
-//     if (!logDevice) {
-//         return QDebuf
-
-//     }
+    QMutexLocker locker(&Private::logDeviceMutex);
+    if (verbosity < Config::value<int>("verbosity", INT_MAX)) {
+        if (!Private::logDevice) {
+            return qDebug();
+        } else {
+            return QDebug(Private::logDevice);
+        }
+    } else {
+        return QDebug(DevNull::instance());
+    }
 }
 
 QString Log::logFile()
 {
-
+    QMutexLocker locker(&Private::logDeviceMutex);
+    if (!Private::logDevice) {
+        return "stderr";
+    } else if (QFile *file = qobject_cast<QFile*>(Private::logDevice)) {
+        return QFileInfo(*file).absoluteFilePath();
+    } else {
+        return QString();
+    }
 }
+
 bool Log::setLogFile(const QString &file)
 {
-
+    QFile *f = new QFile(file);
+    if (f->open(QIODevice::Append)) {
+        setLogDevice(f);
+        return true;
+    }
+    return false;
 }
+
 void Log::setLogDevice(QIODevice *device)
 {
-
+    QMutexLocker locker(&Private::logDeviceMutex);
+    delete Private::logDevice;
+    Private::logDevice = device;
 }

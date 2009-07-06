@@ -12,7 +12,10 @@ public:
     static void setLogDevice(QIODevice *device);
 private:
     Log() {}
-    static QIODevice *logDevice;
+    struct Private {
+        static QIODevice *logDevice;
+        static QMutex logDeviceMutex;
+    };
 };
 
 

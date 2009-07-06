@@ -208,6 +208,7 @@ private:
     static void useArg(int index);
     static QStringList unused, args;
     static QSettings *instance;
+    static QMutex mutex;
 };
 
 #endif
