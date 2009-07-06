@@ -355,7 +355,6 @@ void Backend::onThreadFinished()
     QStringList valid;
     static const bool trustExtension = Config::isEnabled("trust-extension", true);
     foreach(const QString &file, thread->songs) {
-        qDebug() << trustExtension << file << isValid(file);
         if (trustExtension || isValid(file)) {
             valid.append(file);
         }

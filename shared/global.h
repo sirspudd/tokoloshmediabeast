@@ -92,7 +92,6 @@ static inline T readDBusMessage(const QDBusMessage &msg)
 }
 
 
-
 #ifdef Q_WS_WIN
 #include <windows.h>
 #else

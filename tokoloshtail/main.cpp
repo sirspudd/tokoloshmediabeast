@@ -114,5 +114,4 @@ int main(int argc, char *argv[])
     library->unload();
     delete library;
     return appReturnValue;
-
 }

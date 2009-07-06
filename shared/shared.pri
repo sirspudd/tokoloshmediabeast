@@ -19,6 +19,6 @@ unix {
     #QMAKE_EXTRA_TARGETS += generateadaptor generateinterface
     #PRE_TARGETDEPS += $$PWD/tokolosh.xml $$PWD/tokolosh_adaptor.h $$PWD/tokolosh_interface.h
 }
-HEADERS += $$PWD/log.h $$PWD/global.h $$PWD/config.h 
+HEADERS += $$PWD/log.h $$PWD/global.h $$PWD/config.h $$PWD/mutex.h
 SOURCES += $$PWD/log.cpp $$PWD/config.cpp $$PWD/global.cpp
 QT += dbus
