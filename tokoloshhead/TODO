@@ -1,3 +1,4 @@
+- QSettings perthread?
 - GUI for shortcuts, using Config for it now which should continue to work as a backend
 - Volume slider
 - Title bar
@@ -9,12 +10,14 @@
 - Whatever playpaus does
 - Eq
 - Refactor some stuff so I do as little as possible in setSkin
-- Implement double-size stuff (scaling) (graphicsview?)
-- Load songs passed on command line
 - m3u handling
 - Make filedialog show border and not main gui. Will that work? Separate process?
 - Verbose mode that dumps all sorts of stuff
-- Way to list availble methods over DBUS also, restrict which ones we want people to be able to call
 - tr() for all warnings
 
+
 * Consider rewriting config to have a static QSettings member. Would be nicer and faster (Done)
+* Way to list availble methods over DBUS also, restrict which ones we want people to be able to call (Done)
+* Load songs passed on command line (Done)
+* Implement double-size stuff (scaling) (graphicsview?) (Done)
+
