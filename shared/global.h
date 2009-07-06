@@ -60,11 +60,13 @@ void operator>>(const QDBusArgument &arg, Function &f);
 
 static inline void operator<<(QDBusArgument &arg, const QList<Function> &f)
 {
+    qDebug("%s %d: static inline void operator<<(QDBusArgument &arg, const QList<Function> &f)", __FILE__, __LINE__);
     arg << f;
 }
 
 static inline void operator>>(const QDBusArgument &arg, QList<Function> &f)
 {
+    qDebug("%s %d: static inline void operator>>(const QDBusArgument &arg, QList<Function> &f)", __FILE__, __LINE__);
     f.clear();
     arg >> f;
 }

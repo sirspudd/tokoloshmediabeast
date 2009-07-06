@@ -79,7 +79,6 @@ void operator<<(QDBusArgument &arg, const TrackData &trackData)
         << trackData.albumIndex << trackData.year
         << trackData.playlistIndex;
     arg.endStructure();
-//    qDebug() << "doing my thing reading" << foo.value;
 }
 
 
@@ -94,7 +93,6 @@ void operator>>(const QDBusArgument &arg, TrackData &trackData)
         >> trackData.albumIndex >> trackData.year
         >> trackData.playlistIndex;
     arg.endStructure();
-//    qDebug() << "doing my thing reading" << foo.value;
 }
 
 

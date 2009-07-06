@@ -73,7 +73,7 @@ public slots:
     Q_SCRIPTABLE int currentTrackIndex() const;
     Q_SCRIPTABLE QStringList list() const;
     Q_SCRIPTABLE QStringList tracks(int start, int count) const;
-    Q_SCRIPTABLE bool setCurrentTrack(int index);
+    Q_SCRIPTABLE bool setCurrentTrackIndex(int index);
     Q_SCRIPTABLE bool setCurrentTrack(const QString &name);
     Q_SCRIPTABLE int indexOfTrack(const QString &name) const;
     Q_SCRIPTABLE bool setCWD(const QString &path);

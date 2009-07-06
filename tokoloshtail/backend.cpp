@@ -53,9 +53,8 @@ void Backend::prev()
     if (!playlistData.tracks.size()) {
         return;
     }
-    setCurrentTrack((playlistData.current +
-                     playlistData.tracks.size() - 1) %
-                    playlistData.tracks.size());
+    setCurrentTrackIndex((playlistData.current + playlistData.tracks.size() - 1)
+                         % playlistData.tracks.size());
     play();
 }
 
@@ -64,8 +63,8 @@ void Backend::next()
     if (!playlistData.tracks.size()) {
         return;
     }
-    setCurrentTrack((playlistData.current + 1) %
-                    playlistData.tracks.size());
+    setCurrentTrackIndex((playlistData.current + 1) %
+                         playlistData.tracks.size());
     play();
 }
 
@@ -130,6 +129,9 @@ QList<Function> Backend::findFunctions(const QString &functionName) const
                 Function func;
                 func.name = method.signature();
                 func.name.chop(func.name.size() - func.name.indexOf('('));
+                foreach(const QByteArray &parameter, method.parameterTypes()) {
+                    func.args.append(QMetaType::type(parameter.constData()));
+                }
                 ::addFunction(playlistData.root, func.name, func);
                 QSet<QString> used;
                 used.insert(func.name);
@@ -216,7 +218,7 @@ QStringList Backend::tracks(int start, int count) const
     return ret;
 }
 
-bool Backend::setCurrentTrack(int index)
+bool Backend::setCurrentTrackIndex(int index)
 {
     if (index >= 0 && index < playlistData.tracks.size()) {
         playlistData.current = index;
@@ -233,7 +235,7 @@ bool Backend::setCurrentTrack(const QString &name)
 {
     const int idx = playlistData.tracks.indexOf(name);
     if (idx != -1) {
-        setCurrentTrack(idx);
+        setCurrentTrackIndex(idx);
         return true;
     }
     return false;
@@ -256,7 +258,6 @@ TrackData Backend::trackData(const QString &filepath, int fields) const
 
 TrackData Backend::trackData(int index, int fields) const
 {
-    qDebug() << "trackData" << index << fields;
     if (index < 0 || index >= playlistData.tracks.size()) {
         qWarning("Invalid index %d, needs to be between 0-%d", index, playlistData.tracks.size() - 1);
         return TrackData();
