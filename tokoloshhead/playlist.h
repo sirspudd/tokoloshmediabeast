@@ -54,7 +54,7 @@ public:
 public slots:
     void onActivated(const QModelIndex &idx)
     {
-        d.interface->asyncCall("setCurrentTrack", idx.row());
+        d.interface->asyncCall("setCurrentTrackIndex", idx.row());
     }
 
     void setCurrentTrack(int i)
