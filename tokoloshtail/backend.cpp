@@ -272,6 +272,25 @@ TrackData Backend::trackData(int index, int fields) const
     return data;
 }
 
+static inline bool isValidFile(const QFileInfo &fi, Backend *backend)
+{
+    static QMutex mutex;
+    QMutexLocker locker(&mutex);
+    // ### should ask backend for supported extensions
+    static const QSet<QString> validExtensions = Config::value<QStringList>("extensions",
+                                                                            (QStringList() << "mp3" << "ogg" << "flac"
+                                                                             << "acc" << "m4a" << "mp4")).toSet();
+    static const bool ignoreExtension = Config::isEnabled("ignore-extension", false);
+    static const bool trustExtension = Config::isEnabled("trust-extension", true);
+    if (!ignoreExtension) {
+        const QString extension = fi.suffix().toLower();
+        if (!validExtensions.contains(extension))
+            return false;
+    }
+    Q_ASSERT(!backend || backend->thread() == QThread::currentThread());
+    return trustExtension || (backend && backend->isValid(fi.absoluteFilePath()));
+}
+
 static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }
 static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSet<QFileInfo> *seen, Backend *backend)
 { // if backend is 0 it's being run in a thread
@@ -296,24 +315,8 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
             ret += ::recursiveLoad(f, recurse, seen, backend);
         }
     } else if (file.isFile()) {
-        const QString path = file.absoluteFilePath();
-        if (backend) {
-            // this code is not threadsafe but it's never called in a separate thread
-            // Config is so far not threadsafe
-            static const QSet<QString> validExtensions = Config::value<QStringList>("extensions",
-                                                                                    (QStringList() << "mp3" << "ogg" << "flac"
-                                                                                     << "acc" << "m4a" << "mp4")).
-                                                         toSet();
-            static const bool ignoreExtension = Config::isEnabled("ignore-extension", false);
-            if (!ignoreExtension) {
-                const QString extension = file.suffix().toLower();
-                if (!validExtensions.contains(extension))
-                    return ret;
-            }
-        }
-
-        if (!backend || backend->isValid(path)) {
-            ret.append(path);
+        if (::isValidFile(file, backend)) {
+            ret.append(file.absoluteFilePath());
             // ### should I load song name here? Probably. Checking if
             // ### it's valid probably means parsing header anyway
         }
@@ -347,8 +350,10 @@ void Backend::onThreadFinished()
 {
     DirectoryThread *thread = qobject_cast<DirectoryThread*>(sender());
     QStringList valid;
+    static const bool trustExtension = Config::isEnabled("trust-extension", true);
     foreach(const QString &file, thread->songs) {
-        if (isValid(file)) {
+        qDebug() << trustExtension << file << isValid(file);
+        if (trustExtension || isValid(file)) {
             valid.append(file);
         }
     }
@@ -487,7 +492,6 @@ bool Backend::moveTrack(int from, int to)
 #ifdef Q_OS_UNIX
 void Backend::onUnixSignal(int)
 {
-    qDebug("%s %d: void Backend::onUnixSignal(int)", __FILE__, __LINE__);
     Config::setValue("playlist", playlistData.tracks);
     Config::setValue("current", playlistData.current);
     exit(0);
