@@ -41,10 +41,10 @@ int main(int argc, char *argv[])
     } else {
         new QCoreApplication(argc, argv);
     }
-    bool ret; // for QApplication::exec()
-    {
-        QObject interfaceManager; // so the interface gets deleted
-
+    bool ret; // for QApplication::exec() {
+    QObject interfaceManager; // so the interface gets deleted
+    QDBusInterface *interface = 0;
+    if (Config::isEnabled("dbus", true)) {
         if (!QDBusConnection::sessionBus().isConnected()) {
             fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
                     "To start it, run:\n"
@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        QDBusInterface *interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
+        interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
         if (!interface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
             if (!QProcess::startDetached("tokoloshtail")
-                && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../tokoloshtail/tokoloshtail")
+                && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../bin/tokoloshtail")
                 && !interface->isValid()) {
                 qWarning("Can't start tokoloshtail");
                 return 1;
@@ -91,20 +91,16 @@ int main(int argc, char *argv[])
                 QList<Function> functions;
                 functions.append(readDBusMessage<Function>(interface->call("findFunction", arg)));
                 QString error;
-                qDebug() << functions.value(0).name;
                 foreach(const Function &f, functions) {
-                    qDebug() << f.name;
                     if (argc - i - 1 < f.args.size()) {
                         error = QString("Not enough arguments specified for %1 needed %2, got %3").
                                 arg(f.name).arg(f.args.size()).arg(argc - i - 1);
-                        qDebug() << error;
+                        qDebug("%s", qPrintable(error));
                         continue;
                     }
-                    qDebug() << f.args.size();
 
                     QList<QVariant> arguments;
                     int ii = i;
-                    qDebug() << f.args;
                     for (int j=0; j<f.args.size(); ++j) {
                         QVariant variant = args.at(++ii);
                         if (!variant.convert(static_cast<QVariant::Type>(f.args.at(j)))) {
@@ -116,7 +112,6 @@ int main(int argc, char *argv[])
                     if (!error.isEmpty())
                         continue;
                     i = ii;
-                    qDebug() << arguments;
                     const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, f.name, arguments);
                     // ### what if it can't call the function?
                     if (!ret.arguments().isEmpty())
@@ -147,18 +142,18 @@ int main(int argc, char *argv[])
             interface->call("sendWakeUp");
             return 0;
         }
+    }
 
-        Player player(interface);
-        if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
-            const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
-            Q_ASSERT(ret);
-            Q_UNUSED(ret);
-        }
-        player.show();
-        ret = qApp->exec();
-        if (Config::isEnabled("pauseonexit", true)) {
-            interface->call("pause");
-        }
+    Player player(interface);
+    if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
+        const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
+        Q_ASSERT(ret);
+        Q_UNUSED(ret);
+    }
+    player.show();
+    ret = qApp->exec();
+    if (Config::isEnabled("pauseonexit", true)) {
+        interface->call("pause");
     }
     delete qApp;
     return ret;

@@ -105,6 +105,11 @@ public:
         Config::setValue(key, on);
     }
 
+    static inline bool isDisabled(const QString &k, bool defaultValue = false)
+    {
+        return !isEnabled(k, !defaultValue);
+    }
+
     static bool isEnabled(const QString &k, bool defaultValue = false)
     {
         const QString key = k.toLower();
@@ -201,8 +206,12 @@ private:
     Config() {}
     static QVariant valueFromCommandLine(const QString &key);
     static void useArg(int index);
+
     static QStringList unused, args;
     static QSettings *instance;
+//     static QMutex argsMutex;
+//     static QMutex unusedMutex;
+//     static QMutex settingsMutex;
 };
 
 #endif

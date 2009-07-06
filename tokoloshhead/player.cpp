@@ -132,10 +132,12 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
     }
 
     d.interface = interface;
-    d.model = new TrackModel(d.interface, this);
-    d.playlist = new PlaylistWidget(d.interface, d.model);
+    if (d.interface) {
+        d.model = new TrackModel(d.interface, this);
+        d.playlist = new PlaylistWidget(d.interface, d.model);
 
-    d.interface->connection().connect(SERVICE_NAME, "/", QString(), "wakeUp", this, SLOT(wakeUp()));
+        d.interface->connection().connect(SERVICE_NAME, "/", QString(), "wakeUp", this, SLOT(wakeUp()));
+    }
 
     if (!Config::isEnabled("titlebar", false)) {
         Qt::WindowFlags flags = windowFlags() | Qt::FramelessWindowHint;
@@ -220,7 +222,8 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
         }
         // ### icons?
         action->setCheckable(buttonInfo[i].checkable);
-        connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
+        if (buttonInfo[i].receiver)
+            connect(action, SIGNAL(triggered(bool)), buttonInfo[i].receiver, buttonInfo[i].member);
         addAction(action);
         if (buttonInfo[i].checkable && Config::isEnabled(buttonInfo[i].name)) {
             QTimer::singleShot(0, action, SLOT(trigger()));

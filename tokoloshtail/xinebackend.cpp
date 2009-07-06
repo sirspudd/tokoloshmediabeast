@@ -1,4 +1,3 @@
-#ifdef XINEBACKEND
 #include "xinebackend.h"
 #include <xine.h>
 #include <xine/xineutils.h>
@@ -28,8 +27,7 @@ static bool initStream(Node *node, const QString &fileName)
     xine_close(node->stream);
 
     if (!xine_open(node->stream, fileName.toLocal8Bit().constData())) {
-//    if (!xine_open(node->stream, qPrintable(fileName))) {
-        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
+//        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
         return false;
     }
 //    qDebug() << "fileName" << fileName;
@@ -111,8 +109,8 @@ struct Private
     int pendingProgress;
 };
 
-XineBackend::XineBackend()
-    : d(new Private)
+XineBackend::XineBackend(QObject *parent)
+    : Backend(parent), d(new Private)
 {
 }
 
@@ -456,4 +454,11 @@ void XineBackend::setEqualizerSettings(const QHash<int, int> &eq)
     d->updateError(d->main.stream);
 }
 
-#endif
+extern "C" {
+    BackendPlugin *createTokoloshBackendInterface()
+    {
+        return new XineBackendPlugin;
+    }
+};
+
+

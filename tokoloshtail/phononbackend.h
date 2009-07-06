@@ -1,17 +1,17 @@
-#ifdef PHONONBACKEND
 #ifndef PHONONBACKEND_H
 #define PHONONBACKEND_H
 
 #include <QtCore>
 #include <phonon>
 #include "backend.h"
+#include "backendplugin.h"
 
 struct Private;
-class PhononBackend : public Backend
+class Q_DECL_EXPORT PhononBackend : public Backend
 {
     Q_OBJECT
 public:
-    PhononBackend();
+    PhononBackend(QObject *parent);
     virtual ~PhononBackend();
     virtual bool initBackend();
     virtual void shutdown();
@@ -35,5 +35,16 @@ private:
     Private *d;
 };
 
-#endif
+class Q_DECL_EXPORT PhononBackendPlugin : public BackendPlugin
+{
+public:
+    PhononBackendPlugin() : BackendPlugin(QStringList() << QLatin1String("phonon") << QLatin1String("phononbackend")) {}
+    virtual QObject *createBackend(QObject *parent)
+    {
+        return new PhononBackend(parent);
+    }
+
+};
+
+
 #endif

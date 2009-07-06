@@ -1,16 +1,16 @@
-#ifdef XINEBACKEND
 #ifndef XINEBACKEND_H
 #define XINEBACKEND_H
 
 #include <QtCore>
 #include "backend.h"
+#include "backendplugin.h"
 
 struct Private;
-class XineBackend : public Backend
+class Q_DECL_EXPORT XineBackend : public Backend
 {
     Q_OBJECT
 public:
-    XineBackend();
+    XineBackend(QObject *parent = 0);
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
@@ -36,5 +36,14 @@ private:
     Private *d;
 };
 
-#endif
+class Q_DECL_EXPORT XineBackendPlugin : public BackendPlugin
+{
+public:
+    XineBackendPlugin() : BackendPlugin(QStringList() << QLatin1String("xine") << QLatin1String("xinebackend")) {}
+    virtual QObject *createBackend(QObject *parent)
+    {
+        return new XineBackend(parent);
+    }
+
+};
 #endif

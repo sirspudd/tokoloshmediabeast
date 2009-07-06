@@ -21,3 +21,4 @@ unix {
 }
 HEADERS += $$PWD/log.h $$PWD/global.h $$PWD/config.h 
 SOURCES += $$PWD/log.cpp $$PWD/config.cpp $$PWD/global.cpp
+QT += dbus
