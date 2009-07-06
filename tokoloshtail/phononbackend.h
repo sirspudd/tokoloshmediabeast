@@ -38,7 +38,7 @@ private:
 class Q_DECL_EXPORT PhononBackendPlugin : public BackendPlugin
 {
 public:
-    PhononBackendPlugin() : BackendPlugin(QStringList() << QLatin1String("phonon") << QLatin1String("phononbackend")) {}
+    PhononBackendPlugin() : BackendPlugin(QStringList() << "phonon" << "phononbackend") {}
     virtual QObject *createBackend(QObject *parent)
     {
         return new PhononBackend(parent);

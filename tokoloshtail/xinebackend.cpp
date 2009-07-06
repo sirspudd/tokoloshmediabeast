@@ -409,12 +409,12 @@ QString XineBackend::errorMessage() const
 {
     switch (errorCode()) {
     case XINE_ERROR_NONE: return QString();
-    case -1: return QLatin1String("Unknown error");
-    case XINE_ERROR_NO_INPUT_PLUGIN: return QLatin1String("XINE_ERROR_NO_INPUT_PLUGIN");
-    case XINE_ERROR_NO_DEMUX_PLUGIN: return QLatin1String("XINE_ERROR_NO_DEMUX_PLUGIN");
-    case XINE_ERROR_DEMUX_FAILED: return QLatin1String("XINE_ERROR_DEMUX_FAILED");
-    case XINE_ERROR_MALFORMED_MRL: return QLatin1String("XINE_ERROR_MALFORMED_MRL");
-    case XINE_ERROR_INPUT_FAILED: return QLatin1String("XINE_ERROR_INPUT_FAILED");
+    case -1: return "Unknown error";
+    case XINE_ERROR_NO_INPUT_PLUGIN: return "XINE_ERROR_NO_INPUT_PLUGIN";
+    case XINE_ERROR_NO_DEMUX_PLUGIN: return "XINE_ERROR_NO_DEMUX_PLUGIN";
+    case XINE_ERROR_DEMUX_FAILED: return "XINE_ERROR_DEMUX_FAILED";
+    case XINE_ERROR_MALFORMED_MRL: return "XINE_ERROR_MALFORMED_MRL";
+    case XINE_ERROR_INPUT_FAILED: return "XINE_ERROR_INPUT_FAILED";
     default:
         break;
     }

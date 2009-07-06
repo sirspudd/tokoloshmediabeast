@@ -3,15 +3,13 @@
 void initApp(const QString &appname, int argc, char **argv)
 {
     QCoreApplication::setApplicationName(appname);
-    QCoreApplication::setOrganizationName(QLatin1String("Donders"));
+    QCoreApplication::setOrganizationName("Donders");
     qDBusRegisterMetaType<TrackData>();
     qDBusRegisterMetaType<QHash<int, int> >();
     qDBusRegisterMetaType<Function>();
     qDBusRegisterMetaType<QList<Function> >();
 
     Config::init(argc, argv);
-//     app->setOrganizationDomain(QLatin1String("www.github.com/sirspudd/tokoloshmediabeast/tree/master"));
-//    qRegisterMetaType<QVariant>("QVariant");
 }
 
 TrackData &TrackData::operator|=(const TrackData &other)

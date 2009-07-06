@@ -1,12 +1,13 @@
 #include "config.h"
+
 QSettings *Config::instance = 0;
 QStringList Config::unused;
 QStringList Config::args;
-//QMutex Config::mutex;
+QMutex Config::mutex;
 
 // ### This class is not thread safe yet ###
 
-QStringList Config::unusedArguments()
+QStringList Config::unusedArgumentsImpl()
 {
     initUnused();
 //    QMutexLocker locker(&argsMutex);
@@ -23,7 +24,7 @@ void Config::useArg(int index)
 
 QVariant Config::valueFromCommandLine(const QString &key)
 {
-    const QStringList args = Config::arguments();
+    const QStringList args = Config::argumentsImpl();
     QRegExp rx(QString("--?%1=(.*)").arg(key));
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     QVariant value;
@@ -48,11 +49,11 @@ QSettings * Config::settings()
 //    static QMutex settingsMutex;
 //    QMutexLocker locker(&settingsMutex);
     if (!instance) {
-        QString fileName = valueFromCommandLine(QLatin1String("conf")).toString();
+        QString fileName = valueFromCommandLine("conf").toString();
         if (!fileName.isEmpty()) {
-            if (fileName == QLatin1String("none")
-                || fileName == QLatin1String("null")
-                || fileName == QLatin1String("/dev/null")) {
+            if (fileName == "none"
+                || fileName == "null"
+                || fileName == "/dev/null") {
                 fileName.clear();
 //         } else if (!QFile::exists(fileName)) {
 //             qWarning("%s doesn't seem to exist", qPrintable(fileName));
@@ -71,8 +72,8 @@ void Config::initUnused()
 //    QMutexLocker locker(&unusedMutex);
     if (unused.isEmpty()) {
         unused = Config::arguments();
-        unused.replaceInStrings(QRegExp(QLatin1String("--store"), Qt::CaseInsensitive), QString());
-        unused.replaceInStrings(QRegExp(QLatin1String("--save"), Qt::CaseInsensitive), QString());
+        unused.replaceInStrings(QRegExp("--store", Qt::CaseInsensitive), QString());
+        unused.replaceInStrings(QRegExp("--save", Qt::CaseInsensitive), QString());
     }
 }
 
@@ -81,8 +82,8 @@ bool Config::store()
     static enum { DontStore = 0x0, Store = 0x1, Unset = 0x2 } state = Unset;
     if (state == Unset) {
         const QStringList args = Config::arguments();
-        state = (args.contains(QLatin1String("--store"), Qt::CaseInsensitive)
-                 || args.contains(QLatin1String("--save"), Qt::CaseInsensitive)
+        state = (args.contains("--store", Qt::CaseInsensitive)
+                 || args.contains("--save", Qt::CaseInsensitive)
                  ? Store
                  : DontStore);
     }
@@ -90,9 +91,8 @@ bool Config::store()
     return (state == Store);
 }
 
-QStringList Config::arguments()
+QStringList Config::argumentsImpl()
 {
-//    QMutexLocker locker(&argsMutex);
     if (args.isEmpty())
         args = QCoreApplication::arguments();
     return args;
@@ -100,7 +100,7 @@ QStringList Config::arguments()
 
 void Config::init(int argc, char **argv)
 {
-//    QMutexLocker locker(&mutex);
+    QMutexLocker locker(&mutex);
     args.clear();
     for (int i=0; i<argc; ++i) {
         args.append(QString::fromLocal8Bit(argv[i]));

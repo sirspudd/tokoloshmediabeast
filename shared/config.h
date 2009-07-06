@@ -112,8 +112,9 @@ public:
 
     static bool isEnabled(const QString &k, bool defaultValue = false)
     {
+        QMutexLocker locker(&mutex);
         const QString key = k.toLower();
-        const QStringList args = Config::arguments();
+        const QStringList args = Config::argumentsImpl();
         enum { Unset = -1, False = 0, True = 1 } value = Unset;
         struct {
             const char *prefix;
@@ -161,15 +162,38 @@ public:
 
     template <typename T> static bool contains(const QString &key)
     {
-        arguments();
+        QMutexLocker locker(&mutex);
         bool ok;
-        (void)value<T>(key, T(), &ok);
+        (void)valueImpl<T>(key, T(), &ok);
         return ok;
     }
 
     template <typename T> static T value(const QString &k, const T &defaultValue = T(), bool *ok_in = 0)
     {
-        arguments();
+        QMutexLocker locker(&mutex);
+        return valueImpl<T>(k, defaultValue, ok_in);
+    }
+    template <typename T> static void setValue(const QString &key, const T &t)
+    {
+        QMutexLocker locker(&mutex);
+        setValueImpl<T>(key, t);
+    }
+
+    static QStringList unusedArguments()
+    {
+        QMutexLocker locker(&mutex);
+        return unusedArgumentsImpl();
+    }
+    static QStringList arguments()
+    {
+        QMutexLocker locker(&mutex);
+        return argumentsImpl();
+    }
+    static void init(int argc, char **argv);
+private:
+    template <typename T> static T valueImpl(const QString &k, const T &defaultValue = T(), bool *ok_in = 0)
+    {
+        argumentsImpl();
         const QString key = k.toLower();
         QVariant value = valueFromCommandLine(key);
         T t;
@@ -177,10 +201,11 @@ public:
         QSettings *s = settings();
         if (!value.isNull()) {
             ok = ::read(value, t);
-            if (ok && store())
-                Config::setValue<T>(key, t);
-        } else {
-            ok = ::read(s, k, t);
+            if (ok && store()) {
+                Config::setValueImpl<T>(key, t);
+            } else {
+                ok = ::read(s, k, t);
+            }
         }
 
         if (ok_in)
@@ -188,18 +213,15 @@ public:
         return ok ? t : defaultValue;
     }
 
-    template <typename T> static void setValue(const QString &key, const T &t)
+    template <typename T> static void setValueImpl(const QString &key, const T &t)
     {
-        arguments();
+        argumentsImpl();
         QSettings *s = settings();
         ::write(s, key, t);
         s->sync();
     }
-
-    static QStringList unusedArguments();
-    static QStringList arguments();
-    static void init(int argc, char **argv);
-private:
+    static QStringList argumentsImpl();
+    static QStringList unusedArgumentsImpl();
     static QSettings *settings();
     static void initUnused();
     static bool store();
@@ -209,6 +231,7 @@ private:
 
     static QStringList unused, args;
     static QSettings *instance;
+    static QMutex mutex;
 //     static QMutex argsMutex;
 //     static QMutex unusedMutex;
 //     static QMutex settingsMutex;

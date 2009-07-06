@@ -22,18 +22,21 @@ private:
     {}
 };
 
-QIODevice *Log::Private::logDevice = 0;
-QMutex Log::Private::logDeviceMutex;
+QIODevice *Log::logDevice = 0;
+QMutex Log::logDeviceMutex;
 
 QDebug Log::log(int verbosity)
 {
-    QMutexLocker locker(&Private::logDeviceMutex);
+    QMutexLocker locker(&logDeviceMutex);
     enum { DefaultVerbosity = 0 };
     if (verbosity <= Config::value<int>("verbosity", DefaultVerbosity)) {
-        if (!Private::logDevice) {
+        if (!logDevice) {
             return qDebug();
+        } else if (QThread::currentThread() == logDevice->thread()) {
+            return QDebug(logDevice);
         } else {
-            return QDebug(Private::logDevice);
+            // ### what do I do here?
+            return qDebug();
         }
     } else {
         return QDebug(DevNull::instance());
@@ -42,10 +45,10 @@ QDebug Log::log(int verbosity)
 
 QString Log::logFile()
 {
-    QMutexLocker locker(&Private::logDeviceMutex);
-    if (!Private::logDevice) {
+    QMutexLocker locker(&logDeviceMutex);
+    if (!logDevice) {
         return "stderr";
-    } else if (QFile *file = qobject_cast<QFile*>(Private::logDevice)) {
+    } else if (QFile *file = qobject_cast<QFile*>(logDevice)) {
         return QFileInfo(*file).absoluteFilePath();
     } else {
         return QString();
@@ -64,7 +67,7 @@ bool Log::setLogFile(const QString &file)
 
 void Log::setLogDevice(QIODevice *device)
 {
-    QMutexLocker locker(&Private::logDeviceMutex);
-    delete Private::logDevice;
-    Private::logDevice = device;
+    QMutexLocker locker(&logDeviceMutex);
+    delete logDevice;
+    logDevice = device;
 }

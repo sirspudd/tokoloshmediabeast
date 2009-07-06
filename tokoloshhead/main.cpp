@@ -26,7 +26,7 @@ static inline bool startGui()
 static inline QString toString(const QVariant &var)
 {
     if (var.type() == QVariant::StringList) {
-        return var.toStringList().join(QLatin1String("\n"));
+        return var.toStringList().join("\n");
     } else {
         return var.toString();
     }
@@ -34,7 +34,7 @@ static inline QString toString(const QVariant &var)
 
 int main(int argc, char *argv[])
 {
-    ::initApp(QLatin1String("tokoloshhead"), argc, argv);
+    ::initApp("tokoloshhead", argc, argv);
     const bool gui = startGui();
     if (gui) {
         new QApplication(argc, argv);
@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
                     if (!error.isEmpty())
                         continue;
                     i = ii;
+                    // should this be async?
                     const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, f.name, arguments);
                     // ### what if it can't call the function?
                     if (!ret.arguments().isEmpty())
@@ -126,7 +127,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        foreach(QString arg, Config::unusedArguments()) {
+        foreach(const QString &arg, Config::unusedArguments()) {
             const QFileInfo fi(arg);
             if (!fi.exists()) {
                 if (!arg.startsWith("-")) {
@@ -145,11 +146,6 @@ int main(int argc, char *argv[])
     }
 
     Player player(interface);
-    if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
-        const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
-        Q_ASSERT(ret);
-        Q_UNUSED(ret);
-    }
     player.show();
     ret = qApp->exec();
     if (Config::isEnabled("pauseonexit", true)) {

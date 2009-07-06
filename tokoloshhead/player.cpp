@@ -70,7 +70,7 @@ template <class T> static void setShortcuts(T *t)
     for (int i=0; i<list.size(); ++i) {
         const QString str = ::unquote(list.at(i));
         QKeySequence key;
-        if (str == QLatin1String("[default]")) {
+        if (str == "[default]") {
             key = defaultShortcut;
         } else {
             key = QKeySequence(str);
@@ -281,6 +281,11 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
 //     d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle);
     d.volumeSlider = 0;
     reloadSettings();
+    if (!setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
+        const bool ret = setSkin(":/skins/dullSod");
+        Q_ASSERT(ret);
+        Q_UNUSED(ret);
+    }
 }
 
 Player::~Player()

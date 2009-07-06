@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    ::initApp(QLatin1String("tokoloshtail"), argc, argv);
+    ::initApp("tokoloshtail", argc, argv);
     QCoreApplication app(argc, argv);
     if (!QDBusConnection::sessionBus().isConnected()) {
         fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 //    const QString pluginDirectory = Config::value<QString>("plugindir", PLUGINDIR); // ### Can't make this work
     const QString pluginDirectory = Config::value<QString>("plugindir", QCoreApplication::applicationDirPath() + "/../tokoloshtail/plugins");
     Log::log(10) << "Using plugin directory" << pluginDirectory;
-    const QString backendName = Config::value<QString>(QLatin1String("backend"), QLatin1String("xine"));
+    const QString backendName = Config::value<QString>("backend", "xine");
     Log::log(10) << "Searching for backend" << backendName;
     QDir dir(pluginDirectory);
     if (!dir.exists()) {

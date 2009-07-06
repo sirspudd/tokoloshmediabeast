@@ -39,7 +39,7 @@ private:
 class Q_DECL_EXPORT XineBackendPlugin : public BackendPlugin
 {
 public:
-    XineBackendPlugin() : BackendPlugin(QStringList() << QLatin1String("xine") << QLatin1String("xinebackend")) {}
+    XineBackendPlugin() : BackendPlugin(QStringList() << "xine" << "xinebackend") {}
     virtual QObject *createBackend(QObject *parent)
     {
         return new XineBackend(parent);
