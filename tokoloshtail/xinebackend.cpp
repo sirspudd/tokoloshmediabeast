@@ -27,8 +27,7 @@ static bool initStream(Node *node, const QString &fileName)
     xine_close(node->stream);
 
     if (!xine_open(node->stream, fileName.toLocal8Bit().constData())) {
-//    if (!xine_open(node->stream, qPrintable(fileName))) {
-        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
+//        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
         return false;
     }
 //    qDebug() << "fileName" << fileName;
