@@ -113,7 +113,7 @@ private slots:
     void onUnixSignal(int signal);
 #endif
 protected:
-    Backend();
+    Backend(QObject *parent);
     virtual ~Backend();
     struct PlaylistData {
         PlaylistData() : current(-1), seenPaths(0), root(0) {}

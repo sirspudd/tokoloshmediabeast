@@ -1,4 +1,3 @@
-#ifdef PHONONBACKEND
 #include "phononbackend.h"
 
 struct Private
@@ -11,8 +10,8 @@ struct Private
     Phonon::AudioOutput *audioOutput;
 };
 
-PhononBackend::PhononBackend()
-    : d(new Private)
+PhononBackend::PhononBackend(QObject *parent)
+    : Backend(parent), d(new Private)
 {
 }
 
@@ -267,6 +266,12 @@ void PhononBackend::setEqualizerSettings(const QHash<int, int> &eq)
     }
     d->updateError(d->main.stream);
 }
-#endif
 
+extern "C" {
+    // ### why doesn't this work?
+    BackendPlugin *createTokoloshBackendInterface()
+    {
+        return new PhononBackendPlugin;
+    }
+};
 #endif

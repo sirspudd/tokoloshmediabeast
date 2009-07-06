@@ -1,6 +1,8 @@
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
+DESTDIR = ../bin
+TARGET = tokoloshhead
 
 HEADERS += player.h widgets.h shortcutdialog.h skinselectiondialog.h model.h playlist.h resizer.h ../shared/global.h
 

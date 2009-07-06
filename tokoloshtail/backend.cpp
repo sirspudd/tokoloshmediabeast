@@ -22,7 +22,8 @@ Backend *Backend::instance()
     return inst;
 }
 
-Backend::Backend()
+Backend::Backend(QObject *parent)
+    : QObject(parent)
 {
     startTimer(1000);
     Q_ASSERT(!inst);

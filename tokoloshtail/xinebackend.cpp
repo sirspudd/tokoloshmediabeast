@@ -1,4 +1,3 @@
-#ifdef XINEBACKEND
 #include "xinebackend.h"
 #include <xine.h>
 #include <xine/xineutils.h>
@@ -111,8 +110,8 @@ struct Private
     int pendingProgress;
 };
 
-XineBackend::XineBackend()
-    : d(new Private)
+XineBackend::XineBackend(QObject *parent)
+    : Backend(parent), d(new Private)
 {
 }
 
@@ -456,4 +455,11 @@ void XineBackend::setEqualizerSettings(const QHash<int, int> &eq)
     d->updateError(d->main.stream);
 }
 
-#endif
+extern "C" {
+    BackendPlugin *createTokoloshBackendInterface()
+    {
+        return new XineBackendPlugin;
+    }
+};
+
+

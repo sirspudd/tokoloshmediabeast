@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         QDBusInterface *interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
         if (!interface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
             if (!QProcess::startDetached("tokoloshtail")
-                && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../tokoloshtail/tokoloshtail")
+                && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../bin/tokoloshtail")
                 && !interface->isValid()) {
                 qWarning("Can't start tokoloshtail");
                 return 1;
