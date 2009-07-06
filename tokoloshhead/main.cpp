@@ -41,10 +41,10 @@ int main(int argc, char *argv[])
     } else {
         new QCoreApplication(argc, argv);
     }
-    bool ret; // for QApplication::exec()
-    {
-        QObject interfaceManager; // so the interface gets deleted
-
+    bool ret; // for QApplication::exec() {
+    QObject interfaceManager; // so the interface gets deleted
+    QDBusInterface *interface = 0;
+    if (Config::isEnabled("dbus", true)) {
         if (!QDBusConnection::sessionBus().isConnected()) {
             fprintf(stderr, "Cannot connect to the D-Bus session bus.\n"
                     "To start it, run:\n"
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        QDBusInterface *interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
+        interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
         if (!interface->isValid() || Config::isEnabled("restartbackend")) { // tokoloshtail will kill existing process
             if (!QProcess::startDetached("tokoloshtail")
                 && !QProcess::startDetached(QCoreApplication::applicationDirPath() + "/../bin/tokoloshtail")
@@ -147,18 +147,18 @@ int main(int argc, char *argv[])
             interface->call("sendWakeUp");
             return 0;
         }
+    }
 
-        Player player(interface);
-        if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
-            const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
-            Q_ASSERT(ret);
-            Q_UNUSED(ret);
-        }
-        player.show();
-        ret = qApp->exec();
-        if (Config::isEnabled("pauseonexit", true)) {
-            interface->call("pause");
-        }
+    Player player(interface);
+    if (!player.setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
+        const bool ret = player.setSkin(QLatin1String(":/skins/dullSod"));
+        Q_ASSERT(ret);
+        Q_UNUSED(ret);
+    }
+    player.show();
+    ret = qApp->exec();
+    if (Config::isEnabled("pauseonexit", true)) {
+        interface->call("pause");
     }
     delete qApp;
     return ret;
