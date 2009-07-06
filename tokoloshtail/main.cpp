@@ -1,6 +1,7 @@
 #include "../shared/global.h"
 #include <QtCore>
 #include <QtDBus>
+#include "log.h"
 #include "backendplugin.h"
 //#undef PLUGINDIR
 
@@ -17,10 +18,12 @@ int main(int argc, char *argv[])
 
 //    const QString pluginDirectory = Config::value<QString>("plugindir", PLUGINDIR); // ### Can't make this work
     const QString pluginDirectory = Config::value<QString>("plugindir", QCoreApplication::applicationDirPath() + "/../tokoloshtail/plugins");
+    Log::log(10) << "Using plugin directory" << pluginDirectory;
     const QString backendName = Config::value<QString>(QLatin1String("backend"), QLatin1String("xine"));
+    Log::log(10) << "Searching for backend" << backendName;
     QDir dir(pluginDirectory);
     if (!dir.exists()) {
-        qWarning("'%s' doesn't seem to exist", qPrintable(pluginDirectory));
+        Log::log(0) << pluginDirectory << " doesn't seem to exist";
         return 1;
     }
     QObject *backend = 0;
@@ -37,7 +40,7 @@ int main(int argc, char *argv[])
                     library = lib;
                     break;
                 } else {
-                    qWarning("%s doesn't seem to be able to create a backend", qPrintable(fi.absoluteFilePath()));
+                    Log::log(0) << fi.absoluteFilePath() << "doesn't seem to be able to create a backend";
                 }
                 delete interface;
             } else if (!interface) {
@@ -46,8 +49,9 @@ int main(int argc, char *argv[])
                 candidates[lib] = interface;
             }
         } else {
-            if (lib->isLoaded())
-                qDebug() << lib->errorString();
+            if (lib->isLoaded()) {
+                Log::log(1) << "Can't load" << fi.absoluteFilePath() << lib->errorString();
+            }
             delete lib;
         }
     }
@@ -68,7 +72,7 @@ int main(int argc, char *argv[])
         }
     }
     if (!backend) {
-        qWarning("Can't find a suitable backend");
+        Log::log(0) << "Can't find a suitable backend";
         return 1;
     }
     {
@@ -87,7 +91,7 @@ int main(int argc, char *argv[])
         ::sleep(500);
     }
     if (!registered) {
-        qWarning("Can't seem to register service %s", qPrintable(QDBusConnection::sessionBus().lastError().message()));
+        Log::log(0) << "Can't seem to register service" << QDBusConnection::sessionBus().lastError().message();
         return 1;
     }
 
@@ -98,12 +102,11 @@ int main(int argc, char *argv[])
         QString errorMessage;
         ok = backend->metaObject()->invokeMethod(backend, "errorCode", Q_RETURN_ARG(int, errorCode));
         ok = backend->metaObject()->invokeMethod(backend, "errorMessage", Q_RETURN_ARG(QString, errorMessage));
-        qWarning("%s:%d", qPrintable(errorMessage), errorCode);
+        Log::log(0) << errorMessage << errorCode;
         return 1;
     }
     QDBusConnection::sessionBus().registerObject("/", backend, QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportScriptableSignals);
-    printf("Using %s\n", backend->metaObject()->className());
-
+    Log::log(10) << "Using" << backend->metaObject()->className();
     const int appReturnValue = app.exec();
     delete backend;
     library->unload();

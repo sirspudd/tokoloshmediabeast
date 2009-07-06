@@ -2,26 +2,27 @@
 QSettings *Config::instance = 0;
 QStringList Config::unused;
 QStringList Config::args;
-QMutex Config::mutex;
+//QMutex Config::mutex;
+
+// ### This class is not thread safe yet ###
 
 QStringList Config::unusedArguments()
 {
-    QMutexLocker locker(&mutex);
     initUnused();
+//    QMutexLocker locker(&argsMutex);
     return QStringList(unused.mid(1)).filter(QRegExp("^..*$"));
 }
 
 void Config::useArg(int index)
 {
-    QMutexLocker locker(&mutex);
     initUnused();
+//    QMutexLocker locker(&argsMutex);
     Q_ASSERT(index < unused.size());
     unused[index].clear();
 }
 
 QVariant Config::valueFromCommandLine(const QString &key)
 {
-    QMutexLocker locker(&mutex);
     const QStringList args = Config::arguments();
     QRegExp rx(QString("--?%1=(.*)").arg(key));
     rx.setCaseSensitivity(Qt::CaseInsensitive);
@@ -44,7 +45,8 @@ QVariant Config::valueFromCommandLine(const QString &key)
 
 QSettings * Config::settings()
 {
-    QMutexLocker locker(&mutex);
+//    static QMutex settingsMutex;
+//    QMutexLocker locker(&settingsMutex);
     if (!instance) {
         QString fileName = valueFromCommandLine(QLatin1String("conf")).toString();
         if (!fileName.isEmpty()) {
@@ -66,7 +68,7 @@ QSettings * Config::settings()
 
 void Config::initUnused()
 {
-    QMutexLocker locker(&mutex);
+//    QMutexLocker locker(&unusedMutex);
     if (unused.isEmpty()) {
         unused = Config::arguments();
         unused.replaceInStrings(QRegExp(QLatin1String("--store"), Qt::CaseInsensitive), QString());
@@ -90,7 +92,7 @@ bool Config::store()
 
 QStringList Config::arguments()
 {
-    QMutexLocker locker(&mutex);
+//    QMutexLocker locker(&argsMutex);
     if (args.isEmpty())
         args = QCoreApplication::arguments();
     return args;
@@ -98,7 +100,7 @@ QStringList Config::arguments()
 
 void Config::init(int argc, char **argv)
 {
-    QMutexLocker locker(&mutex);
+//    QMutexLocker locker(&mutex);
     args.clear();
     for (int i=0; i<argc; ++i) {
         args.append(QString::fromLocal8Bit(argv[i]));

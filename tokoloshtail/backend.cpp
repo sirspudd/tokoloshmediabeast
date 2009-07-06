@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "log.h"
 #include <config.h>
 #ifdef Q_OS_UNIX
 #include <signal.h>
@@ -298,6 +299,7 @@ static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSe
         const QString path = file.absoluteFilePath();
         if (backend) {
             // this code is not threadsafe but it's never called in a separate thread
+            // Config is so far not threadsafe
             static const QSet<QString> validExtensions = Config::value<QStringList>("extensions",
                                                                                     (QStringList() << "mp3" << "ogg" << "flac"
                                                                                      << "acc" << "m4a" << "mp4")).
@@ -366,7 +368,7 @@ void Backend::onThreadFinished()
 bool Backend::load(const QString &path, bool recurse)
 {
     const QFileInfo fi(path);
-    qDebug() << path << recurse << fi.absoluteFilePath();
+    Log::log(5) << path << recurse << fi.absoluteFilePath();
     if (!fi.exists()) {
         qWarning("%s doesn't seem to exist", qPrintable(path));
         return false;

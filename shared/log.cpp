@@ -8,8 +8,11 @@ public:
     {
         static QMutex mutex;
         QMutexLocker locker(&mutex);
-        static DevNull *instance = new DevNull;
-        return instance;
+        static QHash<QThread*, DevNull*> instances;
+        DevNull *& inst = instances[QThread::currentThread()];
+        if (!inst)
+            inst = new DevNull;
+        return inst;
     }
     virtual qint64 readData(char*, qint64) { return -1; }
     virtual qint64 writeData(const char*, qint64) { return -1; }
@@ -25,7 +28,8 @@ QMutex Log::Private::logDeviceMutex;
 QDebug Log::log(int verbosity)
 {
     QMutexLocker locker(&Private::logDeviceMutex);
-    if (verbosity < Config::value<int>("verbosity", INT_MAX)) {
+    enum { DefaultVerbosity = 0 };
+    if (verbosity <= Config::value<int>("verbosity", DefaultVerbosity)) {
         if (!Private::logDevice) {
             return qDebug();
         } else {

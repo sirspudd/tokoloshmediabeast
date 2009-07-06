@@ -206,9 +206,12 @@ private:
     Config() {}
     static QVariant valueFromCommandLine(const QString &key);
     static void useArg(int index);
+
     static QStringList unused, args;
     static QSettings *instance;
-    static QMutex mutex;
+//     static QMutex argsMutex;
+//     static QMutex unusedMutex;
+//     static QMutex settingsMutex;
 };
 
 #endif
