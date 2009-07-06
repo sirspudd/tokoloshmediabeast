@@ -92,6 +92,8 @@ int main(int argc, char *argv[])
                 functions.append(readDBusMessage<Function>(interface->call("findFunction", arg)));
                 QString error;
                 foreach(const Function &f, functions) {
+                    if (f.name.isEmpty())
+                        break;
                     if (argc - i - 1 < f.args.size()) {
                         error = QString("Not enough arguments specified for %1 needed %2, got %3").
                                 arg(f.name).arg(f.args.size()).arg(argc - i - 1);

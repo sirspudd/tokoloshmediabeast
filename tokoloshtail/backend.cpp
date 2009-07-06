@@ -17,16 +17,37 @@ struct RootNode : public FunctionNode
     QStringList all;
 };
 
+static inline void fixCurrent(int *current, int size)
+{
+    if (size == 0) {
+        *current = -1;
+    } else {
+        *current = qBound(0, *current, size - 1);
+    }
+}
+
 Backend::Backend(QObject *parent)
     : QObject(parent)
 {
-    playlistData.tracks = Config::value<QStringList>("playlist", QStringList());
+    const QString playlistPath = Config::value<QString>("playlist",
+                                                        QString("%1/tokoloshhead_%2.m3u").
+                                                        arg(QDesktopServices::storageLocation(QDesktopServices::TempLocation)).
+                                                        arg(QCoreApplication::applicationPid()));
+    Config::setValue<QString>("playlist", playlistPath);
+    playlistData.playlist.setFileName(playlistPath);
+    sync(FromFile);
+    bool removed = false;
     for (int i=playlistData.tracks.size() - 1; i>=0; --i) {
         if (!QFile::exists(playlistData.tracks.at(i))) {
             playlistData.tracks.removeAt(i);
+            removed = true;
         }
     }
-    playlistData.current = qMin(playlistData.tracks.size() - 1, Config::value<int>("current"));
+    if (removed) {
+        sync(ToFile);
+    }
+    playlistData.current = Config::value<int>("current");
+    ::fixCurrent(&playlistData.current, playlistData.tracks.size());
 #ifdef Q_OS_UNIX
 //    QCoreApplication::watchUnixSignal(SIGINT, true); // doesn't seem to work
     connect(QCoreApplication::instance(), SIGNAL(unixSignal(int)), this, SLOT(onUnixSignal(int)));
@@ -36,7 +57,7 @@ Backend::Backend(QObject *parent)
 Backend::~Backend()
 {
     delete playlistData.root;
-    Config::setValue("playlist", playlistData.tracks);
+//    Config::setValue("playlist", playlistData.tracks);
     Config::setValue("current", playlistData.current);
 }
 
@@ -61,21 +82,18 @@ void Backend::next()
     play();
 }
 
-void Backend::crop(int index)
+void Backend::crop()
 {
     if (playlistData.tracks.size() <= 1)
         return;
     Q_ASSERT(playlistData.current != -1);
-    if (index == -1)
-        index = playlistData.current;
-    if (index < 0 || index >= playlistData.tracks.size()) {
-        qWarning("crop. Invalid index %d (0-%d)", index, playlistData.tracks.size());
-        return;
-    }
-    if (index + 1 < playlistData.tracks.size())
-        removeTracks(index + 1, playlistData.tracks.size() - 1 - index);
-    if (index > 0)
-        removeTracks(0, index);
+    playlistData.blockSync = true;
+    if (playlistData.current + 1 < playlistData.tracks.size())
+        removeTracks(playlistData.current + 1, playlistData.tracks.size() - 1 - playlistData.current);
+    if (playlistData.current > 0)
+        removeTracks(0, playlistData.current);
+    playlistData.blockSync = false;
+    sync(ToFile);
 }
 
 static void addFunction(FunctionNode *node, const QString &string, const Function &function)
@@ -122,6 +140,7 @@ QList<Function> Backend::findFunctions(const QString &functionName) const
                 Function func;
                 func.name = method.signature();
                 func.name.chop(func.name.size() - func.name.indexOf('('));
+//                qDebug() << method.parameterNames() << func.name << method.parameterTypes();
                 foreach(const QByteArray &parameter, method.parameterTypes()) {
                     func.args.append(QMetaType::type(parameter.constData()));
                 }
@@ -179,12 +198,26 @@ int Backend::currentTrackIndex() const
     return playlistData.current;
 }
 
+static inline int width(int num)
+{
+    int count = 1;
+    while (num >= 10) {
+        ++count;
+        num /= 10;
+    }
+    return count;
+}
+
 QStringList Backend::list() const
 {
     QStringList ret = playlistData.tracks;
+    const int width = ::width(ret.size()) + 2;
     for (int i=0; i<ret.size(); ++i) {
         QString &ref = ret[i];
-        ref.prepend(QString("%1 ").arg(i + 1));
+        ref.prepend(QString("%1. ").arg(i + 1, width));
+        if (i == playlistData.current) {
+            ref[0] = '*';
+        }
     }
     return ret;
 }
@@ -214,9 +247,10 @@ bool Backend::setCurrentTrackIndex(int index)
 {
     if (index >= 0 && index < playlistData.tracks.size()) {
         playlistData.current = index;
-        const QString& filePath = playlistData.tracks.at(index);
+        const QString &filePath = playlistData.tracks.at(index);
         loadFile(filePath);
         emit currentTrackChanged(index, filePath); //, trackData(playlistData.tracks.at(index)));
+        Config::setValue<int>("current", playlistData.current);
         return true;
     } else {
         return false;
@@ -272,57 +306,46 @@ TrackData Backend::trackData(int index, int fields) const
     return data;
 }
 
-static inline bool isValidFile(const QFileInfo &fi, Backend *backend)
+enum RecursiveLoadFlags {
+    Recurse = 0x1,
+    ResolveSymlinks = 0x2,
+    IgnoreExtension = 0x4
+};
+
+static inline bool resolveSymlink(QFileInfo *fi)
 {
-    static QMutex mutex;
-    QMutexLocker locker(&mutex);
-    // ### should ask backend for supported extensions
-    static const QSet<QString> validExtensions = Config::value<QStringList>("extensions",
-                                                                            (QStringList() << "mp3" << "ogg" << "flac"
-                                                                             << "acc" << "m4a" << "mp4")).toSet();
-    static const bool ignoreExtension = Config::isEnabled("ignore-extension", false);
-    static const bool trustExtension = Config::isEnabled("trust-extension", true);
-    if (!ignoreExtension) {
-        const QString extension = fi.suffix().toLower();
-        if (!validExtensions.contains(extension))
+    QSet<QFileInfo> seen;
+    while (fi->isSymLink()) {
+        if (seen.contains(*fi)) {
+            qWarning("Recursive symlink detected %s", qPrintable(fi->absoluteFilePath()));
             return false;
+        }
+        seen.insert(*fi);
+        *fi = QFileInfo(fi->readLink());
     }
-    Q_ASSERT(!backend || backend->thread() == QThread::currentThread());
-    return trustExtension || (backend && backend->isValid(fi.absoluteFilePath()));
+    return true;
 }
 
 static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }
-static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSet<QFileInfo> *seen, Backend *backend)
+static inline QStringList recursiveLoad(QFileInfo file, uint flags, const QSet<QString> &validExtensions)
 { // if backend is 0 it's being run in a thread
     QStringList ret;
-    static const bool resolveSymlinks = Config::isEnabled("resolvesymlinks", true);
-    const bool checkSeen = resolveSymlinks && (file.isSymLink() || file.isDir());
-    if (checkSeen) {
-        if (seen->contains(file)) {
-            qWarning("Recursive symlink detected %s", qPrintable(file.absoluteFilePath()));
-            return ret;
-        }
-        seen->insert(file);
+    if (file.isSymLink() && (!(flags & ResolveSymlinks) || !::resolveSymlink(&file))) {
+        return ret;
     }
-    if (file.isSymLink()) {
-        if (resolveSymlinks)
-            ret += ::recursiveLoad(file.readLink(), recurse, seen, backend);
-    } else if (file.isDir()) {
+    Q_ASSERT(!file.isSymLink());
+    if (file.isDir()) {
         const QDir dir(file.absoluteFilePath());
         QDir::Filters filter = QDir::Files;
-        if (recurse)
+        if (flags & Recurse)
             filter |= QDir::NoDotAndDotDot|QDir::Dirs;
         const QFileInfoList list = dir.entryInfoList(filter);
         foreach(const QFileInfo &f, list) {
-            Q_ASSERT(!f.isDir() || recurse);
-            ret += ::recursiveLoad(f, recurse, seen, backend);
+            Q_ASSERT(!f.isDir() || flags & Recurse);
+            ret += ::recursiveLoad(f, flags, validExtensions);
         }
-    } else if (file.isFile()) {
-        if (::isValidFile(file, backend)) {
-            ret.append(file.absoluteFilePath());
-            // ### should I load song name here? Probably. Checking if
-            // ### it's valid probably means parsing header anyway
-        }
+    } else if (file.isFile() && (flags & IgnoreExtension || validExtensions.contains(file.suffix().toLower()))) {
+        ret.append(file.absoluteFilePath());
     }
     return ret;
 }
@@ -332,18 +355,19 @@ class DirectoryThread : public QThread
 {
     Q_OBJECT
 public:
-    DirectoryThread(const QString &dir, QObject *parent)
-        : QThread(parent), directory(dir)
+    DirectoryThread(const QFileInfo &f, uint flg, const QSet<QString> &extensions, QObject *parent)
+        : QThread(parent), fileInfo(f), flags(flg), validExtensions(extensions)
     {
     }
 
     virtual void run()
     {
-        QSet<QFileInfo> seen;
-        songs = ::recursiveLoad(directory, true, &seen, 0);
+        songs = ::recursiveLoad(fileInfo, flags, validExtensions);
     }
 
-    const QString directory;
+    const QFileInfo fileInfo;
+    const uint flags;
+    const QSet<QString> validExtensions;
     QStringList songs;
 };
 
@@ -352,56 +376,77 @@ public:
 void Backend::onThreadFinished()
 {
     DirectoryThread *thread = qobject_cast<DirectoryThread*>(sender());
+    addTracks(thread->songs);
+    thread->deleteLater();
+}
+
+#endif
+
+void Backend::addTracks(const QStringList &list)
+{
     QStringList valid;
-    static const bool trustExtension = Config::isEnabled("trust-extension", true);
-    foreach(const QString &file, thread->songs) {
+    static const bool trustExtension = Config::isEnabled("trustextension", true);
+    foreach(const QString &file, list) {
         if (trustExtension || isValid(file)) {
             valid.append(file);
         }
     }
     if (!valid.isEmpty()) {
         playlistData.tracks.append(valid);
+//         if (playlistData.playlist.isWritable()) {
+//             QTextStream ts(&playlistData.playlist);
+//             for (int i=0; i<valid.size(); ++i) {
+//                 ts << valid.at(i) << endl;
+//             }
+//         } else {
+            sync(ToFile);
+//        }
         emit tracksInserted(playlistData.tracks.size() - valid.size(), valid.size());
-        if (playlistData.current == -1)
-            setCurrentTrack(0);
+        if (playlistData.current == -1) {
+            setCurrentTrackIndex(0);
+        }
     }
-    thread->deleteLater();
 }
-
-#endif
-
-
 
 bool Backend::load(const QString &path, bool recurse)
 {
-    const QFileInfo fi(path);
-    Log::log(5) << path << recurse << fi.absoluteFilePath();
-    if (!fi.exists()) {
-        qWarning("%s doesn't seem to exist", qPrintable(path));
+    static const QSet<QString> validExtensions = Config::value<QStringList>("extensions",
+                                                                            (QStringList() << "mp3" << "ogg" << "flac"
+                                                                             << "acc" << "m4a" << "mp4")).toSet();
+    static const bool resolveSymlinks = Config::isEnabled("resolvesymlinks", true);
+    static const bool ignoreExtension = Config::isEnabled("ignoreextension", false);
+
+    QFileInfo file(path);
+    if (file.isSymLink() && (!resolveSymlinks || !::resolveSymlink(&file))) {
+        return false;
+    }
+    uint flags = recurse ? Recurse : 0;
+    if (resolveSymlinks)
+        flags |= ResolveSymlinks;
+    if (ignoreExtension)
+        flags |= IgnoreExtension;
+
+    Log::log(5) << path << recurse << file.absoluteFilePath();
+    if (!file.exists()) {
+        qWarning("%s doesn't seem to exist", qPrintable(file.absoluteFilePath()));
         return false;
     }
 
 #ifdef THREADED_RECURSIVE_LOAD
-    if (recurse && fi.isDir()) {
-        DirectoryThread *thread = new DirectoryThread(path, this);
+    if (recurse && file.isDir()) {
+        DirectoryThread *thread = new DirectoryThread(file, flags, validExtensions, this);
         connect(thread, SIGNAL(finished()), this, SLOT(onThreadFinished()));
         thread->start();
         return true;
     }
-
 #endif
-    QSet<QFileInfo> seen;
-    const QStringList songs = ::recursiveLoad(path, recurse, &seen, this);
-    if (!songs.isEmpty()) {
-        playlistData.tracks.append(songs);
-        emit tracksInserted(playlistData.tracks.size() - songs.size(), songs.size());
-        if (playlistData.current == -1)
-            setCurrentTrack(0);
-        return true;
+    const QStringList songs = ::recursiveLoad(file, flags, validExtensions);
+    addTracks(songs);
+    if (file.isFile() && songs.isEmpty()) {
+        Log::log(0) << file.absoluteFilePath() << "doesn't seem to be a valid file";
+        return false;
     }
-    if (seen.size() == 1 && songs.isEmpty())
-        qWarning("[%s] doesn't seem to be a valid file", qPrintable((*seen.begin()).absoluteFilePath()));
-    return false;
+    return true;
 }
 
 bool Backend::setCWD(const QString &path)
@@ -452,16 +497,22 @@ bool Backend::removeTracks(int index, int count)
     const QStringList::iterator it = playlistData.tracks.begin() + index;
     playlistData.tracks.erase(it, it + count);
     emit tracksRemoved(index, count);
+    if (playlistData.tracks.isEmpty()) {
+        playlistData.current = -1;
+        action = EmitCurrentChanged;
+    }
     switch (action) {
     case Nothing:
         break;
     case EmitCurrentChanged:
-        emit currentTrackChanged(playlistData.current, playlistData.tracks.at(playlistData.current));
+        emit currentTrackChanged(playlistData.current, playlistData.tracks.value(playlistData.current));
         break;
     case Next:
         next();
         break;
     }
+    if (!playlistData.blockSync)
+        sync(ToFile);
     return true;
 }
 
@@ -475,6 +526,7 @@ bool Backend::swapTrack(int from, int to)
 
     playlistData.tracks.swap(from, to);
     emit tracksSwapped(from, to);
+    sync(ToFile);
     return true;
 }
 
@@ -488,6 +540,7 @@ bool Backend::moveTrack(int from, int to)
 
     playlistData.tracks.move(from, to);
     emit trackMoved(from, to);
+    sync(ToFile);
     return true;
 }
 
@@ -500,3 +553,54 @@ void Backend::onUnixSignal(int)
 }
 
 #endif
+
+QString Backend::playlist() const
+{
+    return playlistData.playlist.fileName();
+}
+
+void Backend::setPlaylist(const QString &file)
+{
+    playlistData.playlist.setFileName(file);
+    sync(FromFile);
+}
+
+bool Backend::sync(SyncMode sync)
+{
+    if (sync == ToFile) {
+        qDebug() << "syncing to file" << QFileInfo(playlistData.playlist.fileName()).absoluteFilePath();
+//         if (playlistData.playlist.isWritable())
+//             playlistData.playlist.remove();
+//        if (!playlistData.playlist.open(QIODevice::ReadWrite)) {
+        if (!playlistData.playlist.open(QIODevice::WriteOnly)) {
+            Log::log(0) << "Can't open" << QFileInfo(playlistData.playlist).absoluteFilePath() << "for writing";
+            return false;
+        }
+        QTextStream ts(&playlistData.playlist);
+        foreach(const QString &file, playlistData.tracks) {
+            ts << file;
+            ts << endl;
+        }
+        playlistData.playlist.close();
+    } else {
+        const int idx = playlistData.current;
+        const QString track = playlistData.tracks.value(idx);
+//        if (!playlistData.playlist.isReadable()) {
+        if (!playlistData.playlist.open(QIODevice::ReadOnly)) {
+            Log::log(0) << "Can't open" << QFileInfo(playlistData.playlist).absoluteFilePath() << "for reading";
+            return false;
+        }
+        playlistData.tracks.clear();
+        QTextStream ts(&playlistData.playlist);
+        while (!ts.atEnd()) {
+            playlistData.tracks.append(ts.readLine());
+        }
+        ::fixCurrent(&playlistData.current, playlistData.tracks.size());
+        const QString currentTrack = currentTrackName();
+        if (playlistData.current != idx || currentTrack != track) {
+            emit currentTrackChanged(playlistData.current, currentTrack);
+        }
+        playlistData.playlist.close();
+    }
+    return true;
+}

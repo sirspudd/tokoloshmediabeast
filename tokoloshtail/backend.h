@@ -77,12 +77,14 @@ public slots:
     Q_SCRIPTABLE int indexOfTrack(const QString &name) const;
     Q_SCRIPTABLE bool setCWD(const QString &path);
     Q_SCRIPTABLE QString CWD() const;
+    Q_SCRIPTABLE QString playlist() const;
+    Q_SCRIPTABLE void setPlaylist(const QString &file);
     Q_SCRIPTABLE void clear() { if (count() > 0) removeTracks(0, count()); }
     Q_SCRIPTABLE void quit();
     Q_SCRIPTABLE void sendWakeUp();
     Q_SCRIPTABLE void prev();
     Q_SCRIPTABLE void next();
-    Q_SCRIPTABLE void crop(int index = -1);
+    Q_SCRIPTABLE void crop();
     Q_SCRIPTABLE Function findFunction(const QString &functionName) const;
     Q_SCRIPTABLE QStringList functions() const;
 
@@ -115,15 +117,20 @@ private slots:
     void onUnixSignal(int signal);
 #endif
 protected:
+    enum SyncMode { ToFile, FromFile };
+    bool sync(SyncMode sync);
+    void addTracks(const QStringList &list);
     Backend(QObject *parent);
     virtual ~Backend();
     struct PlaylistData {
-        PlaylistData() : current(-1), seenPaths(0), root(0) {}
+        PlaylistData() : current(-1), seenPaths(0), root(0), blockSync(false) {}
         int current;
+        QFile playlist;
         QStringList tracks;
         QMap<QString, TrackData> cache;
         QSet<QString> *seenPaths;
         mutable RootNode *root;
+        bool blockSync;
     } playlistData;
 };
 
