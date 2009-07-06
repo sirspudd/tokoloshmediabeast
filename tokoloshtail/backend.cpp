@@ -295,13 +295,16 @@ static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath
 static inline QStringList recursiveLoad(const QFileInfo &file, bool recurse, QSet<QFileInfo> *seen, Backend *backend)
 { // if backend is 0 it's being run in a thread
     QStringList ret;
-    if (seen->contains(file)) {
-        qWarning("Recursive symlink detected %s", qPrintable(file.absoluteFilePath()));
-        return ret;
+    static const bool resolveSymlinks = Config::isEnabled("resolvesymlinks", true);
+    const bool checkSeen = resolveSymlinks && (file.isSymLink() || file.isDir());
+    if (checkSeen) {
+        if (seen->contains(file)) {
+            qWarning("Recursive symlink detected %s", qPrintable(file.absoluteFilePath()));
+            return ret;
+        }
+        seen->insert(file);
     }
-    seen->insert(file);
     if (file.isSymLink()) {
-        static const bool resolveSymlinks = Config::isEnabled("resolvesymlinks", true);
         if (resolveSymlinks)
             ret += ::recursiveLoad(file.readLink(), recurse, seen, backend);
     } else if (file.isDir()) {
