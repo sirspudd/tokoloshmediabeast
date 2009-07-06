@@ -71,7 +71,7 @@ void Config::initUnused()
 {
 //    QMutexLocker locker(&unusedMutex);
     if (unused.isEmpty()) {
-        unused = Config::arguments();
+        unused = Config::argumentsImpl();
         unused.replaceInStrings(QRegExp("--store", Qt::CaseInsensitive), QString());
         unused.replaceInStrings(QRegExp("--save", Qt::CaseInsensitive), QString());
     }
@@ -81,7 +81,7 @@ bool Config::store()
 {
     static enum { DontStore = 0x0, Store = 0x1, Unset = 0x2 } state = Unset;
     if (state == Unset) {
-        const QStringList args = Config::arguments();
+        const QStringList args = Config::argumentsImpl();
         state = (args.contains("--store", Qt::CaseInsensitive)
                  || args.contains("--save", Qt::CaseInsensitive)
                  ? Store

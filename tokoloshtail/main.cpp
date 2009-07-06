@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     QObject *backend = 0;
     QLibrary *library = 0;
     QHash<QLibrary*, BackendPlugin*> candidates;
+
     foreach(const QFileInfo &fi, dir.entryInfoList(QDir::Files, QDir::Size)) {
         QLibrary *lib = new QLibrary(fi.absoluteFilePath());
         CreateBackend createBackend = 0;
@@ -106,6 +107,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     QDBusConnection::sessionBus().registerObject("/", backend, QDBusConnection::ExportScriptableSlots|QDBusConnection::ExportScriptableSignals);
+
     Log::log(10) << "Using" << backend->metaObject()->className();
     const int appReturnValue = app.exec();
     delete backend;
