@@ -74,6 +74,16 @@ public:
             }
             area = Area(area << 1);
         }
+        if (d->areas & Left && areaRect(Left).right() >= pos.x()) {
+            return Left;
+        } else if (d->areas & Right && areaRect(Right).left() <= pos.x()) {
+            return Right;
+        } if (d->areas & Top && areaRect(Top).bottom() >= pos.y()) {
+            return Top;
+        } else if (d->areas & Bottom && areaRect(Bottom).top() <= pos.y()) {
+            return Bottom;
+        }
+
         return NoArea;
     }
 
