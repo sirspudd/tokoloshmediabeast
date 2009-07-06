@@ -193,7 +193,6 @@ public:
 private:
     template <typename T> static T valueImpl(const QString &k, const T &defaultValue = T(), bool *ok_in = 0)
     {
-        argumentsImpl();
         const QString key = k.toLower();
         QVariant value = valueFromCommandLine(key);
         T t;
@@ -203,9 +202,9 @@ private:
             ok = ::read(value, t);
             if (ok && store()) {
                 Config::setValueImpl<T>(key, t);
-            } else {
-                ok = ::read(s, k, t);
             }
+        } else {
+            ok = ::read(s, k, t);
         }
 
         if (ok_in)

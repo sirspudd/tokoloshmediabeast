@@ -367,7 +367,6 @@ void Backend::onThreadFinished()
 
 bool Backend::load(const QString &path, bool recurse)
 {
-    qDebug() << path << recurse;
     const QFileInfo fi(path);
     Log::log(5) << path << recurse << fi.absoluteFilePath();
     if (!fi.exists()) {
