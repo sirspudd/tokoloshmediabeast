@@ -105,6 +105,11 @@ public:
         Config::setValue(key, on);
     }
 
+    static inline bool isDisabled(const QString &k, bool defaultValue = false)
+    {
+        return !isEnabled(k, !defaultValue);
+    }
+
     static bool isEnabled(const QString &k, bool defaultValue = false)
     {
         const QString key = k.toLower();
