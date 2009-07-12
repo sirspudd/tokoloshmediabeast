@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS += tokoloshhead \
-	   tokoloshtail
+SUBDIRS += head \
+	   tail
 unix:system(mkdir -p $$PWD/bin)
 win:system(md $$PWD/bin)
