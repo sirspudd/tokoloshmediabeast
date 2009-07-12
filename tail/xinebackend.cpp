@@ -116,7 +116,6 @@ XineBackend::XineBackend(QObject *parent)
 
 XineBackend::~XineBackend()
 {
-    shutdown();
     delete d;
 }
 

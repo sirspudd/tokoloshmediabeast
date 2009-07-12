@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
 
     Log::log(10) << "Using" << backend->metaObject()->className();
     const int appReturnValue = app.exec();
+    backend->metaObject()->invokeMethod(backend, "shutdown");
     delete backend;
     library->unload();
     delete library;

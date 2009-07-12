@@ -17,7 +17,6 @@ PhononBackend::PhononBackend(QObject *parent)
 
 PhononBackend::~PhononBackend()
 {
-    shutdown();
     delete d;
 }
 
