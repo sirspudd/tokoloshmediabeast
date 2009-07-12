@@ -17,16 +17,16 @@ CONFIG += qdbus debug
 
 
 i18n.target = translations
-i18n.commands = lupdate tokoloshhead.pro
+i18n.commands = lupdate head.pro
 QMAKE_EXTRA_TARGETS += i18n
 
 i18nrelease.target = translations-release
-i18nrelease.commands = lrelease tokoloshhead.pro
+i18nrelease.commands = lrelease head.pro
 QMAKE_EXTRA_TARGETS += i18nrelease
 
-TRANSLATIONS += i18n/tokoloshhead.no.ts \
-		i18n/tokoloshhead.de.ts
+TRANSLATIONS += i18n/head.no.ts \
+		i18n/head.de.ts
 
 QT += dbus
-RESOURCES += tokoloshhead.qrc
+RESOURCES += head.qrc
 !include(../shared/shared.pri):error("Can't find shared.pri")
