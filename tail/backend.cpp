@@ -568,7 +568,7 @@ void Backend::setPlaylist(const QString &file)
 bool Backend::sync(SyncMode sync)
 {
     if (sync == ToFile) {
-        qDebug() << "syncing to file" << QFileInfo(playlistData.playlist.fileName()).absoluteFilePath();
+        Log::log(10) << "syncing to file" << QFileInfo(playlistData.playlist.fileName()).absoluteFilePath();
 //         if (playlistData.playlist.isWritable())
 //             playlistData.playlist.remove();
 //        if (!playlistData.playlist.open(QIODevice::ReadWrite)) {
