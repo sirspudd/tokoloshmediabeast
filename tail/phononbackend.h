@@ -9,9 +9,8 @@
 struct Private;
 class Q_DECL_EXPORT PhononBackend : public Backend
 {
-    Q_OBJECT
 public:
-    PhononBackend(QObject *parent);
+    PhononBackend(QObject *tail);
     virtual ~PhononBackend();
     virtual bool initBackend();
     virtual void shutdown();
@@ -39,7 +38,7 @@ class Q_DECL_EXPORT PhononBackendPlugin : public BackendPlugin
 {
 public:
     PhononBackendPlugin() : BackendPlugin(QStringList() << "phonon" << "phononbackend") {}
-    virtual QObject *createBackend(QObject *parent)
+    virtual Backend *createBackend(QObject *parent)
     {
         return new PhononBackend(parent);
     }

@@ -2,7 +2,8 @@
 #define BACKENDPLUGIN_H
 
 #include <QStringList>
-class Backend;
+#include "backend.h"
+class Tail;
 class BackendPlugin
 {
 public:
@@ -10,8 +11,7 @@ public:
     virtual ~BackendPlugin() {}
     QStringList keys() const { return k; }
 //    virtual Backend *createBackend(QObject *parent) = 0;
-    virtual QObject *createBackend(QObject *parent) = 0;
-
+    virtual Backend *createBackend(QObject *tail) = 0;
 
 private:
     const QStringList k;

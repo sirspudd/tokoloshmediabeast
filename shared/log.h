@@ -4,6 +4,7 @@
 #include <QtCore>
 
 /* thread safe */
+//#define NO_MUTEX /* not thread safe */
 class Log
 {
 public:
@@ -14,7 +15,9 @@ public:
 private:
     Log() {}
     static QIODevice *logDevice;
+#ifndef NO_MUTEX
     static QMutex logDeviceMutex;
+#endif
 };
 
 

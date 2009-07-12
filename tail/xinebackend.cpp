@@ -1,6 +1,7 @@
 #include "xinebackend.h"
 #include <xine.h>
 #include <xine/xineutils.h>
+#include <tail.h>
 
 #ifndef XINE_STREAM_COUNT
 #define XINE_STREAM_COUNT 3
@@ -36,7 +37,7 @@ static bool initStream(Node *node, const QUrl &url)
     return true;
 }
 
-struct Private
+struct Private : public QObject
 {
     Private() : xine(0), first(0), ao_port(0), event_queue(0),
                 status(Backend::Uninitalized), error(XINE_ERROR_NONE),
@@ -109,14 +110,16 @@ struct Private
     int pendingProgress;
 };
 
-XineBackend::XineBackend(QObject *parent)
-    : Backend(parent), d(new Private)
+XineBackend::XineBackend(QObject *tail)
+    : Backend("XineBackend", tail), d(new Private)
 {
 }
 
 XineBackend::~XineBackend()
 {
+    qDebug("%s %d: XineBackend::~XineBackend()", __FILE__, __LINE__);
     delete d;
+    qDebug("%s %d: delete d;", __FILE__, __LINE__);
 }
 
 bool XineBackend::initBackend()
@@ -168,6 +171,7 @@ bool XineBackend::initBackend()
 
 void XineBackend::shutdown()
 {
+    qDebug("%s %d: void XineBackend::shutdown()", __FILE__, __LINE__);
     if (d->status == Uninitalized)
         return;
     if (d->main.stream) {
@@ -198,7 +202,7 @@ void XineBackend::shutdown()
     xine_exit(d->xine);
     d->xine = 0;
     d->status = Uninitalized;
-    emit statusChanged(d->status);
+    statusChanged(d->status);
 }
 
 typedef QVariant (*Xine_Get_Meta_Info_Func)(xine_stream_t *stream, int info);
@@ -288,9 +292,9 @@ void XineBackend::play()
         }
         const bool ok = xine_play(d->main.stream, 0, 0);
         if (ok) {
-            d->pollTimer.start(500, this);
+            d->pollTimer.start(500, d); // what is this timer doing?
             d->status = Playing;
-            emit statusChanged(d->status);
+            statusChanged(d->status);
         } else {
             d->updateError(d->main.stream);
         }
@@ -307,7 +311,7 @@ void XineBackend::pause()
         xine_stop(d->main.stream);
         d->updateError(d->main.stream);
         d->status = Paused;
-        emit statusChanged(d->status);
+        statusChanged(d->status);
     }
 }
 
@@ -320,7 +324,7 @@ void XineBackend::stop()
         d->updateError(d->main.stream);
         d->pollTimer.stop();
         d->status = Stopped;
-        emit statusChanged(d->status);
+        statusChanged(d->status);
     }
 
 }
@@ -334,7 +338,6 @@ bool XineBackend::loadUrl(const QUrl &url)
         return false;
     if (node != &d->main) {
         ::swap(node, &d->main);
-//        emit currentTrackChanged(fileName);
     }
 
     return true;

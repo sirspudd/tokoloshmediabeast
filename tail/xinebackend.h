@@ -8,9 +8,8 @@
 struct Private;
 class Q_DECL_EXPORT XineBackend : public Backend
 {
-    Q_OBJECT
 public:
-    XineBackend(QObject *parent = 0);
+    XineBackend(QObject *tail);
     virtual ~XineBackend();
     virtual bool initBackend();
     virtual void shutdown();
@@ -40,9 +39,9 @@ class Q_DECL_EXPORT XineBackendPlugin : public BackendPlugin
 {
 public:
     XineBackendPlugin() : BackendPlugin(QStringList() << "xine" << "xinebackend") {}
-    virtual QObject *createBackend(QObject *parent)
+    virtual Backend *createBackend(QObject *tail)
     {
-        return new XineBackend(parent);
+        return new XineBackend(tail);
     }
 
 };

@@ -10,8 +10,8 @@ struct Private
     Phonon::AudioOutput *audioOutput;
 };
 
-PhononBackend::PhononBackend(QObject *parent)
-    : Backend(parent), d(new Private)
+PhononBackend::PhononBackend(QObject *tail)
+    : Backend("PhononBackend", tail), d(new Private)
 {
 }
 
@@ -91,7 +91,7 @@ void PhononBackend::play()
 //         if (ok) {
 //             d->pollTimer.start(500, this);
 //             d->status = Playing;
-//             emit statusChanged(d->status);
+//             statusChanged(d->status);
 //         } else {
 //             d->updateError(d->main.stream);
 //         }
@@ -108,7 +108,7 @@ void PhononBackend::pause()
 //         xine_stop(d->main.stream);
 //         d->updateError(d->main.stream);
 //         d->status = Idle;
-//         emit statusChanged(d->status);
+//         statusChanged(d->status);
 //     }
 }
 
@@ -121,7 +121,7 @@ void PhononBackend::stop()
 //         d->updateError(d->main.stream);
 //         d->pollTimer.stop();
 //         d->status = Idle;
-//         emit statusChanged(d->status);
+//         statusChanged(d->status);
 //     }
 }
 
@@ -134,7 +134,6 @@ bool PhononBackend::loadUrl(const QUrl &url)
 //         return false;
 //     if (node != &d->main) {
 //         ::swap(node, &d->main);
-// //        emit currentTrackChanged(fileName);
 //     }
 
 //    return true;

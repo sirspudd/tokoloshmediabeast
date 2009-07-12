@@ -6,8 +6,10 @@ class DevNull : public QIODevice
 public:
     static DevNull *instance()
     {
+#ifndef NO_MUTEX
         static QMutex mutex;
         QMutexLocker locker(&mutex);
+#endif
         static QHash<QThread*, DevNull*> instances;
         DevNull *& inst = instances[QThread::currentThread()];
         if (!inst)
@@ -20,14 +22,19 @@ private:
     DevNull()
         : QIODevice(QCoreApplication::instance())
     {}
+    static QMutex mutex;
 };
 
 QIODevice *Log::logDevice = 0;
+#ifndef NO_MUTEX
 QMutex Log::logDeviceMutex;
+#endif
 
 QDebug Log::log(int verb)
 {
+#ifndef NO_MUTEX
     QMutexLocker locker(&logDeviceMutex);
+#endif
     enum { DefaultVerbosity = 0 };
     static int verbosity = -1;
     if (verbosity == -1) {
@@ -53,7 +60,9 @@ QDebug Log::log(int verb)
 
 QString Log::logFile()
 {
+#ifndef NO_MUTEX
     QMutexLocker locker(&logDeviceMutex);
+#endif
     if (!logDevice) {
         return "stderr";
     } else if (QFile *file = qobject_cast<QFile*>(logDevice)) {
@@ -75,7 +84,9 @@ bool Log::setLogFile(const QString &file)
 
 void Log::setLogDevice(QIODevice *device)
 {
+#ifndef NO_MUTEX
     QMutexLocker locker(&logDeviceMutex);
+#endif
     delete logDevice;
     logDevice = device;
 }
