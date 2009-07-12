@@ -3,28 +3,25 @@
 QSettings *Config::instance = 0;
 QStringList Config::unused;
 QStringList Config::args;
-QMutex Config::mutex;
 
 // ### This class is not thread safe yet ###
 
-QStringList Config::unusedArgumentsImpl()
+QStringList Config::unusedArguments()
 {
     initUnused();
-//    QMutexLocker locker(&argsMutex);
     return QStringList(unused.mid(1)).filter(QRegExp("^..*$"));
 }
 
 void Config::useArg(int index)
 {
     initUnused();
-//    QMutexLocker locker(&argsMutex);
     Q_ASSERT(index < unused.size());
     unused[index].clear();
 }
 
 QVariant Config::valueFromCommandLine(const QString &key)
 {
-    const QStringList args = Config::argumentsImpl();
+    const QStringList args = Config::arguments();
     QRegExp rx(QString("--?%1=(.*)").arg(key));
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     QVariant value;
@@ -46,8 +43,6 @@ QVariant Config::valueFromCommandLine(const QString &key)
 
 QSettings * Config::settings()
 {
-//    static QMutex settingsMutex;
-//    QMutexLocker locker(&settingsMutex);
     if (!instance) {
         QString fileName = valueFromCommandLine("conf").toString();
         if (!fileName.isEmpty()) {
@@ -69,9 +64,8 @@ QSettings * Config::settings()
 
 void Config::initUnused()
 {
-//    QMutexLocker locker(&unusedMutex);
     if (unused.isEmpty()) {
-        unused = Config::argumentsImpl();
+        unused = Config::arguments();
         unused.replaceInStrings(QRegExp("--store", Qt::CaseInsensitive), QString());
         unused.replaceInStrings(QRegExp("--save", Qt::CaseInsensitive), QString());
     }
@@ -81,7 +75,7 @@ bool Config::store()
 {
     static enum { DontStore = 0x0, Store = 0x1, Unset = 0x2 } state = Unset;
     if (state == Unset) {
-        const QStringList args = Config::argumentsImpl();
+        const QStringList args = Config::arguments();
         state = (args.contains("--store", Qt::CaseInsensitive)
                  || args.contains("--save", Qt::CaseInsensitive)
                  ? Store
@@ -91,7 +85,7 @@ bool Config::store()
     return (state == Store);
 }
 
-QStringList Config::argumentsImpl()
+QStringList Config::arguments()
 {
     if (args.isEmpty())
         args = QCoreApplication::arguments();
@@ -100,7 +94,6 @@ QStringList Config::argumentsImpl()
 
 void Config::init(int argc, char **argv)
 {
-    QMutexLocker locker(&mutex);
     args.clear();
     for (int i=0; i<argc; ++i) {
         args.append(QString::fromLocal8Bit(argv[i]));

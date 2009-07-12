@@ -3,6 +3,7 @@
 
 #include <QtCore>
 
+/* thread safe */
 class Log
 {
 public:
