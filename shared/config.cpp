@@ -3,21 +3,21 @@
 QSettings *Config::instance = 0;
 QStringList Config::unused;
 QStringList Config::args;
-Mutex Config::mutex;
+QMutex Config::mutex;
 
 // ### This class is not thread safe yet ###
 
 QStringList Config::unusedArgumentsImpl()
 {
     initUnused();
-//    MutexLocker locker(&argsMutex);
+//    QMutexLocker locker(&argsMutex);
     return QStringList(unused.mid(1)).filter(QRegExp("^..*$"));
 }
 
 void Config::useArg(int index)
 {
     initUnused();
-//    MutexLocker locker(&argsMutex);
+//    QMutexLocker locker(&argsMutex);
     Q_ASSERT(index < unused.size());
     unused[index].clear();
 }
@@ -46,8 +46,8 @@ QVariant Config::valueFromCommandLine(const QString &key)
 
 QSettings * Config::settings()
 {
-//    static Mutex settingsMutex;
-//    MutexLocker locker(&settingsMutex);
+//    static QMutex settingsMutex;
+//    QMutexLocker locker(&settingsMutex);
     if (!instance) {
         QString fileName = valueFromCommandLine("conf").toString();
         if (!fileName.isEmpty()) {
@@ -69,7 +69,7 @@ QSettings * Config::settings()
 
 void Config::initUnused()
 {
-//    MutexLocker locker(&unusedMutex);
+//    QMutexLocker locker(&unusedMutex);
     if (unused.isEmpty()) {
         unused = Config::argumentsImpl();
         unused.replaceInStrings(QRegExp("--store", Qt::CaseInsensitive), QString());
@@ -100,7 +100,7 @@ QStringList Config::argumentsImpl()
 
 void Config::init(int argc, char **argv)
 {
-    MutexLocker locker(&mutex);
+    QMutexLocker locker(&mutex);
     args.clear();
     for (int i=0; i<argc; ++i) {
         args.append(QString::fromLocal8Bit(argv[i]));

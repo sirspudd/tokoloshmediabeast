@@ -2,7 +2,6 @@
 #define LOG_H
 
 #include <QtCore>
-#include "mutex.h"
 
 class Log
 {
@@ -14,7 +13,7 @@ public:
 private:
     Log() {}
     static QIODevice *logDevice;
-    static Mutex logDeviceMutex;
+    static QMutex logDeviceMutex;
 };
 
 

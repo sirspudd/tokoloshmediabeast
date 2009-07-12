@@ -116,8 +116,6 @@ int main(int argc, char *argv[])
                     i = ii;
                     // should this be async?
                     const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, f.name, arguments);
-                    if (!ret.errorMessage().isEmpty())
-                        printf("%s\n", qPrintable(ret.errorMessage()));
                     // ### what if it can't call the function?
                     if (!ret.arguments().isEmpty())
                         printf("%s\n", qPrintable(toString(ret.arguments().first())));

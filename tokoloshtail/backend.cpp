@@ -399,7 +399,7 @@ void Backend::addTracks(const QStringList &list)
 //                 ts << valid.at(i) << endl;
 //             }
 //         } else {
-            sync(ToFile);
+        sync(ToFile);
 //        }
         emit tracksInserted(playlistData.tracks.size() - valid.size(), valid.size());
         if (playlistData.current == -1) {

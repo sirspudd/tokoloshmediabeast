@@ -1,5 +1,4 @@
 #include "log.h"
-
 #include "config.h"
 
 class DevNull : public QIODevice
@@ -7,8 +6,8 @@ class DevNull : public QIODevice
 public:
     static DevNull *instance()
     {
-        static Mutex mutex;
-        MutexLocker locker(&mutex);
+        static QMutex mutex;
+        QMutexLocker locker(&mutex);
         static QHash<QThread*, DevNull*> instances;
         DevNull *& inst = instances[QThread::currentThread()];
         if (!inst)
@@ -24,11 +23,11 @@ private:
 };
 
 QIODevice *Log::logDevice = 0;
-Mutex Log::logDeviceMutex;
+QMutex Log::logDeviceMutex;
 
 QDebug Log::log(int verbosity)
 {
-    MutexLocker locker(&logDeviceMutex);
+    QMutexLocker locker(&logDeviceMutex);
     enum { DefaultVerbosity = 0 };
     if (verbosity <= Config::value<int>("verbosity", DefaultVerbosity)) {
         if (!logDevice) {
@@ -46,7 +45,7 @@ QDebug Log::log(int verbosity)
 
 QString Log::logFile()
 {
-    MutexLocker locker(&logDeviceMutex);
+    QMutexLocker locker(&logDeviceMutex);
     if (!logDevice) {
         return "stderr";
     } else if (QFile *file = qobject_cast<QFile*>(logDevice)) {
@@ -68,7 +67,7 @@ bool Log::setLogFile(const QString &file)
 
 void Log::setLogDevice(QIODevice *device)
 {
-    MutexLocker locker(&logDeviceMutex);
+    QMutexLocker locker(&logDeviceMutex);
     delete logDevice;
     logDevice = device;
 }

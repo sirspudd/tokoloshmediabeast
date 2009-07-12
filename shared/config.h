@@ -5,7 +5,6 @@
 #else
 #include <QtCore>
 #endif
-#include <mutex.h>
 
 template <typename T> bool read(const QVariant &, T &)
 {
@@ -113,7 +112,7 @@ public:
 
     static bool isEnabled(const QString &k, bool defaultValue = false)
     {
-        MutexLocker locker(&mutex);
+        QMutexLocker locker(&mutex);
         const QString key = k.toLower();
         const QStringList args = Config::argumentsImpl();
         enum { Unset = -1, False = 0, True = 1 } value = Unset;
@@ -163,7 +162,7 @@ public:
 
     template <typename T> static bool contains(const QString &key)
     {
-        MutexLocker locker(&mutex);
+        QMutexLocker locker(&mutex);
         bool ok;
         (void)valueImpl<T>(key, T(), &ok);
         return ok;
@@ -171,23 +170,23 @@ public:
 
     template <typename T> static T value(const QString &k, const T &defaultValue = T(), bool *ok_in = 0)
     {
-        MutexLocker locker(&mutex);
+        QMutexLocker locker(&mutex);
         return valueImpl<T>(k, defaultValue, ok_in);
     }
     template <typename T> static void setValue(const QString &key, const T &t)
     {
-        MutexLocker locker(&mutex);
+        QMutexLocker locker(&mutex);
         setValueImpl<T>(key, t);
     }
 
     static QStringList unusedArguments()
     {
-        MutexLocker locker(&mutex);
+        QMutexLocker locker(&mutex);
         return unusedArgumentsImpl();
     }
     static QStringList arguments()
     {
-        MutexLocker locker(&mutex);
+        QMutexLocker locker(&mutex);
         return argumentsImpl();
     }
     static void init(int argc, char **argv);
@@ -231,10 +230,10 @@ private:
 
     static QStringList unused, args;
     static QSettings *instance;
-    static Mutex mutex;
-//     static Mutex argsMutex;
-//     static Mutex unusedMutex;
-//     static Mutex settingsMutex;
+    static QMutex mutex;
+//     static QMutex argsMutex;
+//     static QMutex unusedMutex;
+//     static QMutex settingsMutex;
 };
 
 #endif
