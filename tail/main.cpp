@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     }
 
 //    const QString pluginDirectory = Config::value<QString>("plugindir", PLUGINDIR); // ### Can't make this work
-    const QString pluginDirectory = Config::value<QString>("plugindir", QCoreApplication::applicationDirPath() + "/../tokoloshtail/plugins");
+    const QString pluginDirectory = Config::value<QString>("plugindir", QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../plugins"));
     Log::log(10) << "Using plugin directory" << pluginDirectory;
     const QString backendName = Config::value<QString>("backend", "xine");
     Log::log(10) << "Searching for backend" << backendName;
