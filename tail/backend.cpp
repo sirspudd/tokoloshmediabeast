@@ -29,23 +29,18 @@ static inline void fixCurrent(int *current, int size)
 Backend::Backend(QObject *parent)
     : QObject(parent)
 {
-    const QString playlistPath = Config::value<QString>("playlist",
-                                                        QString("%1/tokoloshhead_%2.m3u").
-                                                        arg(QDesktopServices::storageLocation(QDesktopServices::TempLocation)).
-                                                        arg(QCoreApplication::applicationPid()));
-    Config::setValue<QString>("playlist", playlistPath);
+    QString playlistPath = Config::value<QString>("playlist");
+    if (!playlistPath.isEmpty()) {
+        bool foundInvalid = false;
+        syncFromFile(&foundInvalid);
+        if (foundInvalid)
+            syncToFile();
+    } else {
+        playlistPath = QString("%1/tokolosh.m3u").
+                       arg(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+        Config::setValue<QString>("playlist", playlistPath);
+    }
     playlistData.playlist.setFileName(playlistPath);
-    sync(FromFile);
-    bool removed = false;
-    for (int i=playlistData.tracks.size() - 1; i>=0; --i) {
-        if (!QFile::exists(playlistData.tracks.at(i))) {
-            playlistData.tracks.removeAt(i);
-            removed = true;
-        }
-    }
-    if (removed) {
-        sync(ToFile);
-    }
     playlistData.current = Config::value<int>("current");
     ::fixCurrent(&playlistData.current, playlistData.tracks.size());
 #ifdef Q_OS_UNIX
@@ -93,7 +88,7 @@ void Backend::crop()
     if (playlistData.current > 0)
         removeTracks(0, playlistData.current);
     playlistData.blockSync = false;
-    sync(ToFile);
+    syncToFile();
 }
 
 static void addFunction(FunctionNode *node, const QString &string, const Function &function)
@@ -190,7 +185,7 @@ int Backend::count() const
 
 QString Backend::currentTrackName() const
 {
-    return playlistData.tracks.value(playlistData.current);
+    return QFileInfo(playlistData.tracks.value(playlistData.current).path()).fileName();
 }
 
 int Backend::currentTrackIndex() const
@@ -210,20 +205,23 @@ static inline int width(int num)
 
 QStringList Backend::list() const
 {
-    QStringList ret = playlistData.tracks;
-    const int width = ::width(ret.size()) + 2;
-    for (int i=0; i<ret.size(); ++i) {
-        QString &ref = ret[i];
-        ref.prepend(QString("%1. ").arg(i + 1, width));
+    QStringList ret;
+    // QList should have a reserve(int)
+    const int width = ::width(playlistData.tracks.size()) + 2;
+    for (int i=0; i<playlistData.tracks.size(); ++i) {
+        QString url = playlistData.tracks.at(i).toString();
+        url.prepend(QString("%1. ").arg(i + 1, width));
         if (i == playlistData.current) {
-            ref[0] = '*';
+            url[0] = '*';
         }
+        ret.append(url);
     }
     return ret;
 }
 
 
-static inline bool tracks(const QStringList &list, int from, int size, QStringList *out)
+template <typename T>
+static inline bool tracks(const QList<T> &list, int from, int size, QList<T> *out)
 {
     const int count = list.size();
     if (count != 0 && size != 0 && from >= 0 && from < count && (size < 0 || from + size <= count)) {
@@ -236,20 +234,22 @@ static inline bool tracks(const QStringList &list, int from, int size, QStringLi
 }
 
 
-QStringList Backend::tracks(int start, int count) const
+QList<QUrl> Backend::tracks(int start, int count) const
 {
-    QStringList ret;
-    ::tracks(playlistData.tracks, start, count, &ret);
+    QList<QUrl> ret;
+    ::tracks<QUrl>(playlistData.tracks, start, count, &ret);
     return ret;
 }
 
 bool Backend::setCurrentTrackIndex(int index)
 {
     if (index >= 0 && index < playlistData.tracks.size()) {
+        if (index == playlistData.current) // restart???
+            return true;
         playlistData.current = index;
-        const QString &filePath = playlistData.tracks.at(index);
-        loadFile(filePath);
-        emit currentTrackChanged(index, filePath); //, trackData(playlistData.tracks.at(index)));
+        const QUrl &url = playlistData.tracks.at(index);
+        loadUrl(url);
+        emit currentTrackChanged(index, url); //, trackData(playlistData.tracks.at(index)));
         Config::setValue<int>("current", playlistData.current);
         return true;
     } else {
@@ -267,16 +267,16 @@ bool Backend::setCurrentTrack(const QString &name)
     return false;
 }
 
-int Backend::indexOfTrack(const QString &name) const
+int Backend::indexOfTrack(const QUrl &url) const
 {
-    return playlistData.tracks.indexOf(name);
+    return playlistData.tracks.indexOf(url);
 }
 
-TrackData Backend::trackData(const QString &filepath, int fields) const
+TrackData Backend::trackData(const QUrl &url, int fields) const
 {
-    const int index = indexOfTrack(filepath);
+    const int index = indexOfTrack(url);
     if (index == -1) {
-        qWarning("I don't have %s in my list of files", qPrintable(filepath));
+        qWarning("I don't have %s in my list of files", qPrintable(url.toString()));
         return TrackData();
     }
     return trackData(index, fields);
@@ -290,8 +290,8 @@ TrackData Backend::trackData(int index, int fields) const
     }
     // ### this should maybe cache data
     TrackData data;
-    if (fields & FilePath) {
-        data.path = playlistData.tracks.at(index);
+    if (fields & URL) {
+        data.url = playlistData.tracks.at(index);
     }
     if (fields & PlaylistIndex)
         data.playlistIndex = index;
@@ -384,7 +384,7 @@ void Backend::onThreadFinished()
 
 void Backend::addTracks(const QStringList &list)
 {
-    QStringList valid;
+    QList<QUrl> valid;
     static const bool trustExtension = Config::isEnabled("trustextension", true);
     foreach(const QString &file, list) {
         if (trustExtension || isValid(file)) {
@@ -399,7 +399,7 @@ void Backend::addTracks(const QStringList &list)
 //                 ts << valid.at(i) << endl;
 //             }
 //         } else {
-        sync(ToFile);
+        syncToFile();
 //        }
         emit tracksInserted(playlistData.tracks.size() - valid.size(), valid.size());
         if (playlistData.current == -1) {
@@ -408,8 +408,14 @@ void Backend::addTracks(const QStringList &list)
     }
 }
 
-bool Backend::load(const QString &path, bool recurse)
+bool Backend::load(const QUrl &url, bool recurse)
 {
+    const QString path = url.toLocalFile();
+    if (path.isEmpty()) {
+        addTracks(QStringList() << url.toString());
+        // ugly
+        return true;
+    }
     static const QSet<QString> validExtensions = Config::value<QStringList>("extensions",
                                                                             (QStringList() << "mp3" << "ogg" << "flac"
                                                                              << "acc" << "m4a" << "mp4")).toSet();
@@ -489,12 +495,12 @@ bool Backend::removeTracks(int index, int count)
     }
     if (!playlistData.cache.isEmpty()) {
         for (int i=index; i<index + count; ++i) {
-            const QString &track = playlistData.tracks.at(i);
+            const QUrl &track = playlistData.tracks.at(i);
             playlistData.cache.remove(track);
         }
     }
 
-    const QStringList::iterator it = playlistData.tracks.begin() + index;
+    const QList<QUrl>::iterator it = playlistData.tracks.begin() + index;
     playlistData.tracks.erase(it, it + count);
     emit tracksRemoved(index, count);
     if (playlistData.tracks.isEmpty()) {
@@ -511,8 +517,9 @@ bool Backend::removeTracks(int index, int count)
         next();
         break;
     }
-    if (!playlistData.blockSync)
-        sync(ToFile);
+    if (!playlistData.blockSync) {
+        syncToFile();
+    }
     return true;
 }
 
@@ -526,7 +533,7 @@ bool Backend::swapTrack(int from, int to)
 
     playlistData.tracks.swap(from, to);
     emit tracksSwapped(from, to);
-    sync(ToFile);
+    syncToFile();
     return true;
 }
 
@@ -540,7 +547,7 @@ bool Backend::moveTrack(int from, int to)
 
     playlistData.tracks.move(from, to);
     emit trackMoved(from, to);
-    sync(ToFile);
+    syncToFile();
     return true;
 }
 
@@ -562,11 +569,44 @@ QString Backend::playlist() const
 void Backend::setPlaylist(const QString &file)
 {
     playlistData.playlist.setFileName(file);
-    sync(FromFile);
+    syncToFile();
 }
 
-bool Backend::sync(SyncMode sync)
+bool Backend::syncFromFile(bool *foundInvalidSongs)
 {
+    Q_ASSERT(foundInvalidSongs);
+    *foundInvalidSongs = false;
+    const int idx = playlistData.current;
+    const QUrl track = playlistData.tracks.value(idx);
+    if (!playlistData.playlist.open(QIODevice::ReadOnly)) {
+        Log::log(0) << "Can't open" << QFileInfo(playlistData.playlist).absoluteFilePath() << "for reading";
+        return false;
+    }
+    playlistData.tracks.clear();
+    QTextStream ts(&playlistData.playlist);
+    while (!ts.atEnd()) {
+        const QUrl url = ts.readLine();
+        // these should be urls
+        const QString filePath = url.toLocalFile();
+        if (filePath.isEmpty() || QFile::exists(filePath)) {
+            playlistData.tracks.append(url);
+        } else {
+            *foundInvalidSongs = true;
+        }
+    }
+    ::fixCurrent(&playlistData.current, playlistData.tracks.size());
+    const QUrl currentTrack = playlistData.tracks.value(playlistData.current);
+    if (playlistData.current != idx || currentTrack != track) {
+        emit currentTrackChanged(playlistData.current, currentTrack);
+    }
+    playlistData.playlist.close();
+    return true;
+}
+
+#if 0
+bool Backend::sync(SyncMode sync, bool *removed)
+{
+    // start a thread?
     if (sync == ToFile) {
         Log::log(10) << "syncing to file" << QFileInfo(playlistData.playlist.fileName()).absoluteFilePath();
 //         if (playlistData.playlist.isWritable())
@@ -604,3 +644,4 @@ bool Backend::sync(SyncMode sync)
     }
     return true;
 }
+#endif

@@ -10,29 +10,29 @@ struct Node {
     Node() : stream(0), next(0) {}
 
     xine_stream_t *stream;
-    QString track;
+    QUrl url;
     Node *next;
 };
 
 void swap(Node *left, Node *right)
 {
     qSwap(left->stream, right->stream);
-    qSwap(left->track, right->track);
+    qSwap(left->url, right->url);
     qSwap(left->next, right->next);
 }
 
-static bool initStream(Node *node, const QString &fileName)
+static bool initStream(Node *node, const QUrl &url)
 {
     Q_ASSERT(node->stream);
     xine_close(node->stream);
 
-    if (!xine_open(node->stream, fileName.toLocal8Bit().constData())) {
+    if (!xine_open(node->stream, url.toString().toLocal8Bit().constData())) {
 //        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
         return false;
     }
 //    qDebug() << "fileName" << fileName;
-    Q_ASSERT(node->track != fileName);
-    node->track = fileName;
+    Q_ASSERT(node->url != url);
+    node->url = url;
     return true;
 }
 
@@ -43,14 +43,14 @@ struct Private
                 progressType(Backend::Seconds), pendingProgress(0)
     {}
 
-    xine_stream_t *stream(const QString &fileName, Node **out = 0)
+    xine_stream_t *stream(const QUrl &url, Node **out = 0)
     {
-        if (main.track == fileName) {
+        if (main.url == url) {
             if (out)
                 *out = &main;
             return main.stream;
         } else if (!first) {
-            if (!::initStream(&main, fileName)) {
+            if (!::initStream(&main, url)) {
                 if (out)
                     *out = 0;
                 return 0;
@@ -63,7 +63,7 @@ struct Private
         Node *node = first;
         Q_ASSERT(first);
         forever {
-            if (node->track == fileName) {
+            if (node->url == url) {
                 if (out)
                     *out = node;
                 return node->stream;
@@ -76,7 +76,7 @@ struct Private
         }
 
         Q_ASSERT(node);
-        if (!::initStream(node, fileName)) {
+        if (!::initStream(node, url)) {
             if (out)
                 *out = 0;
             return 0;
@@ -236,7 +236,7 @@ public:
     }
 };
 
-bool XineBackend::trackData(TrackData *data, const QString &path, int mask) const
+bool XineBackend::trackData(TrackData *data, const QUrl &url, int mask) const
 {
     if (status() == Uninitalized)
         return false;
@@ -244,7 +244,7 @@ bool XineBackend::trackData(TrackData *data, const QString &path, int mask) cons
     if (!(mask & BackendTypes)) // shouldn't really happen
         return true;
 
-    xine_stream_t *stream = d->stream(path);
+    xine_stream_t *stream = d->stream(url);
     if (!stream)
         return false; // set error codes? warn?
 
@@ -274,9 +274,9 @@ bool XineBackend::trackData(TrackData *data, const QString &path, int mask) cons
     return true;
 }
 
-bool XineBackend::isValid(const QString &fileName) const
+bool XineBackend::isValid(const QUrl &url) const
 {
-    return status() != Uninitalized && d->stream(fileName);
+    return status() != Uninitalized && (url.toLocalFile().isEmpty() || d->stream(url)); // ### should maybe not do this for remote files
 }
 
 
@@ -325,11 +325,11 @@ void XineBackend::stop()
 
 }
 
-bool XineBackend::loadFile(const QString &fileName)
+bool XineBackend::loadUrl(const QUrl &url)
 {
     stop();
     Node *node;
-    xine_stream_t *s = d->stream(fileName, &node);
+    xine_stream_t *s = d->stream(url, &node);
     if (!s)
         return false;
     if (node != &d->main) {

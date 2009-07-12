@@ -28,7 +28,7 @@ void PhononBackend::shutdown()
 {
 }
 
-bool PhononBackend::trackData(TrackData *data, const QString &path, int mask) const
+bool PhononBackend::trackData(TrackData *data, const QUrl &url, int mask) const
 {
     if (status() == Uninitalized)
         return false;
@@ -51,9 +51,6 @@ bool PhononBackend::trackData(TrackData *data, const QString &path, int mask) co
 
     Phonon::MediaObject *const objects[] = { &d->main, &d->aux, 0 };
     Phonon::MediaObject *object = 0;
-    QUrl url = path;
-    if (url.scheme().isEmpty())
-        url = QUrl::fromLocalFile(path);
 
     for (int i=0; objects[i]; ++i) {
         const Phonon::MediaSource source = objects[i]->currentSource();
@@ -81,7 +78,7 @@ bool PhononBackend::trackData(TrackData *data, const QString &path, int mask) co
     return true;
 }
 
-bool PhononBackend::isValid(const QString &fileName) const
+bool PhononBackend::isValid(const QUrl &fileName) const
 {
 //    return status() != Uninitalized && d->main.isValid();
 }
@@ -128,7 +125,7 @@ void PhononBackend::stop()
 //     }
 }
 
-bool PhononBackend::loadFile(const QString &fileName)
+bool PhononBackend::loadUrl(const QUrl &url)
 {
 //     stop();
 //     Node *node;

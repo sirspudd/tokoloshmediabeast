@@ -28,7 +28,7 @@ QVariant TrackData::data(TrackInfo info) const
     if (!(info & fields))
         return QVariant();
     switch (info) {
-    case FilePath: return path;
+    case URL: return url;
     case Title: return title;
     case TrackLength: return trackLength;
     case Artist: return artist;
@@ -37,7 +37,7 @@ QVariant TrackData::data(TrackInfo info) const
     case Genre: return genre;
     case AlbumIndex: return albumIndex;
     case PlaylistIndex: return playlistIndex;
-    case FileName: return QFileInfo(path).fileName();
+    case FileName: return QFileInfo(url.path()).fileName();
     case None:
     case All: break;
     }
@@ -48,7 +48,7 @@ QVariant TrackData::data(TrackInfo info) const
 void TrackData::setData(TrackInfo info, const QVariant &data)
 {
     switch (info) {
-    case FilePath: fields |= FileName; path = data.toString(); break;
+    case URL: fields |= FileName; url = data.toString(); break;
     case Title: title = data.toString(); break;
     case TrackLength: trackLength = data.toInt(); break;
     case Artist: artist = data.toInt(); break;
@@ -71,11 +71,30 @@ void operator<<(QDBusArgument &arg, const TrackData &trackData)
     arg.beginStructure();
     // enum { Version = 1 }; ### Version stuff?
     // ### could optimize both this one and QDataStream one to only read the fields in fields
-    arg << qint32(trackData.fields) << trackData.path
-        << trackData.artist << trackData.album
-        << trackData.genre << trackData.trackLength
-        << trackData.albumIndex << trackData.year
-        << trackData.playlistIndex;
+    arg << qint32(trackData.fields);
+    if (trackData.fields & URL)
+        arg << trackData.url;
+    if (trackData.fields & Title)
+        arg << trackData.title;
+    if (trackData.fields & Artist)
+        arg << trackData.artist;
+    if (trackData.fields & Album)
+        arg << trackData.album;
+    if (trackData.fields & Genre)
+        arg << trackData.genre;
+    if (trackData.fields & TrackLength)
+        arg << trackData.trackLength;
+    if (trackData.fields & AlbumIndex)
+        arg << trackData.albumIndex;
+    if (trackData.fields & Year)
+        arg << trackData.year;
+    if (trackData.fields & PlaylistIndex)
+        arg << trackData.playlistIndex;
+//     arg << qint32(trackData.fields) << trackData.url
+//         << trackData.title << trackData.artist << trackData.album
+//         << trackData.genre << trackData.trackLength
+//         << trackData.albumIndex << trackData.year
+//         << trackData.playlistIndex;
     arg.endStructure();
 }
 
@@ -85,11 +104,25 @@ void operator>>(const QDBusArgument &arg, TrackData &trackData)
     arg.beginStructure();
     // enum { Version = 1 }; ### Version stuff?
     // ### could optimize both this one and QDataStream one to only read the fields in fields
-    arg >> *reinterpret_cast<qint32*>(&trackData.fields) >> trackData.path
-        >> trackData.artist >> trackData.album
-        >> trackData.genre >> trackData.trackLength
-        >> trackData.albumIndex >> trackData.year
-        >> trackData.playlistIndex;
+    arg >> *reinterpret_cast<qint32*>(&trackData.fields);
+    if (trackData.fields & URL)
+        arg >> trackData.url;
+    if (trackData.fields & Title)
+        arg >> trackData.title;
+    if (trackData.fields & Artist)
+        arg >> trackData.artist;
+    if (trackData.fields & Album)
+        arg >> trackData.album;
+    if (trackData.fields & Genre)
+        arg >> trackData.genre;
+    if (trackData.fields & TrackLength)
+        arg >> trackData.trackLength;
+    if (trackData.fields & AlbumIndex)
+        arg >> trackData.albumIndex;
+    if (trackData.fields & Year)
+        arg >> trackData.year;
+    if (trackData.fields & PlaylistIndex)
+        arg >> trackData.playlistIndex;
     arg.endStructure();
 }
 

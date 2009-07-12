@@ -9,7 +9,7 @@
 
 enum TrackInfo {
     None = 0x000,
-    FilePath = 0x001,
+    URL = 0x001,
     Title = 0x002,
     TrackLength = 0x004,
     Artist = 0x008,
@@ -22,13 +22,14 @@ enum TrackInfo {
     All = 0xfff
 };
 
-static const TrackInfo trackInfos[] = { FilePath, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
+static const TrackInfo trackInfos[] = { URL, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
 void initApp(const QString &appname, int argc, char **argv);
 struct TrackData
 {
     TrackData() : trackLength(-1), albumIndex(-1), year(-1), playlistIndex(-1), fields(None) {}
 
-    QString path, title, artist, album, genre;
+    QUrl url;
+    QString title, artist, album, genre;
     int trackLength, albumIndex, year, playlistIndex; // seconds
 
     int fields; // this means which fields have been queried. values
@@ -54,10 +55,10 @@ struct Function
 };
 
 Q_DECLARE_METATYPE(Function);
-Q_DECLARE_METATYPE(QList<Function>);
 void operator<<(QDBusArgument &arg, const Function &f);
 void operator>>(const QDBusArgument &arg, Function &f);
 
+Q_DECLARE_METATYPE(QList<Function>);
 static inline void operator<<(QDBusArgument &arg, const QList<Function> &f)
 {
     qDebug("%s %d: static inline void operator<<(QDBusArgument &arg, const QList<Function> &f)", __FILE__, __LINE__);
@@ -71,6 +72,18 @@ static inline void operator>>(const QDBusArgument &arg, QList<Function> &f)
     arg >> f;
 }
 
+Q_DECLARE_METATYPE(QUrl);
+static inline void operator<<(QDBusArgument &arg, const QUrl &url)
+{
+    arg << url.toString();
+}
+
+static inline void operator>>(const QDBusArgument &arg, QUrl &url)
+{
+    QString str;
+    arg >> str;
+    url = QUrl(str);
+}
 
 static inline bool operator==(const Function &left, const Function &right)
 { return left.name == right.name && left.args == right.args; }

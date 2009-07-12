@@ -75,7 +75,7 @@ QVariant TrackModel::headerData(int section, Qt::Orientation orientation, int ro
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         Q_ASSERT(section < d.columns.size());
         switch (d.columns.at(section)) {
-        case FilePath: return tr("File path");
+        case URL: return tr("URL");
         case Title: return tr("Title");
         case TrackLength: return tr("Track length");
         case Artist: return tr("Artist");

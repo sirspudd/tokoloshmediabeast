@@ -15,14 +15,14 @@ public:
     virtual ~PhononBackend();
     virtual bool initBackend();
     virtual void shutdown();
-    virtual bool trackData(TrackData *data, const QString &path, int types = All) const;
-    virtual bool isValid(const QString &fileName) const;
+    virtual bool trackData(TrackData *data, const QUrl &url, int types = All) const;
+    virtual bool isValid(const QUrl &url) const;
     virtual void play();
     virtual void pause();
     virtual void setProgress(int type, int progress);
     virtual int progress(int type);
     virtual void stop();
-    virtual bool loadFile(const QString &fileName);
+    virtual bool loadUrl(const QUrl &url);
     virtual int status() const;
     virtual int volume() const;
     virtual void setVolume(int vol);
