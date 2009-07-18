@@ -4,7 +4,7 @@
 #include <QtCore>
 
 /* thread safe */
-//#define NO_MUTEX /* not thread safe */
+#define NO_MUTEX /* not thread safe */
 class Log
 {
 public:

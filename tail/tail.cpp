@@ -30,7 +30,8 @@ Tail::Tail(QObject *parent)
     : QObject(parent)
 {
     QString playlistPath = Config::value<QString>("playlist");
-    if (!playlistPath.isEmpty()) {
+    if (!playlistPath.isEmpty() && QFile::exists(playlistPath)) {
+        d.playlist.setFileName(playlistPath);
         bool foundInvalid = false;
         syncFromFile(&foundInvalid);
         if (foundInvalid)
@@ -39,8 +40,8 @@ Tail::Tail(QObject *parent)
         playlistPath = QString("%1/tokolosh.m3u").
                        arg(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
         Config::setValue<QString>("playlist", playlistPath);
+        d.playlist.setFileName(playlistPath);
     }
-    d.playlist.setFileName(playlistPath);
     d.current = Config::value<int>("current");
     ::fixCurrent(&d.current, d.tracks.size());
 #ifdef Q_OS_UNIX
@@ -51,7 +52,6 @@ Tail::Tail(QObject *parent)
 
 bool Tail::setBackend(Backend *backend)
 {
-    qDebug() << "setbackend" << backend;
     Q_ASSERT(backend);
     if (!backend->initBackend())
         return false;
@@ -63,15 +63,9 @@ bool Tail::setBackend(Backend *backend)
 Tail::~Tail()
 {
     if (d.backend) {
-        qDebug("%s %d: if (d.backend) {", __FILE__, __LINE__);
-//        delete d.backend;
-        qDebug("%s %d: delete d.backend;", __FILE__, __LINE__);
+        delete d.backend;
     }
-    qDebug("%s %d: delete d.root;", __FILE__, __LINE__);
     delete d.root;
-    qDebug("%s %d: delete d.root;", __FILE__, __LINE__);
-//    Config::setValue("playlist", d.tracks);
-    qDebug("%s %d: Config::setValue(\"current\", d.current);", __FILE__, __LINE__);
 }
 
 

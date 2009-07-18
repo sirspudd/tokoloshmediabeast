@@ -31,7 +31,6 @@ static bool initStream(Node *node, const QUrl &url)
 //        fprintf(stderr, "Unable to open path '%s'\n", fileName.toLocal8Bit().constData());
         return false;
     }
-//    qDebug() << "fileName" << fileName;
     Q_ASSERT(node->url != url);
     node->url = url;
     return true;
@@ -117,9 +116,7 @@ XineBackend::XineBackend(QObject *tail)
 
 XineBackend::~XineBackend()
 {
-    qDebug("%s %d: XineBackend::~XineBackend()", __FILE__, __LINE__);
     delete d;
-    qDebug("%s %d: delete d;", __FILE__, __LINE__);
 }
 
 bool XineBackend::initBackend()
@@ -171,7 +168,6 @@ bool XineBackend::initBackend()
 
 void XineBackend::shutdown()
 {
-    qDebug("%s %d: void XineBackend::shutdown()", __FILE__, __LINE__);
     if (d->status == Uninitalized)
         return;
     if (d->main.stream) {
