@@ -5,6 +5,7 @@
 #include <global.h>
 #include "backend.h"
 
+class TagInterface;
 struct RootNode;
 class Tail : public QObject
 {
@@ -103,6 +104,7 @@ protected:
         mutable RootNode *root;
         bool blockSync;
         Backend *backend;
+        TagInterface *tag;
     } d;
 };
 

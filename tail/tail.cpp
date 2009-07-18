@@ -1,6 +1,8 @@
 #include "tail.h"
 #include "log.h"
 #include <config.h>
+#include "taginterface.h"
+#include "id3taginterface.h"
 #ifdef Q_OS_UNIX
 #include <signal.h>
 #endif
@@ -29,6 +31,7 @@ static inline void fixCurrent(int *current, int size)
 Tail::Tail(QObject *parent)
     : QObject(parent)
 {
+    d.tag = new ID3TagInterface;
     QString playlistPath = Config::value<QString>("playlist");
     if (!playlistPath.isEmpty() && QFile::exists(playlistPath)) {
         d.playlist.setFileName(playlistPath);
@@ -62,6 +65,7 @@ bool Tail::setBackend(Backend *backend)
 
 Tail::~Tail()
 {
+    delete d.tag;
     if (d.backend) {
         delete d.backend;
     }
@@ -311,7 +315,8 @@ TrackData Tail::trackData(int index, int fields) const
     enum { TailTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
     const uint backendTypes = fields & TailTypes;
     if (backendTypes) {
-        d.backend->trackData(&data, d.tracks.at(index), backendTypes); // ### check return value?
+        d.tag->trackData(&data, d.tracks.at(index), backendTypes);
+//        d.backend->trackData(&data, d.tracks.at(index), backendTypes); // ### check return value?
     }
     data.fields |= fields;
 //    ::sleep(250);
