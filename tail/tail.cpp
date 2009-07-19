@@ -14,11 +14,6 @@ struct FunctionNode
     Function function;
 };
 
-struct RootNode : public FunctionNode
-{
-    QStringList all;
-};
-
 static inline void fixCurrent(int *current, int size)
 {
     if (size == 0) {
@@ -212,8 +207,6 @@ QStringList Tail::functions() const
         findFunction(QString());
     }
     return ::recurse(d.root);
-
-//    return d.root->all;
 }
 
 QString Tail::lastError() const

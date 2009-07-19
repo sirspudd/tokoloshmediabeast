@@ -6,7 +6,7 @@
 #include "backend.h"
 
 class TagInterface;
-struct RootNode;
+struct FunctionNode;
 class Tail : public QObject
 {
     Q_OBJECT
@@ -104,7 +104,7 @@ protected:
         QFile playlist;
         QList<QUrl> tracks;
         QMap<QUrl, TrackData> cache;
-        mutable RootNode *root;
+        mutable FunctionNode *root;
         bool blockSync;
         Backend *backend;
         TagInterface *tag;
