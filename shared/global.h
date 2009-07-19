@@ -22,6 +22,26 @@ enum TrackInfo {
     All = 0xfff
 };
 
+static inline QString trackInfoToString(TrackInfo info)
+{
+    switch (info) {
+    case URL: return QCoreApplication::translate("TrackInfo", "URL");
+    case Title: return QCoreApplication::translate("TrackInfo", "Title");
+    case TrackLength: return QCoreApplication::translate("TrackInfo", "TrackLength");
+    case Artist: return QCoreApplication::translate("TrackInfo", "Artist");
+    case Album: return QCoreApplication::translate("TrackInfo", "Album");
+    case Year: return QCoreApplication::translate("TrackInfo", "Year");
+    case Genre: return QCoreApplication::translate("TrackInfo", "Genre");
+    case AlbumIndex: return QCoreApplication::translate("TrackInfo", "AlbumIndex");
+    case PlaylistIndex: return QCoreApplication::translate("TrackInfo", "PlaylistIndex");
+    case FileName: return QCoreApplication::translate("TrackInfo", "FileName");
+    default:
+        break;
+    }
+    Q_ASSERT(0);
+    return QString();
+}
+
 static const TrackInfo trackInfos[] = { URL, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
 void initApp(const QString &appname, int argc, char **argv);
 struct TrackData
@@ -38,51 +58,42 @@ struct TrackData
 
     QVariant data(TrackInfo info) const;
     void setData(TrackInfo info, const QVariant &data);
+    QString toString() const;
     TrackData &operator|=(const TrackData &other);
 };
 Q_DECLARE_METATYPE(TrackData);
-void operator<<(QDBusArgument &arg, const TrackData &trackData);
-void operator>>(const QDBusArgument &arg, TrackData &trackData);
+QDBusArgument &operator<<(QDBusArgument &arg, const TrackData &trackData);
+const QDBusArgument &operator>>(const QDBusArgument &arg, TrackData &trackData);
 typedef QHash<int, int> IntHash;
 Q_DECLARE_METATYPE(IntHash);
-void operator<<(QDBusArgument &arg, const QHash<int, int> &ih);
-void operator>>(const QDBusArgument &arg, QHash<int, int> &ih);
+QDBusArgument &operator<<(QDBusArgument &arg, const QHash<int, int> &ih);
+const QDBusArgument &operator>>(const QDBusArgument &arg, QHash<int, int> &ih);
 
 struct Function
 {
+    Function() : returnArgument(0) {}
     QString name;
-    QList<int> args;
+    QList<QList<int> > args;
+    int returnArgument;
 };
 
 Q_DECLARE_METATYPE(Function);
-void operator<<(QDBusArgument &arg, const Function &f);
-void operator>>(const QDBusArgument &arg, Function &f);
-
-Q_DECLARE_METATYPE(QList<Function>);
-static inline void operator<<(QDBusArgument &arg, const QList<Function> &f)
-{
-    qDebug("%s %d: static inline void operator<<(QDBusArgument &arg, const QList<Function> &f)", __FILE__, __LINE__);
-    arg << f;
-}
-
-static inline void operator>>(const QDBusArgument &arg, QList<Function> &f)
-{
-    qDebug("%s %d: static inline void operator>>(const QDBusArgument &arg, QList<Function> &f)", __FILE__, __LINE__);
-    f.clear();
-    arg >> f;
-}
+QDBusArgument &operator<<(QDBusArgument &arg, const Function &f);
+const QDBusArgument &operator>>(const QDBusArgument &arg, Function &f);
 
 Q_DECLARE_METATYPE(QUrl);
-static inline void operator<<(QDBusArgument &arg, const QUrl &url)
+static inline QDBusArgument &operator<<(QDBusArgument &arg, const QUrl &url)
 {
     arg << url.toString();
+    return arg;
 }
 
-static inline void operator>>(const QDBusArgument &arg, QUrl &url)
+static inline const QDBusArgument &operator>>(const QDBusArgument &arg, QUrl &url)
 {
     QString str;
     arg >> str;
     url = QUrl(str);
+    return arg;
 }
 
 static inline bool operator==(const Function &left, const Function &right)

@@ -74,7 +74,6 @@ protected:
         Q_ASSERT(tail);
         d.name = name;
         d.tail = tail;
-        qDebug() << "creating backend" << name << tail << this;
     }
 
 

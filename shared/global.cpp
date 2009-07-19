@@ -7,7 +7,6 @@ void initApp(const QString &appname, int argc, char **argv)
     qDBusRegisterMetaType<TrackData>();
     qDBusRegisterMetaType<QHash<int, int> >();
     qDBusRegisterMetaType<Function>();
-    qDBusRegisterMetaType<QList<Function> >();
 
     Config::init(argc, argv);
 }
@@ -66,7 +65,33 @@ void TrackData::setData(TrackInfo info, const QVariant &data)
     fields |= info;
 }
 
-void operator<<(QDBusArgument &arg, const TrackData &trackData)
+QString TrackData::toString() const
+{
+    const TrackInfo *info = ::trackInfos;
+    QString ret;
+    ret.reserve(256);
+    while (*info != None) {
+        const QVariant value = data(*info);
+        if (!value.isNull()) {
+            QString stringValue;
+            if (*info == URL) {
+                stringValue = url.toString();
+            } else {
+                stringValue = value.toString();
+            }
+            Q_ASSERT(!stringValue.isEmpty());
+            ret.append(::trackInfoToString(*info));
+            ret.append(": ");
+            ret.append(stringValue);
+            ret.append('\n');
+        }
+        ++info;
+    }
+    return ret;
+}
+
+
+QDBusArgument &operator<<(QDBusArgument &arg, const TrackData &trackData)
 {
     arg.beginStructure();
     // enum { Version = 1 }; ### Version stuff?
@@ -96,10 +121,11 @@ void operator<<(QDBusArgument &arg, const TrackData &trackData)
 //         << trackData.albumIndex << trackData.year
 //         << trackData.playlistIndex;
     arg.endStructure();
+    return arg;
 }
 
 
-void operator>>(const QDBusArgument &arg, TrackData &trackData)
+const QDBusArgument &operator>>(const QDBusArgument &arg, TrackData &trackData)
 {
     arg.beginStructure();
     // enum { Version = 1 }; ### Version stuff?
@@ -124,10 +150,11 @@ void operator>>(const QDBusArgument &arg, TrackData &trackData)
     if (trackData.fields & PlaylistIndex)
         arg >> trackData.playlistIndex;
     arg.endStructure();
+    return arg;
 }
 
 
-void operator<<(QDBusArgument &arg, const QHash<int, int> &hash)
+QDBusArgument &operator<<(QDBusArgument &arg, const QHash<int, int> &hash)
 {
     arg.beginStructure();
     arg << qint32(hash.size());
@@ -135,9 +162,10 @@ void operator<<(QDBusArgument &arg, const QHash<int, int> &hash)
         arg << qint32(it.key()) << qint32(it.value());
     }
     arg.endStructure();
+    return arg;
 }
 
-void operator>>(const QDBusArgument &arg, QHash<int, int> &hash)
+const QDBusArgument &operator>>(const QDBusArgument &arg, QHash<int, int> &hash)
 {
     arg.beginStructure();
     hash.clear();
@@ -149,28 +177,27 @@ void operator>>(const QDBusArgument &arg, QHash<int, int> &hash)
         hash[key] = val;
     }
     arg.endStructure();
+    return arg;
 }
 
-void operator<<(QDBusArgument &arg, const Function &func)
+QDBusArgument &operator<<(QDBusArgument &arg, const Function &func)
 {
     arg.beginStructure();
-    arg << func.name << func.args.size();
-    foreach(int type, func.args)
-        arg << type;
+    QByteArray ba;
+    QDataStream ds(&ba, QIODevice::WriteOnly);
+    ds << func.name << func.args << func.returnArgument;
+    arg << ba;
     arg.endStructure();
+    return arg;
 }
 
-void operator>>(const QDBusArgument &arg, Function &func)
+const QDBusArgument &operator>>(const QDBusArgument &arg, Function &func)
 {
+    QByteArray ba;
     arg.beginStructure();
-    arg >> func.name;
-    int count;
-    arg >> count;
-    func.args.clear();
-    for (int i=0; i<count; ++i) {
-        int tmp;
-        arg >> tmp;
-        func.args.append(tmp);
-    }
+    arg >> ba;
+    QDataStream ds(ba);
+    ds >> func.name >> func.args >> func.returnArgument;
     arg.endStructure();
+    return arg;
 }

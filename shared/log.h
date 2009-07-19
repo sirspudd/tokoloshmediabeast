@@ -8,6 +8,7 @@
 class Log
 {
 public:
+    static int verbosity();
     static QDebug log(int verbosity = -1);
     static QString logFile();
     static bool setLogFile(const QString &file);

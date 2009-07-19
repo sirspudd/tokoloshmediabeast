@@ -2,6 +2,7 @@
 #include <QtDBus>
 #include "player.h"
 #include "config.h"
+#include "log.h"
 #include "../shared/global.h"
 
 static inline bool startGui()
@@ -30,6 +31,15 @@ static inline QString toString(const QVariant &var)
     } else {
         return var.toString();
     }
+}
+
+static inline QString toString(const QList<int> &args)
+{
+    QStringList list;
+    foreach(int arg, args) {
+        list.append(QMetaType::typeName(arg));
+    }
+    return list.join(", ");
 }
 
 int main(int argc, char *argv[])
@@ -67,7 +77,7 @@ int main(int argc, char *argv[])
             delete interface;
             interface = new QDBusInterface(SERVICE_NAME, "/", QString(), QDBusConnection::sessionBus(), &interfaceManager);
             // ### nasty way of doing it
-            printf("Waiting for tokoloshtail...\n");
+            Log::log(10) << "Waiting for tokoloshtail...";
             ::sleep(1000);
         }
 
@@ -77,9 +87,10 @@ int main(int argc, char *argv[])
         }
         interface->call("setCWD", QDir::currentPath());
         if (argc > 1) {
-            const QStringList args = Config::arguments();
-            for (int i=1; i<argc; ++i) {
-                const QString &arg = args.at(i);
+            const QStringList cmdLineArgs = Config::arguments();
+            const int argCount = cmdLineArgs.size();
+            for (int i=1; i<argCount; ++i) {
+                const QString &arg = cmdLineArgs.at(i);
                 if (arg == "--list-methods") {
                     const QMetaObject *metaObject = interface->metaObject();
                     for (int j=metaObject->methodOffset(); j<metaObject->methodCount(); ++j) {
@@ -87,45 +98,55 @@ int main(int argc, char *argv[])
                     }
                     return 0;
                 }
-//                const QList<Function> functions = readDBusMessage<QList<Function> >(interface->call("findFunctions", arg));;
-                QList<Function> functions;
-                functions.append(readDBusMessage<Function>(interface->call("findFunction", arg)));
-                QString error;
-                foreach(const Function &f, functions) {
-                    if (f.name.isEmpty())
-                        break;
-                    if (argc - i - 1 < f.args.size()) {
-                        error = QString("Not enough arguments specified for %1 needed %2, got %3").
-                                arg(f.name).arg(f.args.size()).arg(argc - i - 1);
-                        qDebug("%s", qPrintable(error));
-                        continue;
-                    }
-
-                    QList<QVariant> arguments;
-                    int ii = i;
-                    for (int j=0; j<f.args.size(); ++j) {
-                        QVariant variant = args.at(++ii);
-                        if (!variant.convert(static_cast<QVariant::Type>(f.args.at(j)))) {
-                            error = QString("Can't convert %1 to %2").arg(args.at(ii)).arg(QMetaType::typeName(f.args.at(j)));
-                            break;
+                const Function function = ::readDBusMessage<Function>(interface->call("findFunction", arg));
+                if (!function.name.isEmpty()) {
+                    Log::log(10) << arg << function.name << function.args;
+                    QString error;
+                    foreach(const QList<int> &functionArgs, function.args) {
+                        bool foundError = false;
+//                        qDebug() << function.name << ::toString(functionArgs);
+                        if (argCount - i - 1 < functionArgs.size()) {
+                            error = QString("Not enough arguments specified for %1 needed %2 (%3), got %4").
+                                    arg(function.name).arg(functionArgs.size()).arg(::toString(functionArgs)).arg(argCount - i - 1);
+                            continue;
                         }
-                        arguments.append(variant);
+
+                        QList<QVariant> arguments;
+                        int ii = i;
+                        for (int j=0; j<functionArgs.size(); ++j) {
+                            QVariant variant = cmdLineArgs.at(++ii);
+                            if (!variant.convert(static_cast<QVariant::Type>(functionArgs.at(j)))) {
+                                error = QString("Can't convert %1 to %2").arg(cmdLineArgs.at(ii)).arg(QMetaType::typeName(functionArgs.at(j)));
+                                foundError = true;
+                                break;
+                            }
+                            arguments.append(variant);
+                        }
+                        if (foundError) {
+                            continue;
+                        }
+                        error.clear();
+                        i = ii;
+                        // should this be async?
+                        Log::log() << "Calling" << function.name << arguments;
+                        const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, function.name, arguments);
+                        // ### what if it can't call the function?
+                        if (!ret.arguments().isEmpty())
+                            printf("%s\n", qPrintable(toString(ret.arguments().first())));
+                        break;
                     }
-                    if (!error.isEmpty())
-                        continue;
-                    i = ii;
-                    // should this be async?
-                    const QDBusMessage ret = interface->callWithArgumentList(QDBus::Block, f.name, arguments);
-                    // ### what if it can't call the function?
-                    if (!ret.arguments().isEmpty())
-                        printf("%s\n", qPrintable(toString(ret.arguments().first())));
-                    break;
-                }
-                if (!error.isEmpty()) {
-                    qWarning("Error: %s", qPrintable(error));
+                    if (!error.isEmpty()) {
+                        qWarning("Error: %s", qPrintable(error));
+                        return 1;
+                    }
+                    return 0;
+                } else if (!QFile::exists(arg)) {
+#if 0 // crashes right now
+                    const QString lastError = ::readDBusMessage<QString>(interface->call("lastError"));
+                    qWarning("Error: %s", qPrintable(lastError));
+#endif
                     return 1;
                 }
-                return 0;
             }
         }
 

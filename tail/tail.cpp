@@ -10,8 +10,8 @@
 struct FunctionNode
 {
     ~FunctionNode() { qDeleteAll(nodes); }
-    QMap<QChar, FunctionNode*> nodes;
-    QList<Function> functions;
+    QHash<QChar, FunctionNode*> nodes;
+    Function function;
 };
 
 struct RootNode : public FunctionNode
@@ -111,35 +111,62 @@ static void addFunction(FunctionNode *node, const QString &string, const Functio
 {
     Q_ASSERT(node);
     if (string.isEmpty()) {
-        node->functions.append(function);
+        if (node->function.name.isEmpty()) {
+            node->function = function;
+        } else {
+            node->function.args.append(function.args);
+        }
         return;
     }
-    FunctionNode *&n = node->nodes[string.at(0)];
+    FunctionNode *&n = node->nodes[string.at(0).toLower()];
     if (!n) {
         n = new FunctionNode;
     }
     addFunction(n, string.mid(1), function);
 }
 
-static QList<Function> findFunctions(FunctionNode *node, const QString &name)
+static inline QStringList recurse(const FunctionNode *node)
+{
+    Q_ASSERT(node);
+    QStringList ret;
+    foreach(const QList<int> &args, node->function.args) {
+        QStringList argNames;
+        foreach(int arg, args) {
+            argNames.append(QMetaType::typeName(arg));
+        }
+        ret.append(QString("%0 %1(%2)").
+                   arg(QMetaType::typeName(node->function.returnArgument)).
+                   arg(node->function.name).
+                   arg(argNames.join(", ")));
+    }
+    for (QHash<QChar, FunctionNode *>::const_iterator it = node->nodes.begin(); it != node->nodes.end(); ++it) {
+        ret += ::recurse(it.value());
+    }
+
+    return ret;
+}
+
+static Function findFunction(const FunctionNode *node, const QString &name, QString *error)
 {
     if (name.isEmpty()) {
-        while (node->functions.isEmpty() && node->nodes.size() == 1) {
+        while (node->function.name.isEmpty() && node->nodes.size() == 1) {
             node = node->nodes.values().first();
         }
-
-        return node->functions;
+        if (error && node->function.name.isEmpty() && node->nodes.size() > 1) {
+            *error = "Ambigous request. Could match: " + ::recurse(node).join("\n");
+        }
+        return node->function;
     }
 
     FunctionNode *n = node->nodes.value(name.at(0));
     if (!n) {
-        return QList<Function>();
+        return Function();
     }
-    return findFunctions(n, name.mid(1));
+    return findFunction(n, name.mid(1), error);
 }
 
 
-QList<Function> Tail::findFunctions(const QString &functionName) const
+Function Tail::findFunction(const QString &functionName) const
 {
     if (!d.root) {
         d.root = new RootNode;
@@ -149,12 +176,14 @@ QList<Function> Tail::findFunctions(const QString &functionName) const
             const QMetaMethod method = meta->method(i);
             if (method.attributes() & QMetaMethod::Scriptable) {
                 Function func;
-                func.name = method.signature();
+                func.name = QString::fromLatin1(method.signature());
                 func.name.chop(func.name.size() - func.name.indexOf('('));
-//                qDebug() << method.parameterNames() << func.name << method.parameterTypes();
+                func.returnArgument = QMetaType::type(method.typeName());
+                QList<int> args;
                 foreach(const QByteArray &parameter, method.parameterTypes()) {
-                    func.args.append(QMetaType::type(parameter.constData()));
+                    args.append(QMetaType::type(parameter.constData()));
                 }
+                func.args.append(args);
                 ::addFunction(d.root, func.name, func);
                 QSet<QString> used;
                 used.insert(func.name);
@@ -164,7 +193,6 @@ QList<Function> Tail::findFunctions(const QString &functionName) const
                     ::addFunction(d.root, translated, func);
                 }
                 const QStringList aliases = Config::value<QString>(QLatin1String("Aliases/") + func.name).split(' ', QString::SkipEmptyParts);
-//                qDebug() << func.name << aliases;
                 foreach(const QString &alias, aliases) {
                     if (used.contains(alias)) { // ### warn about dupe alias?
                         used.insert(alias);
@@ -175,24 +203,23 @@ QList<Function> Tail::findFunctions(const QString &functionName) const
             }
         }
     }
-    QList<Function> ret = ::findFunctions(d.root, functionName);
-    return ret;
+    return ::findFunction(d.root, functionName.toLower(), &d.lastError);
 }
-
-Function Tail::findFunction(const QString &functionName) const
-{
-    return findFunctions(functionName).value(0);
-}
-
 
 QStringList Tail::functions() const
 {
     if (!d.root) {
-        findFunctions(QString());
+        findFunction(QString());
     }
-    return d.root->all;
+    return ::recurse(d.root);
+
+//    return d.root->all;
 }
 
+QString Tail::lastError() const
+{
+    return d.lastError;
+}
 
 int Tail::count() const
 {
@@ -226,7 +253,7 @@ QStringList Tail::list() const
     const int width = ::width(d.tracks.size()) + 2;
     for (int i=0; i<d.tracks.size(); ++i) {
         QString url = d.tracks.at(i).toString();
-        url.prepend(QString("%1. ").arg(i + 1, width));
+        url.prepend(QString("%1. ").arg(i, width));
         if (i == d.current) {
             url[0] = '*';
         }
@@ -288,6 +315,23 @@ int Tail::indexOfTrack(const QUrl &url) const
     return d.tracks.indexOf(url);
 }
 
+int Tail::indexOfTrack(const QString &name) const
+{
+    for (int i=0; i<d.tracks.size(); ++i) {
+        const QUrl &url = d.tracks.at(i);
+        if (url.toString().contains(name, Qt::CaseInsensitive))
+            return i;
+    }
+    return -1;
+}
+
+TrackData Tail::trackData(const QString &song, int fields) const
+{
+    const int idx = indexOfTrack(song);
+    return (idx == -1 ? TrackData() : trackData(idx, fields));
+}
+
+
 TrackData Tail::trackData(const QUrl &url, int fields) const
 {
     const int index = indexOfTrack(url);
@@ -309,11 +353,12 @@ TrackData Tail::trackData(int index, int fields) const
     if (fields & URL) {
         data.url = d.tracks.at(index);
     }
-    if (fields & PlaylistIndex)
+    if (fields & PlaylistIndex) {
         data.playlistIndex = index;
+    }
 
-    enum { TailTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
-    const uint backendTypes = fields & TailTypes;
+    enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
+    const uint backendTypes = fields & BackendTypes;;
     if (backendTypes) {
         d.tag->trackData(&data, d.tracks.at(index), backendTypes);
 //        d.backend->trackData(&data, d.tracks.at(index), backendTypes); // ### check return value?
@@ -640,3 +685,22 @@ bool Tail::syncToFile()
     return true;
 }
 
+QStringList Tail::tags(const QString &filename) const
+{
+    const int idx = indexOfTrack(filename);
+    QStringList list;
+    if (idx != -1) {
+        const TrackData data = trackData(idx);
+        const TrackInfo *info = ::trackInfos;
+        while (*info != None) {
+            const QVariant var = data.data(*info);
+//            qDebug() << var << qVariantValue<QUrl>(var).toString() << ::trackInfoToString(*info);
+            if (!var.isNull()) {
+                list.append(QString("%1: \"%2\"").arg(::trackInfoToString(*info)).arg(
+                                (*info == URL ? data.url.toString() : var.toString())));
+            }
+            ++info;
+        }
+    }
+    return list;
+}

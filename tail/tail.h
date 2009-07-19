@@ -15,7 +15,6 @@ public:
     virtual ~Tail();
     bool load(const QUrl &path, bool recursive);
     bool setBackend(Backend *backend);
-    QList<Function> findFunctions(const QString &functionName) const;
     void statusChange(int status) { emit statusChanged(status); }
 public slots:
     Q_SCRIPTABLE int capabilities() const { Q_ASSERT(d.backend); return d.backend->capabilities(); }
@@ -40,6 +39,7 @@ public slots:
     // playlist stuff
     Q_SCRIPTABLE TrackData trackData(int idx, int fields = All) const;
     Q_SCRIPTABLE TrackData trackData(const QUrl &path, int fields = All) const;
+    Q_SCRIPTABLE TrackData trackData(const QString &song, int fields = All) const;
     Q_SCRIPTABLE int count() const;
     Q_SCRIPTABLE QString currentTrackName() const;
     Q_SCRIPTABLE int currentTrackIndex() const;
@@ -48,6 +48,7 @@ public slots:
     Q_SCRIPTABLE bool setCurrentTrackIndex(int index);
     Q_SCRIPTABLE bool setCurrentTrack(const QString &name);
     Q_SCRIPTABLE int indexOfTrack(const QUrl &name) const;
+    Q_SCRIPTABLE int indexOfTrack(const QString &name) const;
     Q_SCRIPTABLE bool setCWD(const QString &path);
     Q_SCRIPTABLE QString CWD() const;
     Q_SCRIPTABLE QString playlist() const;
@@ -60,6 +61,8 @@ public slots:
     Q_SCRIPTABLE void crop();
     Q_SCRIPTABLE Function findFunction(const QString &functionName) const;
     Q_SCRIPTABLE QStringList functions() const;
+    Q_SCRIPTABLE QString lastError() const;
+    Q_SCRIPTABLE QStringList tags(const QString &filename) const;
 
     Q_SCRIPTABLE inline bool load(const QString &path) { return load(QUrl(path), false); }
     Q_SCRIPTABLE inline bool loadRecursively(const QString &path) { return load(QUrl(path), true); }
@@ -105,6 +108,7 @@ protected:
         bool blockSync;
         Backend *backend;
         TagInterface *tag;
+        mutable QString lastError;
     } d;
 };
 

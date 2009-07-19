@@ -32,19 +32,7 @@ QMutex Log::logDeviceMutex;
 
 QDebug Log::log(int verb)
 {
-#ifndef NO_MUTEX
-    QMutexLocker locker(&logDeviceMutex);
-#endif
-    enum { DefaultVerbosity = 0 };
-    static int verbosity = -1;
-    if (verbosity == -1) {
-        if (Config::isEnabled("verbose")) {
-            verbosity = INT_MAX;
-        } else {
-            verbosity = Config::value<int>("verbosity", DefaultVerbosity);
-        }
-    }
-    if (verb <= verbosity) {
+    if (verb <= verbosity()) {
         if (!logDevice) {
             return qDebug();
         } else if (QThread::currentThread() == logDevice->thread()) {
@@ -89,4 +77,21 @@ void Log::setLogDevice(QIODevice *device)
 #endif
     delete logDevice;
     logDevice = device;
+}
+
+int Log::verbosity()
+{
+#ifndef NO_MUTEX
+    QMutexLocker locker(&logDeviceMutex);
+#endif
+    enum { DefaultVerbosity = 0 };
+    static int verbosity = -1;
+    if (verbosity == -1) {
+        if (Config::isEnabled("verbose")) {
+            verbosity = INT_MAX;
+        } else {
+            verbosity = Config::value<int>("verbosity", DefaultVerbosity);
+        }
+    }
+    return verbosity;
 }
