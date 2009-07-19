@@ -51,6 +51,7 @@ public:
             bool found = false;
             foreach(const ID3_FrameID id, list) {
                 if (ID3_Frame *frame = tag.Find(id)) {
+                    qDebug() << id << trackInfoToString(trackInfos[i]) << fi.fileName();
                     ID3_Frame::Iterator *it = frame->CreateIterator();
                     forever {
                         const ID3_Field *fld = it->GetNext();
@@ -69,6 +70,8 @@ public:
                     delete it;
                     if (found)
                         break;
+                } else {
+                    qDebug() << "nothing here" << id << trackInfoToString(trackInfos[i]) << fi.fileName();
                 }
             }
             if (found) {

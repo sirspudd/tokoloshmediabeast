@@ -8,9 +8,10 @@ TrackModel::TrackModel(QDBusInterface *interface, QObject *parent)
 
     interface->callWithCallback("count", QList<QVariant>(), this, SLOT(onTrackCountChanged(int)));
 
-    d.columns.append(PlaylistIndex);
-    d.columns.append(Title);
+//    d.columns.append(PlaylistIndex);
     d.columns.append(FileName);
+    d.columns.append(Title);
+    d.columns.append(Artist);
 
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksInserted", this, SLOT(onTracksInserted(int, int)));
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksRemoved", this, SLOT(onTracksRemoved(int, int)));
@@ -54,7 +55,8 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
             QList<QVariant> args;
             const int fields = All;
             args << index.row() << fields; // do I want all?
-#if 1
+#if 0
+            qDebug("%s %d: d.interface->callWithCallback(\"trackData\", args, const_cast<TrackModel*>(this),", __FILE__, __LINE__);
             d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
                                           SLOT(onTrackDataReceived(TrackData)));
 #else
@@ -167,6 +169,7 @@ void TrackModel::onTracksRemoved(int from, int count)
 
 void TrackModel::onTrackDataReceived(const TrackData &data)
 {
+    qDebug("%s %d: void TrackModel::onTrackDataReceived(const TrackData &data)", __FILE__, __LINE__);
     Q_ASSERT(data.fields & PlaylistIndex);
     const int track = data.playlistIndex;
     int &ref = d.pendingFields[track];
