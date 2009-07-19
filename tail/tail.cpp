@@ -164,7 +164,7 @@ static Function findFunction(const FunctionNode *node, const QString &name, QStr
 Function Tail::findFunction(const QString &functionName) const
 {
     if (!d.root) {
-        d.root = new RootNode;
+        d.root = new FunctionNode;
         const QMetaObject *meta = metaObject();
         const int count = meta->methodCount();
         for (int i=0; i<count; ++i) {
@@ -189,12 +189,11 @@ Function Tail::findFunction(const QString &functionName) const
                 }
                 const QStringList aliases = Config::value<QString>(QLatin1String("Aliases/") + func.name).split(' ', QString::SkipEmptyParts);
                 foreach(const QString &alias, aliases) {
-                    if (used.contains(alias)) { // ### warn about dupe alias?
+                    if (!used.contains(alias)) { // ### warn about dupe alias?
                         used.insert(alias);
                         ::addFunction(d.root, alias, func);
                     }
                 }
-                d.root->all += used.toList();
             }
         }
     }
@@ -364,7 +363,8 @@ TrackData Tail::trackData(int index, int fields) const
 enum RecursiveLoadFlags {
     Recurse = 0x1,
     ResolveSymlinks = 0x2,
-    IgnoreExtension = 0x4
+    IgnoreExtension = 0x4,
+    Threaded = 0x8
 };
 
 static inline bool resolveSymlink(QFileInfo *fi)
@@ -383,7 +383,7 @@ static inline bool resolveSymlink(QFileInfo *fi)
 
 static inline uint qHash(const QFileInfo &fi) { return qHash(fi.absoluteFilePath()); }
 static inline QStringList recursiveLoad(QFileInfo file, uint flags, const QSet<QString> &validExtensions)
-{ // if backend is 0 it's being run in a thread
+{
     QStringList ret;
     if (file.isSymLink() && (!(flags & ResolveSymlinks) || !::resolveSymlink(&file))) {
         return ret;
@@ -399,8 +399,30 @@ static inline QStringList recursiveLoad(QFileInfo file, uint flags, const QSet<Q
             Q_ASSERT(!f.isDir() || flags & Recurse);
             ret += ::recursiveLoad(f, flags, validExtensions);
         }
-    } else if (file.isFile() && (flags & IgnoreExtension || validExtensions.contains(file.suffix().toLower()))) {
-        ret.append(file.absoluteFilePath());
+    } else if (file.isFile()) {
+        const QString suffix = file.suffix().toLower();
+        if (suffix == "m3u") { // ## could and should use libmagic to detect all of this
+            QFile f(file.absoluteFilePath());
+            if (f.open(QIODevice::ReadOnly)) {
+                QTextStream ts(&f);
+                while (!ts.atEnd()) {
+                    QString line = ts.readLine();
+                    if (!QFile::exists(line)) {
+                        line.prepend(file.absolutePath() + QDir::separator());
+                        if (!QFile::exists(line))
+                            continue;
+                    }
+                    const QFileInfo fi(line);
+                    if (fi.isFile()) {
+                        ret += recursiveLoad(fi, flags, validExtensions);
+                    } else {
+                        Log::log(1) << "Don't know what to do with this" << fi.absoluteFilePath();
+                    }
+                }
+            }
+        } else if  (flags & IgnoreExtension || validExtensions.contains(suffix)) {
+            ret.append(file.absoluteFilePath());
+        }
     }
     return ret;
 }
@@ -417,7 +439,7 @@ public:
 
     virtual void run()
     {
-        songs = ::recursiveLoad(fileInfo, flags, validExtensions);
+        songs = ::recursiveLoad(fileInfo, flags|Threaded, validExtensions);
     }
 
     const QFileInfo fileInfo;
@@ -465,8 +487,10 @@ void Tail::addTracks(const QStringList &list)
 
 bool Tail::load(const QUrl &url, bool recurse)
 {
+    // ### this code does not deal well with remote m3u's yet
     const QString path = url.toLocalFile();
     if (path.isEmpty()) {
+        // remote file somehow
         addTracks(QStringList() << url.toString());
         // ugly
         return true;
@@ -481,6 +505,7 @@ bool Tail::load(const QUrl &url, bool recurse)
     if (file.isSymLink() && (!resolveSymlinks || !::resolveSymlink(&file))) {
         return false;
     }
+
     uint flags = recurse ? Recurse : 0;
     if (resolveSymlinks)
         flags |= ResolveSymlinks;
@@ -501,6 +526,7 @@ bool Tail::load(const QUrl &url, bool recurse)
         return true;
     }
 #endif
+
     const QStringList songs = ::recursiveLoad(file, flags, validExtensions);
     addTracks(songs);
     if (file.isFile() && songs.isEmpty()) {

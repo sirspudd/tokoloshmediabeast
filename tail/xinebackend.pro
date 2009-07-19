@@ -9,4 +9,4 @@ macx {
 linux {
     LIBS += -L/usr/lib lz -lnsl -lpthread -lrt
 }
-!include(backend.pri):error("Can't find backendd.pri")
+!include(backend.pri):error("Can't find backend.pri")
