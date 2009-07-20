@@ -102,21 +102,6 @@ static inline bool operator==(const Function &left, const Function &right)
 static inline bool operator!=(const Function &left, const Function &right)
 { return left.name != right.name || left.args != right.args; }
 
-template <typename T>
-static inline T readDBusMessage(const QDBusMessage &msg)
-{
-    if (msg.arguments().isEmpty() || msg.arguments().at(0).isNull()) {
-        qWarning("Can't read this stuff");
-        return T();
-    }
-    QDBusArgument arg = qVariantValue<QDBusArgument>(msg.arguments().value(0));
-    T t;
-    arg >> t;
-    return t;
-}
-
-
-
 #ifdef Q_WS_WIN
 #include <windows.h>
 #else

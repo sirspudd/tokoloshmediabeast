@@ -60,7 +60,7 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
             d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
                                           SLOT(onTrackDataReceived(TrackData)));
 #else
-            const TrackData trackData = ::readDBusMessage<TrackData>(d.interface->call("trackData", index.row(), fields));
+            const TrackData trackData = QDBusReply<TrackData>(d.interface->call("trackData", index.row(), fields)).value();
             if (trackData.fields != 0) {
                 const_cast<TrackModel*>(this)->onTrackDataReceived(trackData);
             }

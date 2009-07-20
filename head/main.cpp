@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
                     }
                     return 0;
                 }
-                const Function function = ::readDBusMessage<Function>(interface->call("findFunction", arg));
+                const Function function = QDBusReply<Function>(interface->call("findFunction", arg)).value();
                 if (!function.name.isEmpty()) {
                     Log::log(10) << arg << function.name << function.args;
                     QString error;
@@ -141,10 +141,8 @@ int main(int argc, char *argv[])
                     }
                     return 0;
                 } else if (!QFile::exists(arg)) {
-#if 0 // crashes right now
-                    const QString lastError = ::readDBusMessage<QString>(interface->call("lastError"));
+                    const QString lastError = QDBusReply<QString>(interface->call("lastError")).value();
                     qWarning("Error: %s", qPrintable(lastError));
-#endif
                     return 1;
                 }
             }
