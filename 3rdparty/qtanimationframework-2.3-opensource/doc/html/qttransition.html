@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qtanimationframework-2.3-opensource/src/qttransition.cpp -->
+<head>
+  <title>QtTransition Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qt-logo.png" align="left" width="57" height="67" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+</tr></table><h1 class="title">QtTransition Class Reference<br /><span class="small-subtitle">[<a href="http://doc.trolltech.com/4.4/qtcore.html">QtCore</a> module]</span>
+</h1>
+<p>The QtTransition class provides an action-based transition. <a href="#details">More...</a></p>
+<pre> #include &lt;QtTransition&gt;</pre><p>Inherits <a href="qtabstracttransition.html">QtAbstractTransition</a>.</p>
+<p>Inherited by <a href="qteventtransition.html">QtEventTransition</a>, <a href="qtsignaltransition.html">QtSignalTransition</a>, and <a href="qtstatefinishedtransition.html">QtStateFinishedTransition</a>.</p>
+<ul>
+<li><a href="qttransition-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="public-functions"></a>
+<h3>Public Functions</h3>
+<ul>
+<li><div class="fn"/><b><a href="qttransition.html#QtTransition">QtTransition</a></b> ( QtState * <i>sourceState</i> = 0 )</li>
+<li><div class="fn"/><b><a href="qttransition.html#QtTransition-2">QtTransition</a></b> ( const QList&lt;QtAbstractState *&gt; &amp; <i>targets</i>, QtState * <i>sourceState</i> = 0 )</li>
+<li><div class="fn"/><b><a href="qttransition.html#dtor.QtTransition">~QtTransition</a></b> ()</li>
+<li><div class="fn"/>QList&lt;QtStateAction *&gt; <b><a href="qttransition.html#actions">actions</a></b> () const</li>
+<li><div class="fn"/>void <b><a href="qttransition.html#addAction">addAction</a></b> ( QtStateAction * <i>action</i> )</li>
+<li><div class="fn"/>void <b><a href="qttransition.html#invokeMethodOnTransition">invokeMethodOnTransition</a></b> ( QObject * <i>object</i>, const char * <i>method</i>, const QList&lt;QVariant&gt; &amp; <i>arguments</i> = QList&lt;QVariant&gt; () )</li>
+<li><div class="fn"/>void <b><a href="qttransition.html#removeAction">removeAction</a></b> ( QtStateAction * <i>action</i> )</li>
+</ul>
+<ul>
+<li><div class="fn"/>8 public functions inherited from <a href="qtabstracttransition.html#public-functions">QtAbstractTransition</a></li>
+<li><div class="fn"/>29 public functions inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#public-functions">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"/>3 properties inherited from <a href="qtabstracttransition.html#properties">QtAbstractTransition</a></li>
+<li><div class="fn"/>1 property inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#properties">QObject</a></li>
+<li><div class="fn"/>1 public slot inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#public-slots">QObject</a></li>
+<li><div class="fn"/>1 signal inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#signals">QObject</a></li>
+<li><div class="fn"/>1 public type inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#public-variables">QObject</a></li>
+<li><div class="fn"/>4 static public members inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#static-public-members">QObject</a></li>
+<li><div class="fn"/>2 protected functions inherited from <a href="qtabstracttransition.html#protected-functions">QtAbstractTransition</a></li>
+<li><div class="fn"/>7 protected functions inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#protected-functions">QObject</a></li>
+<li><div class="fn"/>2 protected variables inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QtTransition class provides an action-based transition.</p>
+<p>QtTransition provides an action-based transition; you add actions with the <a href="qttransition.html#addAction">addAction</a>() function. The transition executes the actions when the transition is triggered. QtTransition is part of <a href="statemachine-api.html">The State Machine Framework</a>.</p>
+<p>The <a href="qttransition.html#invokeMethodOnTransition">invokeMethodOnTransition</a>() function is used for defining method invocations that should be performed when a transition is taken.</p>
+<pre> QtStateMachine machine;
+ QtState *s1 = new QtState();
+ machine.addState(s1);
+ QtTransition *t1 = new QtTransition();
+ QLabel label;
+ t1-&gt;invokeMethodOnTransition(&amp;label, &quot;clear&quot;);
+ QtState *s2 = new QtState();
+ machine.addState(s2);
+ t1-&gt;setTargetState(s2);
+ s1-&gt;addTransition(t1);</pre>
+<p>Actions are executed in the order in which they were added.</p>
+<p>See also <a href="qtstate.html#addTransition">QtState::addTransition</a>() and <a href="qtstateaction.html">QtStateAction</a>.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QtTransition"></a>QtTransition::QtTransition ( <a href="qtstate.html">QtState</a> * <i>sourceState</i> = 0 )</h3>
+<p>Constructs a new <a href="qttransition.html">QtTransition</a> object with the given <i>sourceState</i>.</p>
+<h3 class="fn"><a name="QtTransition-2"></a>QtTransition::QtTransition ( const <a href="http://doc.trolltech.com/4.4/qlist.html">QList</a>&lt;<a href="qtabstractstate.html">QtAbstractState</a> *&gt; &amp; <i>targets</i>, <a href="qtstate.html">QtState</a> * <i>sourceState</i> = 0 )</h3>
+<p>Constructs a new <a href="qttransition.html">QtTransition</a> object with the given <i>targets</i> and <i>sourceState</i>.</p>
+<h3 class="fn"><a name="dtor.QtTransition"></a>QtTransition::~QtTransition ()</h3>
+<p>Destroys this transition.</p>
+<h3 class="fn"><a name="actions"></a><a href="http://doc.trolltech.com/4.4/qlist.html">QList</a>&lt;<a href="qtstateaction.html">QtStateAction</a> *&gt; QtTransition::actions () const</h3>
+<p>Returns this transitions's actions, or an empty list if the transition has no actions.</p>
+<p>See also <a href="qttransition.html#addAction">addAction</a>().</p>
+<h3 class="fn"><a name="addAction"></a>void QtTransition::addAction ( <a href="qtstateaction.html">QtStateAction</a> * <i>action</i> )</h3>
+<p>Adds the given <i>action</i> to this transition. The action will be executed when the transition is triggered. The transition takes ownership of the action.</p>
+<p>See also <a href="qttransition.html#removeAction">removeAction</a>().</p>
+<h3 class="fn"><a name="invokeMethodOnTransition"></a>void QtTransition::invokeMethodOnTransition ( <a href="http://doc.trolltech.com/4.4/qobject.html">QObject</a> * <i>object</i>, const char * <i>method</i>, const <a href="http://doc.trolltech.com/4.4/qlist.html">QList</a>&lt;<a href="http://doc.trolltech.com/4.4/qvariant.html">QVariant</a>&gt; &amp; <i>arguments</i> = QList&lt;QVariant&gt; () )</h3>
+<p>Instructs this <a href="qttransition.html">QtTransition</a> to invoke the given <i>method</i> of the given <i>object</i> with the given <i>arguments</i> when the transition is taken. This function will create a <a href="qtstateinvokemethodaction.html">QtStateInvokeMethodAction</a> object and add it to the actions of the transition.</p>
+<h3 class="fn"><a name="removeAction"></a>void QtTransition::removeAction ( <a href="qtstateaction.html">QtStateAction</a> * <i>action</i> )</h3>
+<p>Removes the given <i>action</i> from this transition. The transition releases ownership of the action.</p>
+<p>See also <a href="qttransition.html#addAction">addAction</a>().</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="30%" align="left">Copyright &copy; 2009 Nokia</td>
+<td width="40%" align="center"><a href="http://doc.trolltech.com/trademarks.html">Trademarks</a></td>
+<td width="30%" align="right"><div align="right">Qt Solutions</div></td>
+</tr></table></div></address></body>
+</html>

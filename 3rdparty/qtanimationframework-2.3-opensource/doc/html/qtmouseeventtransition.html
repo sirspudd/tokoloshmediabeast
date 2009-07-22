@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qtanimationframework-2.3-opensource/src/qtmouseeventtransition.cpp -->
+<head>
+  <title>QtMouseEventTransition Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qt-logo.png" align="left" width="57" height="67" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+</tr></table><h1 class="title">QtMouseEventTransition Class Reference<br /><span class="small-subtitle">[<a href="http://doc.trolltech.com/4.4/qtcore.html">QtCore</a> module]</span>
+</h1>
+<p>The QtMouseEventTransition class provides a transition for mouse events. <a href="#details">More...</a></p>
+<pre> #include &lt;QtMouseEventTransition&gt;</pre><p>Inherits <a href="qteventtransition.html">QtEventTransition</a>.</p>
+<ul>
+<li><a href="qtmouseeventtransition-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="public-functions"></a>
+<h3>Public Functions</h3>
+<ul>
+<li><div class="fn"/><b><a href="qtmouseeventtransition.html#QtMouseEventTransition">QtMouseEventTransition</a></b> ( QtState * <i>sourceState</i> = 0 )</li>
+<li><div class="fn"/><b><a href="qtmouseeventtransition.html#QtMouseEventTransition-2">QtMouseEventTransition</a></b> ( QObject * <i>object</i>, QEvent::Type <i>type</i>, Qt::MouseButton <i>button</i>, QtState * <i>sourceState</i> = 0 )</li>
+<li><div class="fn"/><b><a href="qtmouseeventtransition.html#QtMouseEventTransition-3">QtMouseEventTransition</a></b> ( QObject * <i>object</i>, QEvent::Type <i>type</i>, Qt::MouseButton <i>button</i>, const QList&lt;QtAbstractState *&gt; &amp; <i>targets</i>, QtState * <i>sourceState</i> = 0 )</li>
+<li><div class="fn"/><b><a href="qtmouseeventtransition.html#dtor.QtMouseEventTransition">~QtMouseEventTransition</a></b> ()</li>
+<li><div class="fn"/>Qt::MouseButton <b><a href="qtmouseeventtransition.html#button">button</a></b> () const</li>
+<li><div class="fn"/>QPainterPath <b><a href="qtmouseeventtransition.html#path">path</a></b> () const</li>
+<li><div class="fn"/>void <b><a href="qtmouseeventtransition.html#setButton">setButton</a></b> ( Qt::MouseButton <i>button</i> )</li>
+<li><div class="fn"/>void <b><a href="qtmouseeventtransition.html#setPath">setPath</a></b> ( const QPainterPath &amp; <i>path</i> )</li>
+</ul>
+<ul>
+<li><div class="fn"/>4 public functions inherited from <a href="qteventtransition.html#public-functions">QtEventTransition</a></li>
+<li><div class="fn"/>4 public functions inherited from <a href="qttransition.html#public-functions">QtTransition</a></li>
+<li><div class="fn"/>8 public functions inherited from <a href="qtabstracttransition.html#public-functions">QtAbstractTransition</a></li>
+<li><div class="fn"/>29 public functions inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#public-functions">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"/>2 properties inherited from <a href="qteventtransition.html#properties">QtEventTransition</a></li>
+<li><div class="fn"/>3 properties inherited from <a href="qtabstracttransition.html#properties">QtAbstractTransition</a></li>
+<li><div class="fn"/>1 property inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#properties">QObject</a></li>
+<li><div class="fn"/>1 public slot inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#public-slots">QObject</a></li>
+<li><div class="fn"/>1 signal inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#signals">QObject</a></li>
+<li><div class="fn"/>1 public type inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#public-variables">QObject</a></li>
+<li><div class="fn"/>4 static public members inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#static-public-members">QObject</a></li>
+<li><div class="fn"/>1 protected function inherited from <a href="qteventtransition.html#protected-functions">QtEventTransition</a></li>
+<li><div class="fn"/>2 protected functions inherited from <a href="qtabstracttransition.html#protected-functions">QtAbstractTransition</a></li>
+<li><div class="fn"/>7 protected functions inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#protected-functions">QObject</a></li>
+<li><div class="fn"/>2 protected variables inherited from <a href="http://doc.trolltech.com/4.4/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QtMouseEventTransition class provides a transition for mouse events.</p>
+<p>QtMouseEventTransition is part of <a href="statemachine-api.html">The State Machine Framework</a>.</p>
+<p>See also <a href="qtstate.html#addTransition">QtState::addTransition</a>().</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QtMouseEventTransition"></a>QtMouseEventTransition::QtMouseEventTransition ( <a href="qtstate.html">QtState</a> * <i>sourceState</i> = 0 )</h3>
+<p>Constructs a new mouse event transition with the given <i>sourceState</i>.</p>
+<h3 class="fn"><a name="QtMouseEventTransition-2"></a>QtMouseEventTransition::QtMouseEventTransition ( <a href="http://doc.trolltech.com/4.4/qobject.html">QObject</a> * <i>object</i>, <a href="http://doc.trolltech.com/4.4/qevent.html#Type-enum">QEvent::Type</a> <i>type</i>, <a href="http://doc.trolltech.com/4.4/qt.html#MouseButton-enum">Qt::MouseButton</a> <i>button</i>, <a href="qtstate.html">QtState</a> * <i>sourceState</i> = 0 )</h3>
+<p>Constructs a new mouse event transition for events of the given <i>type</i> for the given <i>object</i>, with the given <i>button</i> and <i>sourceState</i>.</p>
+<h3 class="fn"><a name="QtMouseEventTransition-3"></a>QtMouseEventTransition::QtMouseEventTransition ( <a href="http://doc.trolltech.com/4.4/qobject.html">QObject</a> * <i>object</i>, <a href="http://doc.trolltech.com/4.4/qevent.html#Type-enum">QEvent::Type</a> <i>type</i>, <a href="http://doc.trolltech.com/4.4/qt.html#MouseButton-enum">Qt::MouseButton</a> <i>button</i>, const <a href="http://doc.trolltech.com/4.4/qlist.html">QList</a>&lt;<a href="qtabstractstate.html">QtAbstractState</a> *&gt; &amp; <i>targets</i>, <a href="qtstate.html">QtState</a> * <i>sourceState</i> = 0 )</h3>
+<p>Constructs a new mouse event transition for events of the given <i>type</i> for the given <i>object</i>, with the given <i>button</i>, <i>targets</i> and <i>sourceState</i>.</p>
+<h3 class="fn"><a name="dtor.QtMouseEventTransition"></a>QtMouseEventTransition::~QtMouseEventTransition ()</h3>
+<p>Destroys this mouse event transition.</p>
+<h3 class="fn"><a name="button"></a><a href="http://doc.trolltech.com/4.4/qt.html#MouseButton-enum">Qt::MouseButton</a> QtMouseEventTransition::button () const</h3>
+<p>Returns the button that this mouse event transition checks for.</p>
+<p>See also <a href="qtmouseeventtransition.html#setButton">setButton</a>().</p>
+<h3 class="fn"><a name="path"></a><a href="http://doc.trolltech.com/4.4/qpainterpath.html">QPainterPath</a> QtMouseEventTransition::path () const</h3>
+<p>Returns the path for this mouse event transition.</p>
+<p>See also <a href="qtmouseeventtransition.html#setPath">setPath</a>().</p>
+<h3 class="fn"><a name="setButton"></a>void QtMouseEventTransition::setButton ( <a href="http://doc.trolltech.com/4.4/qt.html#MouseButton-enum">Qt::MouseButton</a> <i>button</i> )</h3>
+<p>Sets the <i>button</i> that this mouse event transition will check for.</p>
+<p>See also <a href="qtmouseeventtransition.html#button">button</a>().</p>
+<h3 class="fn"><a name="setPath"></a>void QtMouseEventTransition::setPath ( const <a href="http://doc.trolltech.com/4.4/qpainterpath.html">QPainterPath</a> &amp; <i>path</i> )</h3>
+<p>Sets the <i>path</i> for this mouse event transition. If a valid path has been set, the transition will only trigger if the mouse event position (<a href="http://doc.trolltech.com/4.4/qmouseevent.html#pos">QMouseEvent::pos</a>()) is inside the path.</p>
+<p>See also <a href="qtmouseeventtransition.html#path">path</a>() and <a href="http://doc.trolltech.com/4.4/qpainterpath.html#contains">QPainterPath::contains</a>().</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="30%" align="left">Copyright &copy; 2009 Nokia</td>
+<td width="40%" align="center"><a href="http://doc.trolltech.com/trademarks.html">Trademarks</a></td>
+<td width="30%" align="right"><div align="right">Qt Solutions</div></td>
+</tr></table></div></address></body>
+</html>

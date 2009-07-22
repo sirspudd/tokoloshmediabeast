@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QtHelpProject version="1.0">
+    <namespace>com.trolltech.qtsolutions.qtanimationframework_2.3</namespace>
+    <virtualFolder>qdoc</virtualFolder>
+    <customFilter name="Qt Solutions: Qt Animation Framework">
+        <filterAttribute>qt</filterAttribute>
+        <filterAttribute>qtanimationframework</filterAttribute>
+        <filterAttribute>solutions</filterAttribute>
+    </customFilter>
+    <filterSection>
+        <filterAttribute>qt</filterAttribute>
+        <filterAttribute>qtanimationframework</filterAttribute>
+        <filterAttribute>solutions</filterAttribute>
+        <toc>
+            <section ref="index.html" title="Qt Solutions: Qt Animation Framework Documentation">
+                <section ref="legal-easing.html" title="Easing Equations by Robert Penner"></section>
+                <section ref="index.html" title="Qt Animation Framework"></section>
+                <section ref="animation.html" title="The Animation Framework"></section>
+                <section ref="statemachine-api.html" title="The State Machine Framework"></section>
+            </section>
+        </toc>
+        <keywords>
+            <keyword name="Easing Equations by Robert Penner" id="Easing Equations by Robert Penner" ref="legal-easing.html"></keyword>
+            <keyword name="Qt Animation Framework" id="Qt Animation Framework" ref="index.html"></keyword>
+            <keyword name="QtAbstractAnimation" id="QtAbstractAnimation" ref="qtabstractanimation.html"></keyword>
+            <keyword name="QtAbstractAnimation::DeletionPolicy" id="QtAbstractAnimation::DeletionPolicy" ref="qtabstractanimation.html#DeletionPolicy-enum"></keyword>
+            <keyword name="QtAbstractAnimation::KeepWhenStopped" id="QtAbstractAnimation::KeepWhenStopped" ref="qtabstractanimation.html#DeletionPolicy-enum"></keyword>
+            <keyword name="QtAbstractAnimation::DeleteWhenStopped" id="QtAbstractAnimation::DeleteWhenStopped" ref="qtabstractanimation.html#DeletionPolicy-enum"></keyword>
+            <keyword name="QtAbstractAnimation::Direction" id="QtAbstractAnimation::Direction" ref="qtabstractanimation.html#Direction-enum"></keyword>
+            <keyword name="QtAbstractAnimation::Forward" id="QtAbstractAnimation::Forward" ref="qtabstractanimation.html#Direction-enum"></keyword>
+            <keyword name="QtAbstractAnimation::Backward" id="QtAbstractAnimation::Backward" ref="qtabstractanimation.html#Direction-enum"></keyword>
+            <keyword name="QtAbstractAnimation::State" id="QtAbstractAnimation::State" ref="qtabstractanimation.html#State-enum"></keyword>
+            <keyword name="QtAbstractAnimation::Stopped" id="QtAbstractAnimation::Stopped" ref="qtabstractanimation.html#State-enum"></keyword>
+            <keyword name="QtAbstractAnimation::Paused" id="QtAbstractAnimation::Paused" ref="qtabstractanimation.html#State-enum"></keyword>
+            <keyword name="QtAbstractAnimation::Running" id="QtAbstractAnimation::Running" ref="qtabstractanimation.html#State-enum"></keyword>
+            <keyword name="currentLoop" id="QtAbstractAnimation::currentLoop" ref="qtabstractanimation.html#currentLoop-prop"></keyword>
+            <keyword name="currentLoopChanged" id="QtAbstractAnimation::currentLoopChanged" ref="qtabstractanimation.html#currentLoopChanged"></keyword>
+            <keyword name="currentTime" id="QtAbstractAnimation::currentTime" ref="qtabstractanimation.html#currentTime-prop"></keyword>
+            <keyword name="direction" id="QtAbstractAnimation::direction" ref="qtabstractanimation.html#direction-prop"></keyword>
+            <keyword name="directionChanged" id="QtAbstractAnimation::directionChanged" ref="qtabstractanimation.html#directionChanged"></keyword>
+            <keyword name="duration" id="QtAbstractAnimation::duration" ref="qtabstractanimation.html#duration-prop"></keyword>
+            <keyword name="finished" id="QtAbstractAnimation::finished" ref="qtabstractanimation.html#finished"></keyword>
+            <keyword name="group" id="QtAbstractAnimation::group" ref="qtabstractanimation.html#group"></keyword>
+            <keyword name="loopCount" id="QtAbstractAnimation::loopCount" ref="qtabstractanimation.html#loopCount-prop"></keyword>
+            <keyword name="pause" id="QtAbstractAnimation::pause" ref="qtabstractanimation.html#pause"></keyword>
+            <keyword name="resume" id="QtAbstractAnimation::resume" ref="qtabstractanimation.html#resume"></keyword>
+            <keyword name="setCurrentTime" id="QtAbstractAnimation::setCurrentTime" ref="qtabstractanimation.html#currentTime-prop"></keyword>
+            <keyword name="setDirection" id="QtAbstractAnimation::setDirection" ref="qtabstractanimation.html#direction-prop"></keyword>
+            <keyword name="setLoopCount" id="QtAbstractAnimation::setLoopCount" ref="qtabstractanimation.html#loopCount-prop"></keyword>
+            <keyword name="start" id="QtAbstractAnimation::start" ref="qtabstractanimation.html#start"></keyword>
+            <keyword name="state" id="QtAbstractAnimation::state" ref="qtabstractanimation.html#state-prop"></keyword>
+            <keyword name="stateChanged" id="QtAbstractAnimation::stateChanged" ref="qtabstractanimation.html#stateChanged"></keyword>
+            <keyword name="stop" id="QtAbstractAnimation::stop" ref="qtabstractanimation.html#stop"></keyword>
+            <keyword name="totalDuration" id="QtAbstractAnimation::totalDuration" ref="qtabstractanimation.html#totalDuration"></keyword>
+            <keyword name="updateCurrentTime" id="QtAbstractAnimation::updateCurrentTime" ref="qtabstractanimation.html#updateCurrentTime"></keyword>
+            <keyword name="updateDirection" id="QtAbstractAnimation::updateDirection" ref="qtabstractanimation.html#updateDirection"></keyword>
+            <keyword name="updateState" id="QtAbstractAnimation::updateState" ref="qtabstractanimation.html#updateState"></keyword>
+            <keyword name="~QtAbstractAnimation" id="QtAbstractAnimation::~QtAbstractAnimation" ref="qtabstractanimation.html#dtor.QtAbstractAnimation"></keyword>
+            <keyword name="QtAbstractState" id="QtAbstractState" ref="qtabstractstate.html"></keyword>
+            <keyword name="QtAbstractState::RestorePolicy" id="QtAbstractState::RestorePolicy" ref="qtabstractstate.html#RestorePolicy-enum"></keyword>
+            <keyword name="QtAbstractState::GlobalRestorePolicy" id="QtAbstractState::GlobalRestorePolicy" ref="qtabstractstate.html#RestorePolicy-enum"></keyword>
+            <keyword name="QtAbstractState::DoNotRestoreProperties" id="QtAbstractState::DoNotRestoreProperties" ref="qtabstractstate.html#RestorePolicy-enum"></keyword>
+            <keyword name="QtAbstractState::RestoreProperties" id="QtAbstractState::RestoreProperties" ref="qtabstractstate.html#RestorePolicy-enum"></keyword>
+            <keyword name="assignProperty" id="QtAbstractState::assignProperty" ref="qtabstractstate.html#assignProperty"></keyword>
+            <keyword name="onEntry" id="QtAbstractState::onEntry" ref="qtabstractstate.html#onEntry"></keyword>
+            <keyword name="onExit" id="QtAbstractState::onExit" ref="qtabstractstate.html#onExit"></keyword>
+            <keyword name="parentState" id="QtAbstractState::parentState" ref="qtabstractstate.html#parentState"></keyword>
+            <keyword name="restorePolicy" id="QtAbstractState::restorePolicy" ref="qtabstractstate.html#restorePolicy-prop"></keyword>
+            <keyword name="setRestorePolicy" id="QtAbstractState::setRestorePolicy" ref="qtabstractstate.html#restorePolicy-prop"></keyword>
+            <keyword name="~QtAbstractState" id="QtAbstractState::~QtAbstractState" ref="qtabstractstate.html#dtor.QtAbstractState"></keyword>
+            <keyword name="QtAbstractTransition" id="QtAbstractTransition" ref="qtabstracttransition.html"></keyword>
+            <keyword name="addAnimation" id="QtAbstractTransition::addAnimation" ref="qtabstracttransition.html#addAnimation"></keyword>
+            <keyword name="animations" id="QtAbstractTransition::animations" ref="qtabstracttransition.html#animations"></keyword>
+            <keyword name="eventTest" id="QtAbstractTransition::eventTest" ref="qtabstracttransition.html#eventTest"></keyword>
+            <keyword name="onTransition" id="QtAbstractTransition::onTransition" ref="qtabstracttransition.html#onTransition"></keyword>
+            <keyword name="removeAnimation" id="QtAbstractTransition::removeAnimation" ref="qtabstracttransition.html#removeAnimation"></keyword>
+            <keyword name="setTargetState" id="QtAbstractTransition::setTargetState" ref="qtabstracttransition.html#target-prop"></keyword>
+            <keyword name="setTargetStates" id="QtAbstractTransition::setTargetStates" ref="qtabstracttransition.html#targets-prop"></keyword>
+            <keyword name="source" id="QtAbstractTransition::source" ref="qtabstracttransition.html#source-prop"></keyword>
+            <keyword name="sourceState" id="QtAbstractTransition::sourceState" ref="qtabstracttransition.html#source-prop"></keyword>
+            <keyword name="target" id="QtAbstractTransition::target" ref="qtabstracttransition.html#target-prop"></keyword>
+            <keyword name="targetState" id="QtAbstractTransition::targetState" ref="qtabstracttransition.html#target-prop"></keyword>
+            <keyword name="targetStates" id="QtAbstractTransition::targetStates" ref="qtabstracttransition.html#targets-prop"></keyword>
+            <keyword name="targets" id="QtAbstractTransition::targets" ref="qtabstracttransition.html#targets-prop"></keyword>
+            <keyword name="~QtAbstractTransition" id="QtAbstractTransition::~QtAbstractTransition" ref="qtabstracttransition.html#dtor.QtAbstractTransition"></keyword>
+            <keyword name="QtActionState" id="QtActionState" ref="qtactionstate.html"></keyword>
+            <keyword name="addEntryAction" id="QtActionState::addEntryAction" ref="qtactionstate.html#addEntryAction"></keyword>
+            <keyword name="addExitAction" id="QtActionState::addExitAction" ref="qtactionstate.html#addExitAction"></keyword>
+            <keyword name="entryActions" id="QtActionState::entryActions" ref="qtactionstate.html#entryActions"></keyword>
+            <keyword name="exitActions" id="QtActionState::exitActions" ref="qtactionstate.html#exitActions"></keyword>
+            <keyword name="invokeMethodOnEntry" id="QtActionState::invokeMethodOnEntry" ref="qtactionstate.html#invokeMethodOnEntry"></keyword>
+            <keyword name="invokeMethodOnExit" id="QtActionState::invokeMethodOnExit" ref="qtactionstate.html#invokeMethodOnExit"></keyword>
+            <keyword name="removeEntryAction" id="QtActionState::removeEntryAction" ref="qtactionstate.html#removeEntryAction"></keyword>
+            <keyword name="removeExitAction" id="QtActionState::removeExitAction" ref="qtactionstate.html#removeExitAction"></keyword>
+            <keyword name="~QtActionState" id="QtActionState::~QtActionState" ref="qtactionstate.html#dtor.QtActionState"></keyword>
+            <keyword name="QtAnimationGroup" id="QtAnimationGroup" ref="qtanimationgroup.html"></keyword>
+            <keyword name="addAnimation" id="QtAnimationGroup::addAnimation" ref="qtanimationgroup.html#addAnimation"></keyword>
+            <keyword name="animationAt" id="QtAnimationGroup::animationAt" ref="qtanimationgroup.html#animationAt"></keyword>
+            <keyword name="animationCount" id="QtAnimationGroup::animationCount" ref="qtanimationgroup.html#animationCount"></keyword>
+            <keyword name="clearAnimations" id="QtAnimationGroup::clearAnimations" ref="qtanimationgroup.html#clearAnimations"></keyword>
+            <keyword name="indexOfAnimation" id="QtAnimationGroup::indexOfAnimation" ref="qtanimationgroup.html#indexOfAnimation"></keyword>
+            <keyword name="insertAnimationAt" id="QtAnimationGroup::insertAnimationAt" ref="qtanimationgroup.html#insertAnimationAt"></keyword>
+            <keyword name="removeAnimation" id="QtAnimationGroup::removeAnimation" ref="qtanimationgroup.html#removeAnimation"></keyword>
+            <keyword name="takeAnimationAt" id="QtAnimationGroup::takeAnimationAt" ref="qtanimationgroup.html#takeAnimationAt"></keyword>
+            <keyword name="~QtAnimationGroup" id="QtAnimationGroup::~QtAnimationGroup" ref="qtanimationgroup.html#dtor.QtAnimationGroup"></keyword>
+            <keyword name="QtEasingCurve" id="QtEasingCurve" ref="qteasingcurve.html"></keyword>
+            <keyword name="QtEasingCurve::EasingFunction" id="QtEasingCurve::EasingFunction" ref="qteasingcurve.html#EasingFunction-typedef"></keyword>
+            <keyword name="QtEasingCurve::Type" id="QtEasingCurve::Type" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::Linear" id="QtEasingCurve::Linear" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InQuad" id="QtEasingCurve::InQuad" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutQuad" id="QtEasingCurve::OutQuad" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutQuad" id="QtEasingCurve::InOutQuad" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInQuad" id="QtEasingCurve::OutInQuad" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InCubic" id="QtEasingCurve::InCubic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutCubic" id="QtEasingCurve::OutCubic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutCubic" id="QtEasingCurve::InOutCubic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInCubic" id="QtEasingCurve::OutInCubic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InQuart" id="QtEasingCurve::InQuart" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutQuart" id="QtEasingCurve::OutQuart" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutQuart" id="QtEasingCurve::InOutQuart" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInQuart" id="QtEasingCurve::OutInQuart" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InQuint" id="QtEasingCurve::InQuint" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutQuint" id="QtEasingCurve::OutQuint" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutQuint" id="QtEasingCurve::InOutQuint" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInQuint" id="QtEasingCurve::OutInQuint" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InSine" id="QtEasingCurve::InSine" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutSine" id="QtEasingCurve::OutSine" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutSine" id="QtEasingCurve::InOutSine" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInSine" id="QtEasingCurve::OutInSine" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InExpo" id="QtEasingCurve::InExpo" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutExpo" id="QtEasingCurve::OutExpo" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutExpo" id="QtEasingCurve::InOutExpo" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInExpo" id="QtEasingCurve::OutInExpo" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InCirc" id="QtEasingCurve::InCirc" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutCirc" id="QtEasingCurve::OutCirc" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutCirc" id="QtEasingCurve::InOutCirc" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInCirc" id="QtEasingCurve::OutInCirc" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InElastic" id="QtEasingCurve::InElastic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutElastic" id="QtEasingCurve::OutElastic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutElastic" id="QtEasingCurve::InOutElastic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInElastic" id="QtEasingCurve::OutInElastic" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InBack" id="QtEasingCurve::InBack" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutBack" id="QtEasingCurve::OutBack" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutBack" id="QtEasingCurve::InOutBack" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInBack" id="QtEasingCurve::OutInBack" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InBounce" id="QtEasingCurve::InBounce" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutBounce" id="QtEasingCurve::OutBounce" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::InOutBounce" id="QtEasingCurve::InOutBounce" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::OutInBounce" id="QtEasingCurve::OutInBounce" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="QtEasingCurve::Custom" id="QtEasingCurve::Custom" ref="qteasingcurve.html#Type-enum"></keyword>
+            <keyword name="amplitude" id="QtEasingCurve::amplitude" ref="qteasingcurve.html#amplitude"></keyword>
+            <keyword name="customType" id="QtEasingCurve::customType" ref="qteasingcurve.html#customType"></keyword>
+            <keyword name="operator!=" id="QtEasingCurve::operator!=" ref="qteasingcurve.html#operator-not-eq"></keyword>
+            <keyword name="operator=" id="QtEasingCurve::operator=" ref="qteasingcurve.html#operator-eq"></keyword>
+            <keyword name="operator==" id="QtEasingCurve::operator==" ref="qteasingcurve.html#operator-eq-eq"></keyword>
+            <keyword name="overshoot" id="QtEasingCurve::overshoot" ref="qteasingcurve.html#overshoot"></keyword>
+            <keyword name="period" id="QtEasingCurve::period" ref="qteasingcurve.html#period"></keyword>
+            <keyword name="setAmplitude" id="QtEasingCurve::setAmplitude" ref="qteasingcurve.html#setAmplitude"></keyword>
+            <keyword name="setCustomType" id="QtEasingCurve::setCustomType" ref="qteasingcurve.html#setCustomType"></keyword>
+            <keyword name="setOvershoot" id="QtEasingCurve::setOvershoot" ref="qteasingcurve.html#setOvershoot"></keyword>
+            <keyword name="setPeriod" id="QtEasingCurve::setPeriod" ref="qteasingcurve.html#setPeriod"></keyword>
+            <keyword name="setType" id="QtEasingCurve::setType" ref="qteasingcurve.html#setType"></keyword>
+            <keyword name="type" id="QtEasingCurve::type" ref="qteasingcurve.html#type"></keyword>
+            <keyword name="valueForProgress" id="QtEasingCurve::valueForProgress" ref="qteasingcurve.html#valueForProgress"></keyword>
+            <keyword name="~QtEasingCurve" id="QtEasingCurve::~QtEasingCurve" ref="qteasingcurve.html#dtor.QtEasingCurve"></keyword>
+            <keyword name="QtEventTransition" id="QtEventTransition" ref="qteventtransition.html"></keyword>
+            <keyword name="eventSource" id="QtEventTransition::eventSource" ref="qteventtransition.html#object-prop"></keyword>
+            <keyword name="eventType" id="QtEventTransition::eventType" ref="qteventtransition.html#eventType-prop"></keyword>
+            <keyword name="object" id="QtEventTransition::object" ref="qteventtransition.html#object-prop"></keyword>
+            <keyword name="setEventSource" id="QtEventTransition::setEventSource" ref="qteventtransition.html#object-prop"></keyword>
+            <keyword name="setEventType" id="QtEventTransition::setEventType" ref="qteventtransition.html#eventType-prop"></keyword>
+            <keyword name="testEventCondition" id="QtEventTransition::testEventCondition" ref="qteventtransition.html#testEventCondition"></keyword>
+            <keyword name="~QtEventTransition" id="QtEventTransition::~QtEventTransition" ref="qteventtransition.html#dtor.QtEventTransition"></keyword>
+            <keyword name="QtFinalState" id="QtFinalState" ref="qtfinalstate.html"></keyword>
+            <keyword name="~QtFinalState" id="QtFinalState::~QtFinalState" ref="qtfinalstate.html#dtor.QtFinalState"></keyword>
+            <keyword name="QtGraphicsWidget" id="QtGraphicsWidget" ref="qtgraphicswidget.html"></keyword>
+            <keyword name="geometry" id="QtGraphicsWidget::geometry" ref="qtgraphicswidget.html#geometry-prop"></keyword>
+            <keyword name="pos" id="QtGraphicsWidget::pos" ref="qtgraphicswidget.html#pos-prop"></keyword>
+            <keyword name="setTransformOrigin" id="QtGraphicsWidget::setTransformOrigin" ref="qtgraphicswidget.html#transformOrigin-prop"></keyword>
+            <keyword name="setXRotation" id="QtGraphicsWidget::setXRotation" ref="qtgraphicswidget.html#xRotation-prop"></keyword>
+            <keyword name="setXScale" id="QtGraphicsWidget::setXScale" ref="qtgraphicswidget.html#xScale-prop"></keyword>
+            <keyword name="setYRotation" id="QtGraphicsWidget::setYRotation" ref="qtgraphicswidget.html#yRotation-prop"></keyword>
+            <keyword name="setYScale" id="QtGraphicsWidget::setYScale" ref="qtgraphicswidget.html#yScale-prop"></keyword>
+            <keyword name="setZRotation" id="QtGraphicsWidget::setZRotation" ref="qtgraphicswidget.html#zRotation-prop"></keyword>
+            <keyword name="transformOrigin" id="QtGraphicsWidget::transformOrigin" ref="qtgraphicswidget.html#transformOrigin-prop"></keyword>
+            <keyword name="xRotation" id="QtGraphicsWidget::xRotation" ref="qtgraphicswidget.html#xRotation-prop"></keyword>
+            <keyword name="xScale" id="QtGraphicsWidget::xScale" ref="qtgraphicswidget.html#xScale-prop"></keyword>
+            <keyword name="yRotation" id="QtGraphicsWidget::yRotation" ref="qtgraphicswidget.html#yRotation-prop"></keyword>
+            <keyword name="yScale" id="QtGraphicsWidget::yScale" ref="qtgraphicswidget.html#yScale-prop"></keyword>
+            <keyword name="zRotation" id="QtGraphicsWidget::zRotation" ref="qtgraphicswidget.html#zRotation-prop"></keyword>
+            <keyword name="zValue" id="QtGraphicsWidget::zValue" ref="qtgraphicswidget.html#zValue-prop"></keyword>
+            <keyword name="~QtGraphicsWidget" id="QtGraphicsWidget::~QtGraphicsWidget" ref="qtgraphicswidget.html#dtor.QtGraphicsWidget"></keyword>
+            <keyword name="QtHistoryState" id="QtHistoryState" ref="qthistorystate.html"></keyword>
+            <keyword name="defaultState" id="QtHistoryState::defaultState" ref="qthistorystate.html#defaultState"></keyword>
+            <keyword name="setDefaultState" id="QtHistoryState::setDefaultState" ref="qthistorystate.html#setDefaultState"></keyword>
+            <keyword name="~QtHistoryState" id="QtHistoryState::~QtHistoryState" ref="qthistorystate.html#dtor.QtHistoryState"></keyword>
+            <keyword name="QtKeyEventTransition" id="QtKeyEventTransition" ref="qtkeyeventtransition.html"></keyword>
+            <keyword name="key" id="QtKeyEventTransition::key" ref="qtkeyeventtransition.html#key-prop"></keyword>
+            <keyword name="modifiers" id="QtKeyEventTransition::modifiers" ref="qtkeyeventtransition.html#modifiers"></keyword>
+            <keyword name="setKey" id="QtKeyEventTransition::setKey" ref="qtkeyeventtransition.html#key-prop"></keyword>
+            <keyword name="setModifiers" id="QtKeyEventTransition::setModifiers" ref="qtkeyeventtransition.html#setModifiers"></keyword>
+            <keyword name="~QtKeyEventTransition" id="QtKeyEventTransition::~QtKeyEventTransition" ref="qtkeyeventtransition.html#dtor.QtKeyEventTransition"></keyword>
+            <keyword name="QtMouseEventTransition" id="QtMouseEventTransition" ref="qtmouseeventtransition.html"></keyword>
+            <keyword name="button" id="QtMouseEventTransition::button" ref="qtmouseeventtransition.html#button"></keyword>
+            <keyword name="path" id="QtMouseEventTransition::path" ref="qtmouseeventtransition.html#path"></keyword>
+            <keyword name="setButton" id="QtMouseEventTransition::setButton" ref="qtmouseeventtransition.html#setButton"></keyword>
+            <keyword name="setPath" id="QtMouseEventTransition::setPath" ref="qtmouseeventtransition.html#setPath"></keyword>
+            <keyword name="~QtMouseEventTransition" id="QtMouseEventTransition::~QtMouseEventTransition" ref="qtmouseeventtransition.html#dtor.QtMouseEventTransition"></keyword>
+            <keyword name="QtParallelAnimationGroup" id="QtParallelAnimationGroup" ref="qtparallelanimationgroup.html"></keyword>
+            <keyword name="~QtParallelAnimationGroup" id="QtParallelAnimationGroup::~QtParallelAnimationGroup" ref="qtparallelanimationgroup.html#dtor.QtParallelAnimationGroup"></keyword>
+            <keyword name="QtPauseAnimation" id="QtPauseAnimation" ref="qtpauseanimation.html"></keyword>
+            <keyword name="duration" id="QtPauseAnimation::duration" ref="qtpauseanimation.html#duration-prop"></keyword>
+            <keyword name="setDuration" id="QtPauseAnimation::setDuration" ref="qtpauseanimation.html#duration-prop"></keyword>
+            <keyword name="~QtPauseAnimation" id="QtPauseAnimation::~QtPauseAnimation" ref="qtpauseanimation.html#dtor.QtPauseAnimation"></keyword>
+            <keyword name="QtPropertyAnimation" id="QtPropertyAnimation" ref="qtpropertyanimation.html"></keyword>
+            <keyword name="propertyName" id="QtPropertyAnimation::propertyName" ref="qtpropertyanimation.html#propertyName-prop"></keyword>
+            <keyword name="setPropertyName" id="QtPropertyAnimation::setPropertyName" ref="qtpropertyanimation.html#propertyName-prop"></keyword>
+            <keyword name="setTargetObject" id="QtPropertyAnimation::setTargetObject" ref="qtpropertyanimation.html#targetObject-prop"></keyword>
+            <keyword name="targetObject" id="QtPropertyAnimation::targetObject" ref="qtpropertyanimation.html#targetObject-prop"></keyword>
+            <keyword name="updateCurrentValue" id="QtPropertyAnimation::updateCurrentValue" ref="qtpropertyanimation.html#updateCurrentValue"></keyword>
+            <keyword name="~QtPropertyAnimation" id="QtPropertyAnimation::~QtPropertyAnimation" ref="qtpropertyanimation.html#dtor.QtPropertyAnimation"></keyword>
+            <keyword name="QtSequentialAnimationGroup" id="QtSequentialAnimationGroup" ref="qtsequentialanimationgroup.html"></keyword>
+            <keyword name="addPause" id="QtSequentialAnimationGroup::addPause" ref="qtsequentialanimationgroup.html#addPause"></keyword>
+            <keyword name="currentAnimation" id="QtSequentialAnimationGroup::currentAnimation" ref="qtsequentialanimationgroup.html#currentAnimation-prop"></keyword>
+            <keyword name="currentAnimationChanged" id="QtSequentialAnimationGroup::currentAnimationChanged" ref="qtsequentialanimationgroup.html#currentAnimationChanged"></keyword>
+            <keyword name="insertPauseAt" id="QtSequentialAnimationGroup::insertPauseAt" ref="qtsequentialanimationgroup.html#insertPauseAt"></keyword>
+            <keyword name="~QtSequentialAnimationGroup" id="QtSequentialAnimationGroup::~QtSequentialAnimationGroup" ref="qtsequentialanimationgroup.html#dtor.QtSequentialAnimationGroup"></keyword>
+            <keyword name="QtSignalEvent" id="QtSignalEvent" ref="qtsignalevent.html"></keyword>
+            <keyword name="arguments" id="QtSignalEvent::arguments" ref="qtsignalevent.html#arguments"></keyword>
+            <keyword name="sender" id="QtSignalEvent::sender" ref="qtsignalevent.html#sender"></keyword>
+            <keyword name="signalIndex" id="QtSignalEvent::signalIndex" ref="qtsignalevent.html#signalIndex"></keyword>
+            <keyword name="~QtSignalEvent" id="QtSignalEvent::~QtSignalEvent" ref="qtsignalevent.html#dtor.QtSignalEvent"></keyword>
+            <keyword name="QtSignalTransition" id="QtSignalTransition" ref="qtsignaltransition.html"></keyword>
+            <keyword name="object" id="QtSignalTransition::object" ref="qtsignaltransition.html#object-prop"></keyword>
+            <keyword name="senderObject" id="QtSignalTransition::senderObject" ref="qtsignaltransition.html#object-prop"></keyword>
+            <keyword name="setSenderObject" id="QtSignalTransition::setSenderObject" ref="qtsignaltransition.html#object-prop"></keyword>
+            <keyword name="setSignal" id="QtSignalTransition::setSignal" ref="qtsignaltransition.html#signal-prop"></keyword>
+            <keyword name="signal" id="QtSignalTransition::signal" ref="qtsignaltransition.html#signal-prop"></keyword>
+            <keyword name="~QtSignalTransition" id="QtSignalTransition::~QtSignalTransition" ref="qtsignaltransition.html#dtor.QtSignalTransition"></keyword>
+            <keyword name="QtState" id="QtState" ref="qtstate.html"></keyword>
+            <keyword name="QtState::HistoryType" id="QtState::HistoryType" ref="qtstate.html#HistoryType-enum"></keyword>
+            <keyword name="QtState::ShallowHistory" id="QtState::ShallowHistory" ref="qtstate.html#HistoryType-enum"></keyword>
+            <keyword name="QtState::DeepHistory" id="QtState::DeepHistory" ref="qtstate.html#HistoryType-enum"></keyword>
+            <keyword name="QtState::Type" id="QtState::Type" ref="qtstate.html#Type-enum"></keyword>
+            <keyword name="QtState::Normal" id="QtState::Normal" ref="qtstate.html#Type-enum"></keyword>
+            <keyword name="QtState::ParallelGroup" id="QtState::ParallelGroup" ref="qtstate.html#Type-enum"></keyword>
+            <keyword name="addFinishedTransition" id="QtState::addFinishedTransition" ref="qtstate.html#addFinishedTransition"></keyword>
+            <keyword name="addHistoryState" id="QtState::addHistoryState" ref="qtstate.html#addHistoryState"></keyword>
+            <keyword name="addTransition" id="QtState::addTransition" ref="qtstate.html#addTransition"></keyword>
+            <keyword name="errorState" id="QtState::errorState" ref="qtstate.html#errorState"></keyword>
+            <keyword name="initialState" id="QtState::initialState" ref="qtstate.html#initialState"></keyword>
+            <keyword name="removeTransition" id="QtState::removeTransition" ref="qtstate.html#removeTransition"></keyword>
+            <keyword name="setErrorState" id="QtState::setErrorState" ref="qtstate.html#setErrorState"></keyword>
+            <keyword name="setInitialState" id="QtState::setInitialState" ref="qtstate.html#setInitialState"></keyword>
+            <keyword name="transitions" id="QtState::transitions" ref="qtstate.html#transitions"></keyword>
+            <keyword name="~QtState" id="QtState::~QtState" ref="qtstate.html#dtor.QtState"></keyword>
+            <keyword name="QtStateAction" id="QtStateAction" ref="qtstateaction.html"></keyword>
+            <keyword name="execute" id="QtStateAction::execute" ref="qtstateaction.html#execute"></keyword>
+            <keyword name="~QtStateAction" id="QtStateAction::~QtStateAction" ref="qtstateaction.html#dtor.QtStateAction"></keyword>
+            <keyword name="QtStateFinishedEvent" id="QtStateFinishedEvent" ref="qtstatefinishedevent.html"></keyword>
+            <keyword name="state" id="QtStateFinishedEvent::state" ref="qtstatefinishedevent.html#state"></keyword>
+            <keyword name="~QtStateFinishedEvent" id="QtStateFinishedEvent::~QtStateFinishedEvent" ref="qtstatefinishedevent.html#dtor.QtStateFinishedEvent"></keyword>
+            <keyword name="QtStateFinishedTransition" id="QtStateFinishedTransition" ref="qtstatefinishedtransition.html"></keyword>
+            <keyword name="setState" id="QtStateFinishedTransition::setState" ref="qtstatefinishedtransition.html#state-prop"></keyword>
+            <keyword name="state" id="QtStateFinishedTransition::state" ref="qtstatefinishedtransition.html#state-prop"></keyword>
+            <keyword name="~QtStateFinishedTransition" id="QtStateFinishedTransition::~QtStateFinishedTransition" ref="qtstatefinishedtransition.html#dtor.QtStateFinishedTransition"></keyword>
+            <keyword name="QtStateInvokeMethodAction" id="QtStateInvokeMethodAction" ref="qtstateinvokemethodaction.html"></keyword>
+            <keyword name="arguments" id="QtStateInvokeMethodAction::arguments" ref="qtstateinvokemethodaction.html#arguments-prop"></keyword>
+            <keyword name="methodName" id="QtStateInvokeMethodAction::methodName" ref="qtstateinvokemethodaction.html#methodName-prop"></keyword>
+            <keyword name="setArguments" id="QtStateInvokeMethodAction::setArguments" ref="qtstateinvokemethodaction.html#arguments-prop"></keyword>
+            <keyword name="setMethodName" id="QtStateInvokeMethodAction::setMethodName" ref="qtstateinvokemethodaction.html#methodName-prop"></keyword>
+            <keyword name="setTargetObject" id="QtStateInvokeMethodAction::setTargetObject" ref="qtstateinvokemethodaction.html#target-prop"></keyword>
+            <keyword name="target" id="QtStateInvokeMethodAction::target" ref="qtstateinvokemethodaction.html#target-prop"></keyword>
+            <keyword name="targetObject" id="QtStateInvokeMethodAction::targetObject" ref="qtstateinvokemethodaction.html#target-prop"></keyword>
+            <keyword name="~QtStateInvokeMethodAction" id="QtStateInvokeMethodAction::~QtStateInvokeMethodAction" ref="qtstateinvokemethodaction.html#dtor.QtStateInvokeMethodAction"></keyword>
+            <keyword name="QtStateMachine" id="QtStateMachine" ref="qtstatemachine.html"></keyword>
+            <keyword name="QtStateMachine::Error" id="QtStateMachine::Error" ref="qtstatemachine.html#Error-enum"></keyword>
+            <keyword name="QtStateMachine::NoError" id="QtStateMachine::NoError" ref="qtstatemachine.html#Error-enum"></keyword>
+            <keyword name="QtStateMachine::NoInitialStateError" id="QtStateMachine::NoInitialStateError" ref="qtstatemachine.html#Error-enum"></keyword>
+            <keyword name="QtStateMachine::NoDefaultStateInHistoryState" id="QtStateMachine::NoDefaultStateInHistoryState" ref="qtstatemachine.html#Error-enum"></keyword>
+            <keyword name="addState" id="QtStateMachine::addState" ref="qtstatemachine.html#addState"></keyword>
+            <keyword name="animationsFinished" id="QtStateMachine::animationsFinished" ref="qtstatemachine.html#animationsFinished"></keyword>
+            <keyword name="clearError" id="QtStateMachine::clearError" ref="qtstatemachine.html#clearError"></keyword>
+            <keyword name="error" id="QtStateMachine::error" ref="qtstatemachine.html#error"></keyword>
+            <keyword name="errorState" id="QtStateMachine::errorState" ref="qtstatemachine.html#errorState-prop"></keyword>
+            <keyword name="errorString" id="QtStateMachine::errorString" ref="qtstatemachine.html#errorString-prop"></keyword>
+            <keyword name="finished" id="QtStateMachine::finished" ref="qtstatemachine.html#finished"></keyword>
+            <keyword name="globalRestorePolicy" id="QtStateMachine::globalRestorePolicy" ref="qtstatemachine.html#globalRestorePolicy"></keyword>
+            <keyword name="initialState" id="QtStateMachine::initialState" ref="qtstatemachine.html#initialState-prop"></keyword>
+            <keyword name="postEvent" id="QtStateMachine::postEvent" ref="qtstatemachine.html#postEvent"></keyword>
+            <keyword name="removeState" id="QtStateMachine::removeState" ref="qtstatemachine.html#removeState"></keyword>
+            <keyword name="rootState" id="QtStateMachine::rootState" ref="qtstatemachine.html#rootState-prop"></keyword>
+            <keyword name="setErrorState" id="QtStateMachine::setErrorState" ref="qtstatemachine.html#errorState-prop"></keyword>
+            <keyword name="setGlobalRestorePolicy" id="QtStateMachine::setGlobalRestorePolicy" ref="qtstatemachine.html#setGlobalRestorePolicy"></keyword>
+            <keyword name="setInitialState" id="QtStateMachine::setInitialState" ref="qtstatemachine.html#initialState-prop"></keyword>
+            <keyword name="start" id="QtStateMachine::start" ref="qtstatemachine.html#start"></keyword>
+            <keyword name="started" id="QtStateMachine::started" ref="qtstatemachine.html#started"></keyword>
+            <keyword name="states" id="QtStateMachine::states" ref="qtstatemachine.html#states"></keyword>
+            <keyword name="stop" id="QtStateMachine::stop" ref="qtstatemachine.html#stop"></keyword>
+            <keyword name="stopped" id="QtStateMachine::stopped" ref="qtstatemachine.html#stopped"></keyword>
+            <keyword name="~QtStateMachine" id="QtStateMachine::~QtStateMachine" ref="qtstatemachine.html#dtor.QtStateMachine"></keyword>
+            <keyword name="QtTransition" id="QtTransition" ref="qttransition.html"></keyword>
+            <keyword name="actions" id="QtTransition::actions" ref="qttransition.html#actions"></keyword>
+            <keyword name="addAction" id="QtTransition::addAction" ref="qttransition.html#addAction"></keyword>
+            <keyword name="invokeMethodOnTransition" id="QtTransition::invokeMethodOnTransition" ref="qttransition.html#invokeMethodOnTransition"></keyword>
+            <keyword name="removeAction" id="QtTransition::removeAction" ref="qttransition.html#removeAction"></keyword>
+            <keyword name="~QtTransition" id="QtTransition::~QtTransition" ref="qttransition.html#dtor.QtTransition"></keyword>
+            <keyword name="QtVariantAnimation" id="QtVariantAnimation" ref="qtvariantanimation.html"></keyword>
+            <keyword name="QtVariantAnimation::KeyValue" id="QtVariantAnimation::KeyValue" ref="qtvariantanimation.html#KeyValue-typedef"></keyword>
+            <keyword name="QtVariantAnimation::KeyValues" id="QtVariantAnimation::KeyValues" ref="qtvariantanimation.html#KeyValues-typedef"></keyword>
+            <keyword name="currentValue" id="QtVariantAnimation::currentValue" ref="qtvariantanimation.html#currentValue-prop"></keyword>
+            <keyword name="duration" id="QtVariantAnimation::duration" ref="qtvariantanimation.html#duration-prop"></keyword>
+            <keyword name="easingCurve" id="QtVariantAnimation::easingCurve" ref="qtvariantanimation.html#easingCurve-prop"></keyword>
+            <keyword name="endValue" id="QtVariantAnimation::endValue" ref="qtvariantanimation.html#endValue-prop"></keyword>
+            <keyword name="interpolated" id="QtVariantAnimation::interpolated" ref="qtvariantanimation.html#interpolated"></keyword>
+            <keyword name="keyValueAt" id="QtVariantAnimation::keyValueAt" ref="qtvariantanimation.html#keyValueAt"></keyword>
+            <keyword name="keyValues" id="QtVariantAnimation::keyValues" ref="qtvariantanimation.html#keyValues"></keyword>
+            <keyword name="setDuration" id="QtVariantAnimation::setDuration" ref="qtvariantanimation.html#duration-prop"></keyword>
+            <keyword name="setEasingCurve" id="QtVariantAnimation::setEasingCurve" ref="qtvariantanimation.html#easingCurve-prop"></keyword>
+            <keyword name="setEndValue" id="QtVariantAnimation::setEndValue" ref="qtvariantanimation.html#endValue-prop"></keyword>
+            <keyword name="setKeyValueAt" id="QtVariantAnimation::setKeyValueAt" ref="qtvariantanimation.html#setKeyValueAt"></keyword>
+            <keyword name="setKeyValues" id="QtVariantAnimation::setKeyValues" ref="qtvariantanimation.html#setKeyValues"></keyword>
+            <keyword name="setStartValue" id="QtVariantAnimation::setStartValue" ref="qtvariantanimation.html#startValue-prop"></keyword>
+            <keyword name="startValue" id="QtVariantAnimation::startValue" ref="qtvariantanimation.html#startValue-prop"></keyword>
+            <keyword name="updateCurrentValue" id="QtVariantAnimation::updateCurrentValue" ref="qtvariantanimation.html#updateCurrentValue"></keyword>
+            <keyword name="valueChanged" id="QtVariantAnimation::valueChanged" ref="qtvariantanimation.html#valueChanged"></keyword>
+            <keyword name="~QtVariantAnimation" id="QtVariantAnimation::~QtVariantAnimation" ref="qtvariantanimation.html#dtor.QtVariantAnimation"></keyword>
+            <keyword name="Animation" id="Animation" ref="animation.html#animation"></keyword>
+            <keyword name="The Animation Framework" id="The Animation Framework" ref="animation.html"></keyword>
+            <keyword name="The State Machine Framework" id="The State Machine Framework" ref="statemachine-api.html"></keyword>
+            <keyword name="qRegisterAnimationInterpolator" id="qRegisterAnimationInterpolator" ref="qtvariantanimation.html#qRegisterAnimationInterpolator"></keyword>
+        </keywords>
+        <files>
+            <file>qtstatefinishedtransition.html</file>
+            <file>images/qeasingcurve-incirc.png</file>
+            <file>qtpauseanimation.html</file>
+            <file>images/qeasingcurve-outinquad.png</file>
+            <file>images/qeasingcurve-outquint.png</file>
+            <file>qtsignaltransition.html</file>
+            <file>qtkeyeventtransition.html</file>
+            <file>images/statemachine-button.png</file>
+            <file>images/qeasingcurve-inexpo.png</file>
+            <file>qtactionstate.html</file>
+            <file>index.html</file>
+            <file>images/qeasingcurve-inoutcirc.png</file>
+            <file>images/qeasingcurve-inbounce.png</file>
+            <file>images/qeasingcurve-inoutcubic.png</file>
+            <file>images/qeasingcurve-outcubic.png</file>
+            <file>images/qeasingcurve-outinquint.png</file>
+            <file>images/qeasingcurve-inoutquad.png</file>
+            <file>images/qeasingcurve-inback.png</file>
+            <file>images/qeasingcurve-outinback.png</file>
+            <file>images/qeasingcurve-outinelastic.png</file>
+            <file>images/qeasingcurve-outcirc.png</file>
+            <file>qtsequentialanimationgroup.html</file>
+            <file>images/qeasingcurve-outinbounce.png</file>
+            <file>images/qeasingcurve-outinsine.png</file>
+            <file>qtfinalstate.html</file>
+            <file>qtvariantanimation.html</file>
+            <file>images/statemachine-finished.png</file>
+            <file>images/qeasingcurve-inquad.png</file>
+            <file>images/qeasingcurve-inoutbounce.png</file>
+            <file>qtstateinvokemethodaction.html</file>
+            <file>qtabstracttransition.html</file>
+            <file>statemachine-api.html</file>
+            <file>images/qeasingcurve-outincirc.png</file>
+            <file>qttransition.html</file>
+            <file>images/statemachine-parallel.png</file>
+            <file>qtstatemachine.html</file>
+            <file>images/statemachine-nonparallel.png</file>
+            <file>images/qeasingcurve-inoutelastic.png</file>
+            <file>images/qeasingcurve-outinquart.png</file>
+            <file>qtmouseeventtransition.html</file>
+            <file>qteventtransition.html</file>
+            <file>qtpropertyanimation.html</file>
+            <file>qteasingcurve.html</file>
+            <file>images/qeasingcurve-inquart.png</file>
+            <file>images/statemachine-button-nested.png</file>
+            <file>images/qeasingcurve-insine.png</file>
+            <file>qtstate.html</file>
+            <file>images/qeasingcurve-inoutexpo.png</file>
+            <file>images/qeasingcurve-outinexpo.png</file>
+            <file>animation.html</file>
+            <file>images/qeasingcurve-linear.png</file>
+            <file>legal-easing.html</file>
+            <file>qtstateaction.html</file>
+            <file>qtgraphicswidget.html</file>
+            <file>images/qeasingcurve-outincubic.png</file>
+            <file>qtsignalevent.html</file>
+            <file>qtabstractstate.html</file>
+            <file>images/qeasingcurve-inquint.png</file>
+            <file>images/qeasingcurve-inelastic.png</file>
+            <file>images/qeasingcurve-outsine.png</file>
+            <file>qtstatefinishedevent.html</file>
+            <file>images/qeasingcurve-outback.png</file>
+            <file>images/qeasingcurve-outelastic.png</file>
+            <file>qtanimationgroup.html</file>
+            <file>images/qeasingcurve-outbounce.png</file>
+            <file>images/states.png</file>
+            <file>images/qeasingcurve-inoutsine.png</file>
+            <file>images/qeasingcurve-inoutquart.png</file>
+            <file>images/qeasingcurve-outquart.png</file>
+            <file>qthistorystate.html</file>
+            <file>images/qeasingcurve-outexpo.png</file>
+            <file>images/statemachine-button-history.png</file>
+            <file>images/qeasingcurve-inoutquint.png</file>
+            <file>images/qeasingcurve-outquad.png</file>
+            <file>qtparallelanimationgroup.html</file>
+            <file>images/qeasingcurve-incubic.png</file>
+            <file>images/qeasingcurve-inoutback.png</file>
+            <file>qtabstractanimation.html</file>
+            <file>images/qeasingcurve-outcirc.png</file>
+            <file>images/qeasingcurve-outcubic.png</file>
+            <file>images/statemachine-button.png</file>
+            <file>images/statemachine-nonparallel.png</file>
+            <file>images/qeasingcurve-outsine.png</file>
+            <file>images/qeasingcurve-outquart.png</file>
+            <file>images/qeasingcurve-inoutquint.png</file>
+            <file>images/qeasingcurve-linear.png</file>
+            <file>images/qeasingcurve-inexpo.png</file>
+            <file>images/qeasingcurve-inoutexpo.png</file>
+            <file>images/qeasingcurve-inoutelastic.png</file>
+            <file>images/qeasingcurve-outinquart.png</file>
+            <file>images/qeasingcurve-inquint.png</file>
+            <file>images/qeasingcurve-outincirc.png</file>
+            <file>images/qeasingcurve-outincubic.png</file>
+            <file>images/qeasingcurve-outexpo.png</file>
+            <file>images/qeasingcurve-outinsine.png</file>
+            <file>images/qeasingcurve-outinquint.png</file>
+            <file>images/qeasingcurve-inbounce.png</file>
+            <file>images/qeasingcurve-outinexpo.png</file>
+            <file>images/qeasingcurve-inelastic.png</file>
+            <file>images/qeasingcurve-outquint.png</file>
+            <file>images/qeasingcurve-insine.png</file>
+            <file>images/statemachine-finished.png</file>
+            <file>images/qeasingcurve-inoutsine.png</file>
+            <file>classic.css</file>
+            <file>images/qeasingcurve-outinback.png</file>
+            <file>images/qeasingcurve-outinbounce.png</file>
+            <file>images/qeasingcurve-inback.png</file>
+            <file>images/qeasingcurve-inoutcubic.png</file>
+            <file>images/qeasingcurve-outinelastic.png</file>
+            <file>images/qeasingcurve-inoutquart.png</file>
+            <file>images/statemachine-parallel.png</file>
+            <file>images/qeasingcurve-outinquad.png</file>
+            <file>images/qeasingcurve-inquart.png</file>
+            <file>images/qt-logo.png</file>
+            <file>images/qeasingcurve-inoutbounce.png</file>
+            <file>images/qeasingcurve-outquad.png</file>
+            <file>images/qeasingcurve-inquad.png</file>
+            <file>images/states.png</file>
+            <file>images/qeasingcurve-inoutback.png</file>
+            <file>images/qeasingcurve-outelastic.png</file>
+            <file>images/qeasingcurve-outbounce.png</file>
+            <file>images/qeasingcurve-inoutcirc.png</file>
+            <file>images/statemachine-button-history.png</file>
+            <file>images/qeasingcurve-incubic.png</file>
+            <file>images/qeasingcurve-outback.png</file>
+            <file>images/qeasingcurve-inoutquad.png</file>
+            <file>images/qeasingcurve-incirc.png</file>
+            <file>images/statemachine-button-nested.png</file>
+        </files>
+    </filterSection>
+</QtHelpProject>

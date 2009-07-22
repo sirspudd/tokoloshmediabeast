@@ -1,0 +1,55 @@
+/*!
+	\page index.html
+	\title Qt Animation Framework
+
+    	\section1 Description
+	
+            This component adds a convenient API to do animations in Qt.
+            Note that this solution is experimental and work in progress:
+            No backwards compatibility (source nor binary) is provided.
+        
+
+	
+    The Animation Framework lets you define, run and control animations,
+    states and transitions. The foundation classes QtPropertyAnimation,
+    QtSequentialAnimationGroup and QtParallelAnimationGroupare used to
+    scoreboard both simple and complex animations.
+    A simple animation might change a widget's geometry from one rectangle
+    to another, over the course of 2 seconds, using a linear easing curve.
+    You can daisy-chain animations by adding them to a QtSequentialAnimationGroup,
+    a class that also gives you fine grained control over pauses and combinations
+    of parallel and sequential subanimations.
+    In addition to this, The State Machine Framework lets you define and run
+    state machines.
+
+	    
+
+    	
+        \section1 Overview
+	    \list
+	 \i  \link animation.html The Animation Framework \endlink  \i  \link statemachine-api.html The State Machine Framework \endlink \endlist
+	
+        \section1 Classes
+	    \list
+	 \i  QtAbstractAnimation \i  QtAnimationGroup \i  QtEasingCurve \i  QtParallelAnimationGroup \i  QtPropertyAnimation \i  QtSequentialAnimationGroup \i  QtVariantAnimation \i  QtGraphicsWidget \i  QtAbstractState \i  QtAbstractTransition \i  QtActionState \i  QtEventTransition \i  QtFinalState \i  QtHistoryState \i  QtKeyEventTransition \i  QtMouseEventTransition \i  QtSignalEvent \i  QtSignalTransition \i  QtState \i  QtStateAction \i  QtStateFinishedEvent \i  QtStateFinishedTransition \i  QtStateInvokeMethodAction \i  QtStateMachine \i  QtTransition\endlist
+	
+    
+
+    	
+
+    	
+    		\section1 Tested platforms
+		\list
+		\i Qt 4.4, 4.5 / Windows XP / MSVC.NET 2008
+		    \i Qt 4.4, 4.5 / Linux (32bit + 64bit) / gcc
+		    \i Qt 4.4, 4.5 / MacOS X 10.5 / gcc
+		    \endlist
+
+    	
+
+	
+		\section1 Screenshots
+
+    		\img states.png
+		    
+	*/
