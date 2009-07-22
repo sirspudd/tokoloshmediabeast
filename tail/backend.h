@@ -15,7 +15,8 @@ public:
         Uninitalized,
         Playing,
         Paused,
-        Stopped
+        Stopped,
+        Undefined
     };
 
     enum ProgressType {

@@ -22,6 +22,7 @@ PhononBackend::~PhononBackend()
 
 bool PhononBackend::initBackend()
 {
+    return false;
 }
 
 void PhononBackend::shutdown()
@@ -81,6 +82,7 @@ bool PhononBackend::trackData(TrackData *data, const QUrl &url, int mask) const
 bool PhononBackend::isValid(const QUrl &fileName) const
 {
 //    return status() != Uninitalized && d->main.isValid();
+    return false;
 }
 
 
@@ -152,6 +154,10 @@ int PhononBackend::status() const
     case Phonon::PlayingState:
     case Phonon::BufferingState:
         return Playing;
+    default:
+        qDebug() << "Returned undefined state" << __FILE__ << __FUNCTION__ << __LINE__;
+        //FIXME: Anders: Reasonable state to introduce?
+        return Undefined;
     }
 }
 
@@ -159,6 +165,7 @@ int PhononBackend::volume() const
 {
 //     return d->audioOutput ? d->audioOutput->volume()2
 //     return ret;
+    return 0;
 }
 
 void PhononBackend::setVolume(int vol)
@@ -178,6 +185,7 @@ bool PhononBackend::isMute() const
 //     const int ret = xine_get_param(d->main.stream, XINE_PARAM_AUDIO_MUTE);
 //     d->updateError(d->main.stream);
 //     return ret == 1;
+    return false;
 }
 
 void PhononBackend::setProgress(int type, int progress)
@@ -211,6 +219,7 @@ int PhononBackend::progress(int type)
 //         return int(double(var.toInt()) * 10000.0 / 65535.0);
 //         // 100th of a percent
 //     }
+    return 0;
 }
 QString PhononBackend::errorMessage() const
 {
@@ -226,11 +235,12 @@ QString PhononBackend::errorMessage() const
 //         break;
 //     }
 //     Q_ASSERT(0);
-//     return QString();
+    return QString();
 }
 int PhononBackend::errorCode() const
 {
 //    return d->error;
+    return 0;
 }
 
 int PhononBackend::flags() const
