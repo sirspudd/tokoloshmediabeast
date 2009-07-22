@@ -3,4 +3,4 @@
 ######################################################################
 
 TEMPLATE = subdirs
-SUBDIRS += qtanimationframework
+SUBDIRS += qtanimationframework-2.3-opensource/qtanimationframework.pro
