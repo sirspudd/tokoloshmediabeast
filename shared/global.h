@@ -69,6 +69,7 @@ Q_DECLARE_METATYPE(IntHash);
 QDBusArgument &operator<<(QDBusArgument &arg, const QHash<int, int> &ih);
 const QDBusArgument &operator>>(const QDBusArgument &arg, QHash<int, int> &ih);
 
+/* There could be overloads of the function. The different types of arguments are in args */
 struct Function
 {
     Function() : returnArgument(0) {}

@@ -69,8 +69,6 @@ public:
                     delete it;
                     if (found)
                         break;
-                } else {
-                    qDebug() << "nothing here" << id << trackInfoToString(trackInfos[i]) << fi.fileName();
                 }
             }
             if (found) {

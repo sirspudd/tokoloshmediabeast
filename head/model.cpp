@@ -55,12 +55,12 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
             QList<QVariant> args;
             const int fields = All;
             args << index.row() << fields; // do I want all?
-#if 0
-            qDebug("%s %d: d.interface->callWithCallback(\"trackData\", args, const_cast<TrackModel*>(this),", __FILE__, __LINE__);
+#if 1
             d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
                                           SLOT(onTrackDataReceived(TrackData)));
 #else
             const TrackData trackData = QDBusReply<TrackData>(d.interface->call("trackData", index.row(), fields)).value();
+            qDebug() << d.interface->lastError() << trackData.fields << trackData.title;
             if (trackData.fields != 0) {
                 const_cast<TrackModel*>(this)->onTrackDataReceived(trackData);
             }
@@ -158,7 +158,6 @@ bool TrackModel::removeColumns(int, int, const QModelIndex &)
 
 void TrackModel::onTracksInserted(int from, int count)
 {
-    qDebug() << "from" << from << count;
     insertRows(from, count, QModelIndex());
 }
 
@@ -169,7 +168,6 @@ void TrackModel::onTracksRemoved(int from, int count)
 
 void TrackModel::onTrackDataReceived(const TrackData &data)
 {
-    qDebug("%s %d: void TrackModel::onTrackDataReceived(const TrackData &data)", __FILE__, __LINE__);
     Q_ASSERT(data.fields & PlaylistIndex);
     const int track = data.playlistIndex;
     int &ref = d.pendingFields[track];
@@ -231,7 +229,6 @@ void TrackModel::emitDataChanged(int row)
 
 void TrackModel::onTrackCountChanged(int count)
 {
-    qDebug() << "count changed" << count << d.rowCount;
     if (d.rowCount > count) {
         removeRows(count, d.rowCount - 1);
     } else if (d.rowCount < count) {

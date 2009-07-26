@@ -15,7 +15,7 @@ TrackData &TrackData::operator|=(const TrackData &other)
 {
     for (int i=0; trackInfos[i] != None; ++i) {
         const TrackInfo info = trackInfos[i];
-        if (other.fields & info) {
+        if (other.fields & info && !(fields & info)) {
             setData(info, other.data(info));
         }
     }
@@ -95,31 +95,30 @@ QDBusArgument &operator<<(QDBusArgument &arg, const TrackData &trackData)
 {
     arg.beginStructure();
     // enum { Version = 1 }; ### Version stuff?
-    // ### could optimize both this one and QDataStream one to only read the fields in fields
-    arg << qint32(trackData.fields);
-    if (trackData.fields & URL)
-        arg << trackData.url;
-    if (trackData.fields & Title)
-        arg << trackData.title;
-    if (trackData.fields & Artist)
-        arg << trackData.artist;
-    if (trackData.fields & Album)
-        arg << trackData.album;
-    if (trackData.fields & Genre)
-        arg << trackData.genre;
-    if (trackData.fields & TrackLength)
-        arg << trackData.trackLength;
-    if (trackData.fields & AlbumIndex)
-        arg << trackData.albumIndex;
-    if (trackData.fields & Year)
-        arg << trackData.year;
-    if (trackData.fields & PlaylistIndex)
-        arg << trackData.playlistIndex;
-//     arg << qint32(trackData.fields) << trackData.url
-//         << trackData.title << trackData.artist << trackData.album
-//         << trackData.genre << trackData.trackLength
-//         << trackData.albumIndex << trackData.year
-//         << trackData.playlistIndex;
+    QByteArray data;
+    {
+        QDataStream ds(&data, QIODevice::WriteOnly);
+        ds << qint32(trackData.fields);
+        if (trackData.fields & URL)
+            ds << trackData.url;
+        if (trackData.fields & Title)
+            ds << trackData.title;
+        if (trackData.fields & Artist)
+            ds << trackData.artist;
+        if (trackData.fields & Album)
+            ds << trackData.album;
+        if (trackData.fields & Genre)
+            ds << trackData.genre;
+        if (trackData.fields & TrackLength)
+            ds << trackData.trackLength;
+        if (trackData.fields & AlbumIndex)
+            ds << trackData.albumIndex;
+        if (trackData.fields & Year)
+            ds << trackData.year;
+        if (trackData.fields & PlaylistIndex)
+            ds << trackData.playlistIndex;
+    }
+    arg << data;
     arg.endStructure();
     return arg;
 }
@@ -128,27 +127,31 @@ QDBusArgument &operator<<(QDBusArgument &arg, const TrackData &trackData)
 const QDBusArgument &operator>>(const QDBusArgument &arg, TrackData &trackData)
 {
     arg.beginStructure();
+    QByteArray data;
+    arg >> data;
+    QDataStream ds(&data, QIODevice::ReadOnly);
     // enum { Version = 1 }; ### Version stuff?
-    // ### could optimize both this one and QDataStream one to only read the fields in fields
-    arg >> *reinterpret_cast<qint32*>(&trackData.fields);
+    qint32 tmp;
+    ds >> tmp;
+    trackData.fields = tmp;
     if (trackData.fields & URL)
-        arg >> trackData.url;
+        ds >> trackData.url;
     if (trackData.fields & Title)
-        arg >> trackData.title;
+        ds >> trackData.title;
     if (trackData.fields & Artist)
-        arg >> trackData.artist;
+        ds >> trackData.artist;
     if (trackData.fields & Album)
-        arg >> trackData.album;
+        ds >> trackData.album;
     if (trackData.fields & Genre)
-        arg >> trackData.genre;
+        ds >> trackData.genre;
     if (trackData.fields & TrackLength)
-        arg >> trackData.trackLength;
+        ds >> trackData.trackLength;
     if (trackData.fields & AlbumIndex)
-        arg >> trackData.albumIndex;
+        ds >> trackData.albumIndex;
     if (trackData.fields & Year)
-        arg >> trackData.year;
+        ds >> trackData.year;
     if (trackData.fields & PlaylistIndex)
-        arg >> trackData.playlistIndex;
+        ds >> trackData.playlistIndex;
     arg.endStructure();
     return arg;
 }

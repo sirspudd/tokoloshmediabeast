@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
                     return 0;
                 }
                 const Function function = QDBusReply<Function>(interface->call("findFunction", arg)).value();
+
                 if (!function.name.isEmpty()) {
                     Log::log(10) << arg << function.name << function.args;
                     QString error;
