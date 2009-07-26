@@ -23,6 +23,7 @@ public:
                                           this, SLOT(onCurrentTrackChanged(int)));
         d.interface->callWithCallback("currentTrack", QList<QVariant>(), this, SLOT(setCurrentTrack(int)));
         connect(d.tableView, SIGNAL(activated(QModelIndex)), this, SLOT(onActivated(QModelIndex)));
+        new QShortcut(QKeySequence(Qt::Key_Delete), this, SLOT(removeSongs())); // this should be properly mapped with shortcut system
     }
 
     void closeEvent(QCloseEvent *e)
@@ -50,8 +51,20 @@ public:
         }
         QWidget::showEvent(e);
     }
-
 public slots:
+    void removeSongs()
+    {
+        // could do ranges
+        QList<int> tracks;
+        foreach(const QModelIndex &i, d.tableView->selectionModel()->selectedRows()) {
+            tracks.append(i.row());
+        }
+        qSort(tracks);
+        for (int i=tracks.size() - 1; i>=0; --i) {
+            d.interface->asyncCall("removeTrack", tracks.at(i));
+        }
+    }
+
     void onActivated(const QModelIndex &idx)
     {
         d.interface->asyncCall("setCurrentTrackIndex", idx.row());

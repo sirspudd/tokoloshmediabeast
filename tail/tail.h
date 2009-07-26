@@ -66,6 +66,7 @@ public slots:
 
     Q_SCRIPTABLE inline bool load(const QString &path) { return load(QUrl(path), false); }
     Q_SCRIPTABLE inline bool loadRecursively(const QString &path) { return load(QUrl(path), true); }
+    Q_SCRIPTABLE bool removeTracks(const QList<int> &tracks);
     Q_SCRIPTABLE bool removeTracks(int index, int count);
     Q_SCRIPTABLE bool removeTrack(int index) { return removeTracks(index, 1); }
     Q_SCRIPTABLE bool swapTrack(int from, int to);

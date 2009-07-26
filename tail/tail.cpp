@@ -611,6 +611,18 @@ bool Tail::removeTracks(int index, int count)
     return true;
 }
 
+bool Tail::removeTracks(const QList<int> &tracks)
+{
+    QList<int> sorted = tracks;
+    qSort(sorted);
+    bool ret = true;
+    for (int i=sorted.size() - 1; i>=0; --i) {
+        ret &= removeTrack(sorted.at(i));
+    }
+    return ret;
+}
+
+
 bool Tail::swapTrack(int from, int to)
 {
     const int size = d.tracks.size();
