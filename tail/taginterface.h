@@ -7,7 +7,7 @@ class TagInterface
 {
 public:
     virtual ~TagInterface() {}
-    virtual bool trackData(TrackData *data, const QUrl &path, int types = All) const = 0;
+    virtual uint trackData(TrackData *data, const QUrl &path, int types = All) const = 0;
 };
 
 #endif

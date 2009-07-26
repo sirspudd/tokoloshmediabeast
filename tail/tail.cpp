@@ -26,7 +26,7 @@ static inline void fixCurrent(int *current, int size)
 Tail::Tail(QObject *parent)
     : QObject(parent)
 {
-    d.tag = new ID3TagInterface;
+    d.tagInterfaces.append(new ID3TagInterface);
     QString playlistPath = Config::value<QString>("playlist");
     if (!playlistPath.isEmpty() && QFile::exists(playlistPath)) {
         d.playlist.setFileName(playlistPath);
@@ -60,7 +60,7 @@ bool Tail::setBackend(Backend *backend)
 
 Tail::~Tail()
 {
-    delete d.tag;
+    qDeleteAll(d.tagInterfaces);
     if (d.backend) {
         delete d.backend;
     }
@@ -351,12 +351,17 @@ TrackData Tail::trackData(int index, int fields) const
     }
 
     enum { BackendTypes = Title|TrackLength|Artist|Year|Genre|AlbumIndex };
-    const uint backendTypes = fields & BackendTypes;;
+    uint backendTypes = fields & BackendTypes;
     if (backendTypes) {
-        d.tag->trackData(&data, d.tracks.at(index), backendTypes);
+        foreach(const TagInterface *tag, d.tagInterfaces) {
+            uint handled = tag->trackData(&data, d.tracks.at(index), backendTypes);
+            backendTypes &= ~handled;
+            if (!backendTypes)
+                break;
+        }
 //        d.backend->trackData(&data, d.tracks.at(index), backendTypes); // ### check return value?
     }
-    data.fields |= fields;
+    data.fields |= fields; // ### should this only be the types we actually found?
 //    ::sleep(250);
     return data;
 }

@@ -107,7 +107,7 @@ protected:
         mutable FunctionNode *root;
         bool blockSync;
         Backend *backend;
-        TagInterface *tag;
+        QList<TagInterface*> tagInterfaces;
         mutable QString lastError;
     } d;
 };

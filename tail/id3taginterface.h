@@ -30,7 +30,7 @@ public:
         return ids;
     }
 
-    virtual bool trackData(TrackData *data, const QUrl &path, int types = All) const
+    virtual uint trackData(TrackData *data, const QUrl &path, int types = All) const
     {
         QFileInfo fi = path.toLocalFile();
         if (!fi.exists())
@@ -38,7 +38,7 @@ public:
 
         ID3_Tag tag;
         tag.Link(qPrintable(fi.absoluteFilePath()));
-        bool success = false;
+        uint ret = 0;
         for (int i=0; ::trackInfos[i] != None; ++i) {
             if (!(types & ::trackInfos[i]))
                 continue;
@@ -63,7 +63,6 @@ public:
                         if (ret > 0) {
                             variant = byteArray;
                             found = true;
-                            success = true;
                             break;
                         }
                     }
@@ -75,10 +74,11 @@ public:
                 }
             }
             if (found) {
+                ret |= trackInfos[i];
                 data->setData(trackInfos[i], variant);
             }
         }
-        return success;
+        return ret;
     }
 };
 
