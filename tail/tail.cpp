@@ -340,7 +340,6 @@ TrackData Tail::trackData(int index, int fields) const
         qWarning("Invalid index %d, needs to be between 0-%d", index, d.tracks.size() - 1);
         return TrackData();
     }
-    qDebug() << "trackdata for" << index << d.tracks.at(index);
     // ### this should maybe cache data
     TrackData data;
     if (fields & URL) {
@@ -555,8 +554,9 @@ QString Tail::CWD() const
 
 void Tail::quit()
 {
-    if (d.backend)
+    if (d.backend) {
         d.backend->shutdown();
+    }
     QCoreApplication::quit();
 }
 

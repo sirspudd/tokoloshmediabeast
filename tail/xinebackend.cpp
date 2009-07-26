@@ -170,19 +170,21 @@ void XineBackend::shutdown()
 {
     if (d->status == Uninitalized)
         return;
+    if (d->event_queue) {
+        xine_event_dispose_queue(d->event_queue);
+        d->event_queue = 0;
+    }
+
+
     if (d->main.stream) {
+        xine_stop(d->main.stream);
         xine_close(d->main.stream);
         if (d->ao_port) {
             xine_close_audio_driver(d->xine, d->ao_port);
             d->ao_port = 0;
         }
-        xine_dispose(d->main.stream);
+//        xine_dispose(d->main.stream); // ### this hangs
         d->main.stream = 0;
-    }
-
-    if (d->event_queue) {
-        xine_event_dispose_queue(d->event_queue);
-        d->event_queue = 0;
     }
 
     while (d->first) {

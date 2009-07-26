@@ -155,7 +155,7 @@ int PhononBackend::status() const
     case Phonon::BufferingState:
         return Playing;
     default:
-        qDebug() << "Returned undefined state" << __FILE__ << __FUNCTION__ << __LINE__;
+        qWarning() << "Returned undefined state" << __FILE__ << __FUNCTION__ << __LINE__;
         //FIXME: Anders: Reasonable state to introduce?
         return Undefined;
     }
