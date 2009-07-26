@@ -50,7 +50,7 @@ void TrackData::setData(TrackInfo info, const QVariant &data)
     case URL: fields |= FileName; url = data.toString(); break;
     case Title: title = data.toString(); break;
     case TrackLength: trackLength = data.toInt(); break;
-    case Artist: artist = data.toInt(); break;
+    case Artist: artist = data.toString(); break;
     case Album: album = data.toString(); break;
     case Year: year = data.toInt(); break;
     case Genre: genre = data.toString(); break;
