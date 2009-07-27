@@ -71,6 +71,10 @@ public slots:
     Q_SCRIPTABLE bool removeTrack(int index) { return removeTracks(index, 1); }
     Q_SCRIPTABLE bool swapTrack(int from, int to);
     Q_SCRIPTABLE bool moveTrack(int from, int to);
+
+    Q_SCRIPTABLE bool shuffle() const { return d.shuffle; }
+    Q_SCRIPTABLE bool toggleShuffle() { setShuffle(!d.shuffle); return d.shuffle; }
+    Q_SCRIPTABLE void setShuffle(bool on) { d.shuffle = on; }
 signals:
     Q_SCRIPTABLE void wakeUp();
     Q_SCRIPTABLE void trackNames(int from, const QStringList &list);
@@ -98,9 +102,10 @@ protected:
     bool syncToFile();
     bool syncFromFile(bool *foundInvalidSongs);
 //    bool sync(SyncMode sync, bool *removedSongs);
+    enum RepeatMode { NoRepeat, RepeatOne, RepeatAll };
     void addTracks(const QStringList &list);
     struct Data {
-        Data() : current(-1), root(0), blockSync(false), backend(0) {}
+        Data() : current(-1), root(0), blockSync(false), backend(0), shuffle(false), repeat(NoRepeat) {}
         int current;
         QFile playlist;
         QList<QUrl> tracks;
@@ -109,6 +114,8 @@ protected:
         bool blockSync;
         Backend *backend;
         QList<TagInterface*> tagInterfaces;
+        bool shuffle;
+        RepeatMode repeat;
         mutable QString lastError;
     } d;
 };

@@ -83,8 +83,18 @@ void Tail::next()
     if (!d.tracks.size()) {
         return;
     }
-    setCurrentTrackIndex((d.current + 1) %
-                         d.tracks.size());
+
+    int index = d.current;
+    if (d.shuffle) {
+        index = rand() % d.tracks.size();
+        // ### should remember which ones I've played
+    } else if (++index >= d.tracks.size() && !d.repeat == RepeatAll) {
+        stop();
+        d.current = 0;
+        return;
+    }
+
+    setCurrentTrackIndex(index);
     play();
 }
 
