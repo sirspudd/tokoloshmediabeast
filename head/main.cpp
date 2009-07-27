@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
                         bool foundError = false;
 //                        qDebug() << function.name << ::toString(functionArgs);
                         if (argCount - i - 1 < functionArgs.size()) {
-                            error = QString("Not enough arguments specified for %1 needed %2 (%3), got %4").
+                            error = QString("Not enough arguments specified for %1 needed %2(%3), got %4").
                                     arg(function.name).arg(functionArgs.size()).arg(::toString(functionArgs)).arg(argCount - i - 1);
                             continue;
                         }
@@ -166,12 +166,13 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-
-    Player player(interface);
-    player.show();
-    ret = qApp->exec();
-    if (Config::isEnabled("pauseonexit", true)) {
-        interface->call("pause");
+    if (gui) {
+        Player player(interface);
+        player.show();
+        ret = qApp->exec();
+        if (Config::isEnabled("pauseonexit", true)) {
+            interface->call("pause");
+        }
     }
     delete qApp;
     return ret;
