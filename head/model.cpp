@@ -5,14 +5,17 @@ TrackModel::TrackModel(QDBusInterface *interface, QObject *parent)
 {
     d.interface = interface;
     d.rowCount = 0; //QDBusReply<int>(interface->call("count")).value();
+    d.current = -1;
 
     interface->callWithCallback("count", QList<QVariant>(), this, SLOT(onTrackCountChanged(int)));
+    interface->callWithCallback("currentTrackIndex", QList<QVariant>(), this, SLOT(onCurrentTrackChanged(int)));
 
 //    d.columns.append(PlaylistIndex);
     d.columns.append(FileName);
     d.columns.append(Title);
     d.columns.append(Artist);
 
+    interface->connection().connect(SERVICE_NAME, "/", QString(), "currentTrackChanged", this, SLOT(onCurrentTrackChanged(int)));
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksInserted", this, SLOT(onTracksInserted(int, int)));
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksRemoved", this, SLOT(onTracksRemoved(int, int)));
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksMoved", this, SLOT(onTracksMoved(int, int)));
@@ -41,7 +44,15 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-    if (role != Qt::DisplayRole && role != Qt::EditRole) { // Decoration role, album art?
+    switch (role) {
+    case Qt::DisplayRole:
+        break;
+    case Qt::FontRole: {
+        QFont f;
+        if (index.row() == d.current)
+            f.setBold(true);
+        return f; }
+    default:
         return QVariant();
     }
 
@@ -236,3 +247,20 @@ void TrackModel::onTrackCountChanged(int count)
     }
 }
 
+void TrackModel::onTracksChanged(int from, int count)
+{
+    emit dataChanged(index(from, 0), index(from + count, d.columns.size() - 1));
+}
+
+void TrackModel::onCurrentTrackChanged(int c)
+{
+    qDebug() << "onCurrentTrackChanged" << c;
+    if (c != d.current) {
+        const int old = d.current;
+        d.current = c;
+        if (old >= 0)
+            emitDataChanged(old);
+        if (d.current != -1)
+            emitDataChanged(d.current);
+    }
+}

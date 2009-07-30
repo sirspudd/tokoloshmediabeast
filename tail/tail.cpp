@@ -289,13 +289,13 @@ QList<QUrl> Tail::tracks(int start, int count) const
 bool Tail::setCurrentTrackIndex(int index)
 {
     if (index >= 0 && index < d.tracks.size()) {
-        if (index == d.current) // restart???
-            return true;
-        d.current = index;
-        const QUrl &url = d.tracks.at(index);
-        loadUrl(url);
-        emit currentTrackChanged(index, url); //, trackData(d.tracks.at(index)));
-        Config::setValue<int>("current", d.current);
+        if (index != d.current) { // restart???
+            d.current = index;
+            const QUrl &url = d.tracks.at(index);
+            loadUrl(url);
+            emit currentTrackChanged(index); //, trackData(d.tracks.at(index)));
+            Config::setValue<int>("current", d.current);
+        }
         return true;
     } else {
         return false;
@@ -609,7 +609,7 @@ bool Tail::removeTracks(int index, int count)
     case Nothing:
         break;
     case EmitCurrentChanged:
-        emit currentTrackChanged(d.current, d.tracks.value(d.current));
+        emit currentTrackChanged(d.current);
         break;
     case Next:
         next();
@@ -686,8 +686,8 @@ bool Tail::syncFromFile(bool *foundInvalidSongs)
 {
     Q_ASSERT(foundInvalidSongs);
     *foundInvalidSongs = false;
-    const int idx = d.current;
-    const QUrl track = d.tracks.value(idx);
+    const int oldCurrent = d.current;
+    const QList<QUrl> oldTracks = d.tracks;
     if (!d.playlist.open(QIODevice::ReadOnly)) {
         Log::log(0) << "Can't open" << QFileInfo(d.playlist).absoluteFilePath() << "for reading";
         return false;
@@ -704,12 +704,31 @@ bool Tail::syncFromFile(bool *foundInvalidSongs)
             *foundInvalidSongs = true;
         }
     }
-    ::fixCurrent(&d.current, d.tracks.size());
-    const QUrl currentTrack = d.tracks.value(d.current);
-    if (d.current != idx || currentTrack != track) {
-        emit currentTrackChanged(d.current, currentTrack);
-    }
     d.playlist.close();
+
+    if (d.tracks.size() != oldTracks.size()) {
+        ::fixCurrent(&d.current, d.tracks.size());
+        emit tracksRemoved(0, oldTracks.size());
+        emit tracksInserted(0, d.tracks.size());
+    } else if (d.tracks != oldTracks) {
+        int from = -1;
+        for (int i=0; i<d.tracks.size(); ++i) {
+            if (d.tracks.at(i) == oldTracks.at(i)) {
+                if (from == -1)
+                    from = 1;
+            } else if (from != -1) {
+                emit tracksChanged(from, i - from);
+                from = -1;
+            }
+        }
+        if (from != -1) {
+            emit tracksChanged(from, d.tracks.size() - from);
+        }
+    }
+
+    if (d.current != oldCurrent)
+        emit currentTrackChanged(d.current);
+
     return true;
 }
 

@@ -78,9 +78,10 @@ public slots:
 signals:
     Q_SCRIPTABLE void wakeUp();
     Q_SCRIPTABLE void trackNames(int from, const QStringList &list);
-    Q_SCRIPTABLE void currentTrackChanged(int index, const QUrl &string);
+    Q_SCRIPTABLE void currentTrackChanged(int index);
 
     Q_SCRIPTABLE void tracksInserted(int from, int count);
+    Q_SCRIPTABLE void tracksChanged(int from, int count);
     Q_SCRIPTABLE void tracksRemoved(int from, int count);
     Q_SCRIPTABLE void trackMoved(int from, int to);
     Q_SCRIPTABLE void tracksSwapped(int from, int to);

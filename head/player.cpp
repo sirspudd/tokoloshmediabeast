@@ -566,6 +566,7 @@ void Player::closeEvent(QCloseEvent *e)
 {
     Config::setValue("geometry", saveGeometry());
     QWidget::closeEvent(e);
+    QApplication::quit();
 }
 
 void Player::editShortcuts()

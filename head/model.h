@@ -40,6 +40,8 @@ public slots:
     void onTracksRemoved(int from, int count);
     void onTrackMoved(int from, int to);
     void onTracksSwapped(int from, int to);
+    void onTracksChanged(int from, int size);
+    void onCurrentTrackChanged(int c);
 private:
     void emitDataChanged(int row);
     int column(TrackInfo info) const { return d.columns.indexOf(info); }
@@ -49,6 +51,7 @@ private:
         mutable QHash<int, int> pendingFields;
         QVector<TrackInfo> columns;
         int rowCount;
+        int current;
         // bool blockIncomingTrackData; Do I need to make sure everything is in sync?
     } d;
 };

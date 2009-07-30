@@ -4,6 +4,7 @@
 #include <QtGui>
 #include <model.h>
 #include "../shared/config.h"
+
 class PlaylistWidget : public QWidget
 {
     Q_OBJECT
