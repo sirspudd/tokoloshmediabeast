@@ -89,7 +89,7 @@ public slots:
     void reloadSettings();
     void editShortcuts();
     void wakeUp();
-    void playlist();
+    void togglePlaylist();
 #ifdef QT_DEBUG
     void debugButton();
     void toggleOverlay(bool on);

@@ -182,7 +182,7 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
         { 0, 0, separator, QRect(), false, false, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Equalizer"), this, SLOT(equalizer()),
           QRect(219, 58, 23, 12), true, true, Qt::Key_E },
-        { QT_TRANSLATE_NOOP("Player", "Playlist"), this, SLOT(playlist()),
+        { QT_TRANSLATE_NOOP("Player", "Playlist"), this, SLOT(togglePlaylist()),
           QRect(242, 58, 23, 12), true, true, Qt::Key_P },
         { 0, 0, separator, QRect(), false, false, QKeySequence() },
         { 0, 0, 0, QRect(), false, false, QKeySequence() },
@@ -688,7 +688,7 @@ void Player::restoreDefaultSize()
     resize(sizeHint());
 }
 
-void Player::playlist()
+void Player::togglePlaylist()
 {
     d.playlist->setVisible(!d.playlist->isVisible());
 }
