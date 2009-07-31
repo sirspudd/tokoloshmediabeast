@@ -4,14 +4,23 @@ INCLUDEPATH += .
 DESTDIR = ../bin
 TARGET = tokoloshhead
 
-HEADERS += player.h widgets.h shortcutdialog.h skinselectiondialog.h model.h playlist.h resizer.h ../shared/global.h
+HEADERS += player.h \
+           widgets.h \
+           shortcutdialog.h \
+           skinselectiondialog.h \
+           model.h \
+           playlist.h \
+           resizer.h \
+           ../shared/global.h \
+           dbusinterface.h
 
 SOURCES += main.cpp \
            player.cpp \
            widgets.cpp \
            shortcutdialog.cpp \
            model.cpp \
-           skinselectiondialog.cpp
+           skinselectiondialog.cpp \
+           dbusinterface.cpp
 
 CONFIG += qdbus debug
 
