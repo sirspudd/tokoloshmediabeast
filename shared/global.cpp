@@ -24,8 +24,9 @@ TrackData &TrackData::operator|=(const TrackData &other)
 
 QVariant TrackData::data(TrackInfo info) const
 {
-    if (!(info & fields))
+    if (!(info & fields)) {
         return QVariant();
+    }
     switch (info) {
     case URL: return url;
     case Title: return title;
@@ -47,7 +48,7 @@ QVariant TrackData::data(TrackInfo info) const
 void TrackData::setData(TrackInfo info, const QVariant &data)
 {
     switch (info) {
-    case URL: fields |= FileName; url = data.toString(); break;
+    case URL: fields |= (FileName|URL); url = data.toUrl(); break;
     case Title: title = data.toString(); break;
     case TrackLength: trackLength = data.toInt(); break;
     case Artist: artist = data.toString(); break;
@@ -56,7 +57,7 @@ void TrackData::setData(TrackInfo info, const QVariant &data)
     case Genre: genre = data.toString(); break;
     case AlbumIndex: albumIndex = data.toInt(); break;
     case PlaylistIndex: playlistIndex = data.toInt(); break;
-    case FileName: break; //
+    case FileName: Q_ASSERT(0); break; //
     case None:
     case All:
         Q_ASSERT(0);
