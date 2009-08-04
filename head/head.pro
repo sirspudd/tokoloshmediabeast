@@ -20,7 +20,8 @@ SOURCES += main.cpp \
            shortcutdialog.cpp \
            model.cpp \
            skinselectiondialog.cpp \
-           dbusinterface.cpp
+           dbusinterface.cpp \
+           playlist.cpp
 
 CONFIG += qdbus debug
 
