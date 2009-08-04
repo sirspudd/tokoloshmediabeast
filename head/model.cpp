@@ -4,11 +4,8 @@ TrackModel::TrackModel(QDBusInterface *interface, QObject *parent)
     : QAbstractTableModel(parent)
 {
     d.interface = interface;
-    d.rowCount = 0; //QDBusReply<int>(interface->call("count")).value();
+    d.rowCount = 0;
     d.current = -1;
-
-    interface->callWithCallback("count", QList<QVariant>(), this, SLOT(onTrackCountChanged(int)));
-    interface->callWithCallback("currentTrackIndex", QList<QVariant>(), this, SLOT(onCurrentTrackChanged(int)));
 
 //    d.columns.append(PlaylistIndex);
     d.columns.append(FileName);
@@ -20,6 +17,9 @@ TrackModel::TrackModel(QDBusInterface *interface, QObject *parent)
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksRemoved", this, SLOT(onTracksRemoved(int, int)));
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksMoved", this, SLOT(onTracksMoved(int, int)));
     interface->connection().connect(SERVICE_NAME, "/", QString(), "tracksSwapped", this, SLOT(onTracksSwapped(int, int)));
+
+    interface->callWithCallback("count", QList<QVariant>(), this, SLOT(onTrackCountChanged(int)));
+    interface->callWithCallback("currentTrackIndex", QList<QVariant>(), this, SLOT(onCurrentTrackChanged(int)));
 }
 
 QModelIndex TrackModel::index(int row, int column, const QModelIndex &parent) const
@@ -69,6 +69,7 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
 #if 1
             d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
                                           SLOT(onTrackDataReceived(TrackData)));
+            qDebug() << "calling trackdata" << args;
 #else
             const TrackData trackData = QDBusReply<TrackData>(d.interface->call("trackData", index.row(), fields)).value();
             qDebug() << d.interface->lastError() << trackData.fields << trackData.title;
@@ -153,9 +154,16 @@ bool TrackModel::removeRows(int row, int count, const QModelIndex &parent)
     beginRemoveRows(QModelIndex(), row, row + count - 1);
     d.rowCount -= count;
     QMap<int, TrackData>::iterator it = d.data.lowerBound(row);
-    const QMap<int, TrackData>::iterator end = d.data.upperBound(row + count);
+    QMap<int, TrackData>::const_iterator end = d.data.upperBound(row + count);
     while (it != end) {
         d.data.erase(it++);
+    }
+    end = d.data.end();
+    QMap<int, TrackData> moved;
+    while (it != end) {
+        moved[it.key() - count] = it.value();
+        moved.erase(it);
+        ++it;
     }
     endRemoveRows();
     return true;
@@ -179,6 +187,7 @@ void TrackModel::onTracksRemoved(int from, int count)
 
 void TrackModel::onTrackDataReceived(const TrackData &data)
 {
+    qDebug() << "receiving trackData" << data.playlistIndex << data.title;
     if (!(data.fields)) {
         qWarning("Somehow receiving empty trackdata");
         return;
