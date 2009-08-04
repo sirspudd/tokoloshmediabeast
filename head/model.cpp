@@ -179,6 +179,10 @@ void TrackModel::onTracksRemoved(int from, int count)
 
 void TrackModel::onTrackDataReceived(const TrackData &data)
 {
+    if (!(data.fields)) {
+        qWarning("Somehow receiving empty trackdata");
+        return;
+    }
     Q_ASSERT(data.fields & PlaylistIndex);
     const int track = data.playlistIndex;
     int &ref = d.pendingFields[track];
@@ -186,6 +190,8 @@ void TrackModel::onTrackDataReceived(const TrackData &data)
     if (!ref) {
         d.pendingFields.remove(track);
     }
+    if (track < d.rowCount)
+        return;
     Q_ASSERT(track < d.rowCount);
     d.data[track] = data;
     emit dataChanged(index(track, 0), index(track, d.columns.size() - 1));
