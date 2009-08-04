@@ -62,6 +62,7 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
 
     if (!(data.fields & info)) {
         int &val = d.pendingFields[index.row()];
+//        qDebug() << "going to fetch" << index.row() << "because" << data.fields << info;
         if ((val & info) != info) {
             QList<QVariant> args;
             const int fields = All;
@@ -69,7 +70,7 @@ QVariant TrackModel::data(const QModelIndex &index, int role) const
 #if 1
             d.interface->callWithCallback("trackData", args, const_cast<TrackModel*>(this),
                                           SLOT(onTrackDataReceived(TrackData)));
-            qDebug() << "calling trackdata" << args;
+//            qDebug() << "calling trackdata" << args;
 #else
             const TrackData trackData = QDBusReply<TrackData>(d.interface->call("trackData", index.row(), fields)).value();
             qDebug() << d.interface->lastError() << trackData.fields << trackData.title;
@@ -187,7 +188,7 @@ void TrackModel::onTracksRemoved(int from, int count)
 
 void TrackModel::onTrackDataReceived(const TrackData &data)
 {
-    qDebug() << "receiving trackData" << data.playlistIndex << data.title;
+//    qDebug() << "receiving trackData" << data.playlistIndex << data.title << data.fields;
     if (!(data.fields)) {
         qWarning("Somehow receiving empty trackdata");
         return;
@@ -199,10 +200,10 @@ void TrackModel::onTrackDataReceived(const TrackData &data)
     if (!ref) {
         d.pendingFields.remove(track);
     }
-    if (track < d.rowCount)
+    if (track >= d.rowCount)
         return;
-    Q_ASSERT(track < d.rowCount);
-    d.data[track] = data;
+    d.data[track] |= data;
+//    qDebug() << "receiving" << d.data[track].fields << track << data.fields;
     emit dataChanged(index(track, 0), index(track, d.columns.size() - 1));
 }
 
@@ -269,7 +270,7 @@ void TrackModel::onTracksChanged(int from, int count)
 
 void TrackModel::onCurrentTrackChanged(int c)
 {
-    qDebug() << "onCurrentTrackChanged" << c;
+//    qDebug() << "onCurrentTrackChanged" << c;
     if (c != d.current) {
         const int old = d.current;
         d.current = c;
