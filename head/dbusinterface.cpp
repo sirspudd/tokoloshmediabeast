@@ -57,7 +57,7 @@ public:
                 }
                 return true;
             }
-        } while (timer.elapsed() < maxWait);
+        } while (maxWait < 0 || timer.elapsed() < maxWait);
         return false;
     }
 
