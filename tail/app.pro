@@ -11,3 +11,4 @@ HEADERS += tail.h backend.h taginterface.h id3taginterface.h
 !include(../shared/shared.pri):error("Can't find shared.pri")
 CONFIG += qdbus
 LIBS += -lid3
+OBJECTS_DIR = .objapp

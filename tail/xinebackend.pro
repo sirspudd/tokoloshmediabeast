@@ -8,5 +8,8 @@ macx {
 }
 linux {
     LIBS += -L/usr/lib lz -lnsl -lpthread -lrt
+    QMAKE_CXXFLAGS += -fPIC
+    QMAKE_CFLAGS += -fPIC
 }
 !include(backend.pri):error("Can't find backend.pri")
+
