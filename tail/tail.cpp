@@ -319,7 +319,6 @@ int Tail::indexOfTrack(const QUrl &url) const
 
 int Tail::indexOfTrack(const QString &name) const
 {
-    qDebug() << "indexOfTrack" << name;
     for (int i=0; i<d.tracks.size(); ++i) {
         const QUrl &url = d.tracks.at(i);
         if (url.toString().contains(name, Qt::CaseInsensitive))
@@ -330,7 +329,6 @@ int Tail::indexOfTrack(const QString &name) const
 
 TrackData Tail::trackData(const QString &song, int fields) const
 {
-    qDebug() << "trackData" << song;
     const int idx = indexOfTrack(song);
     return (idx == -1 ? TrackData() : trackData(idx, fields));
 }
@@ -338,7 +336,6 @@ TrackData Tail::trackData(const QString &song, int fields) const
 
 TrackData Tail::trackData(const QUrl &url, int fields) const
 {
-    qDebug() << "trackData" << url;
     const int index = indexOfTrack(url);
     if (index == -1) {
         qWarning("I don't have %s in my list of files", qPrintable(url.toString()));
@@ -349,11 +346,12 @@ TrackData Tail::trackData(const QUrl &url, int fields) const
 
 TrackData Tail::trackData(int index, int fields) const
 {
-    qDebug() << "trackData" << index << fields;
     if (index < 0 || index >= d.tracks.size()) {
         qWarning("Invalid index %d, needs to be between 0-%d", index, d.tracks.size() - 1);
         return TrackData();
     }
+    Log::log(50) << "requsting trackdata for song" << index << "fields" << ::trackInfosToStringList(fields).join("|")
+                 << d.tracks.at(index);
     // ### this should maybe cache data
     TrackData data;
     if (fields & URL) {

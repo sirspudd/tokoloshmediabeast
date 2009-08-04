@@ -43,6 +43,19 @@ static inline QString trackInfoToString(TrackInfo info)
 }
 
 static const TrackInfo trackInfos[] = { URL, Title, TrackLength, Artist, Album, Year, Genre, AlbumIndex, PlaylistIndex, None };
+static inline QStringList trackInfosToStringList(uint info)
+{
+    QStringList ret;
+    for (int i=0; trackInfos[i] != None; ++i) {
+        if (info & trackInfos[i]) {
+            ret.append(trackInfoToString(trackInfos[i]));
+        }
+    }
+    if (info & FileName)
+        ret.append(trackInfoToString(FileName));
+    return ret;
+}
+
 void initApp(const QString &appname, int argc, char **argv);
 struct TrackData
 {
@@ -53,14 +66,15 @@ struct TrackData
     int trackLength, albumIndex, year, playlistIndex; // seconds
 
     int fields; // this means which fields have been queried. values
-                 // might still be null if we don't know about them
-                 // but there's no reason to ask again.
+    // might still be null if we don't know about them
+    // but there's no reason to ask again.
 
     QVariant data(TrackInfo info) const;
     void setData(TrackInfo info, const QVariant &data);
     QString toString() const;
     TrackData &operator|=(const TrackData &other);
 };
+
 Q_DECLARE_METATYPE(TrackData);
 QDBusArgument &operator<<(QDBusArgument &arg, const TrackData &trackData);
 const QDBusArgument &operator>>(const QDBusArgument &arg, TrackData &trackData);
