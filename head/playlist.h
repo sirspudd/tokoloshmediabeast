@@ -16,6 +16,8 @@ public slots:
     void removeSongs();
     void onActivated(const QModelIndex &idx);
     void setCurrentTrack(int i);
+signals:
+    void visibilityChanged(bool visible);
 private:
     struct Data {
         QDBusInterface *interface;

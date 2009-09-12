@@ -254,6 +254,7 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
         Q_ASSERT(ret);
         Q_UNUSED(ret);
     }
+    connect(d.playlist, SIGNAL(visibilityChanged(bool)), d.buttons[Playlist], SLOT(setChecked(bool)));
 }
 
 Player::~Player()

@@ -20,12 +20,14 @@ PlaylistWidget::PlaylistWidget(QDBusInterface *interface, TrackModel *model, QWi
 
 void PlaylistWidget::closeEvent(QCloseEvent *e)
 {
+    emit visibilityChanged(false);
     Config::setValue("playlist/geometry", saveGeometry());
     QWidget::closeEvent(e);
 }
 
 void PlaylistWidget::showEvent(QShowEvent *e)
 {
+    emit visibilityChanged(true);
     if (!Config::isEnabled("ignorelastgeometry", false)) {
         const QByteArray g = Config::value<QByteArray>("playlist/geometry");
         if (!g.isEmpty()) {
