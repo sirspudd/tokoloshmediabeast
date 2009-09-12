@@ -244,10 +244,12 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
     d.posBarSlider->setRange(0, 600);
     d.posBarSlider->setStyle(d.posBarStyle = new SliderStyle(this));
 
+//    mainwin_volume = create_hslider(&mainwin_wlist, mainwin_bg, mainwin_gc, 107, 57, 68, 13, 15, 422, 0, 422, 14, 11, 15, 0, 0, 51, mainwin_volume_framecb, mainwin_volume_motioncb, mainwin_volume_releasecb, SKIN_VOLUME);
+
     d.volumeSlider = new Slider(Qt::Horizontal, this);
-    d.volumeSlider->setGeometry(14, 72, 253, 10);
-    d.volumeSlider->setRange(0, 600);
-    d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle(this));
+    d.volumeSlider->setGeometry(107, 57, 68, 13);
+    d.volumeSlider->setRange(0, 100);
+//    d.volumeSlider->setStyle(d.volumeStyle = new SliderStyle(this));
     reloadSettings();
     if (!setSkin(Config::value<QString>("skin", QString(":/skins/dullSod")))) {
         const bool ret = setSkin(":/skins/dullSod");
