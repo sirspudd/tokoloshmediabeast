@@ -11,5 +11,4 @@ linux {
     QMAKE_CXXFLAGS += -fPIC
     QMAKE_CFLAGS += -fPIC
 }
-!include(backend.pri):error("Can't find backend.pri")
-
+include(backend.pri)

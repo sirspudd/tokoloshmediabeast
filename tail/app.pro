@@ -8,7 +8,7 @@ INCLUDEPATH += .
 SOURCES += main.cpp tail.cpp
 HEADERS += tail.h backend.h taginterface.h id3taginterface.h
 
-!include(../shared/shared.pri):error("Can't find shared.pri")
+include(../shared/shared.pri)
 CONFIG += qdbus
 LIBS += -lid3
 OBJECTS_DIR = .objapp

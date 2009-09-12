@@ -39,4 +39,4 @@ TRANSLATIONS += i18n/head.no.ts \
 
 QT += dbus
 RESOURCES += head.qrc
-!include(../shared/shared.pri):error("Can't find shared.pri")
+include(../shared/shared.pri)
