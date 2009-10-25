@@ -1,4 +1,0 @@
-#!/bin/zsh
-INCLUDE_PATH=../../include
-mkdir -p $INCLUDE_PATH
-find ./src -name "*.h" | grep -v _p | while read i; do echo Copying $i; cp $i $INCLUDE_PATH; done
