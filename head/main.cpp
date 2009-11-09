@@ -88,16 +88,18 @@ int main(int argc, char *argv[])
         interface->call("setCWD", QDir::currentPath());
         if (argc > 1) {
             const QStringList cmdLineArgs = Config::arguments();
+            if (cmdLineArgs.contains("--list-methods")
+                || cmdLineArgs.contains("-h")
+                || cmdLineArgs.contains("-?")) {
+                const QMetaObject *metaObject = interface->metaObject();
+                for (int j=metaObject->methodOffset(); j<metaObject->methodCount(); ++j) {
+                    printf("%s\n", metaObject->method(j).signature());
+                }
+                return 0;
+            }
             const int argCount = cmdLineArgs.size();
             for (int i=1; i<argCount; ++i) {
                 const QString &arg = cmdLineArgs.at(i);
-                if (arg == "--list-methods") {
-                    const QMetaObject *metaObject = interface->metaObject();
-                    for (int j=metaObject->methodOffset(); j<metaObject->methodCount(); ++j) {
-                        printf("%s\n", metaObject->method(j).signature());
-                    }
-                    return 0;
-                }
                 const Function function = QDBusReply<Function>(interface->call("findFunction", arg)).value();
 
                 if (!function.name.isEmpty()) {
