@@ -8,6 +8,7 @@ HEADERS += player.h \
            widgets.h \
            shortcutdialog.h \
            skinselectiondialog.h \
+           controlpanel.h \
            model.h \
            playlist.h \
            resizer.h \
@@ -18,6 +19,7 @@ SOURCES += main.cpp \
            player.cpp \
            widgets.cpp \
            shortcutdialog.cpp \
+           controlpanel.cpp \
            model.cpp \
            skinselectiondialog.cpp \
            dbusinterface.cpp \

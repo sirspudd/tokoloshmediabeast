@@ -86,6 +86,7 @@ public slots:
     bool setSkin(const QString &path);
     void open();
     void openSkin();
+    void openControlPanel();
     void reloadSettings();
     void editShortcuts();
     void wakeUp();
