@@ -171,6 +171,9 @@ int main(int argc, char *argv[])
     if (gui) {
         Player player(interface);
         player.show();
+        //explicitly added to work around KDE 4.3 (Kubuntu 9.10 base) focus
+        //stealing fuckery
+        player.raise();
         ret = qApp->exec();
         if (Config::isEnabled("pauseonexit", true)) {
             interface->call("pause");
