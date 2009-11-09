@@ -1,3 +1,4 @@
+- Configuration dialog
 - QSettings perthread?
 - GUI for shortcuts, using Config for it now which should continue to work as a backend
 - Volume slider
