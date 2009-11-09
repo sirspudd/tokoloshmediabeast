@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo apt-get install build-essential libid3-3.8.3-dev libqt4-dev libxine-dev
