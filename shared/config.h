@@ -197,6 +197,28 @@ public:
         s->sync();
     }
 
+    static void setValue(const QString &key, const QVariant &value)
+    {
+        arguments();
+        QSettings *s = settings();
+        s->setValue(key.toLower(), value);
+    }
+
+    static QVariant value(const QString &k, const QVariant &defaultValue)
+    {
+        const QString key = k.toLower();
+        QVariant value = valueFromCommandLine(key);
+        QSettings *s = settings();
+        if (value.isNull()) {
+            value = s->value(key, defaultValue);
+        } else if (store()) {
+            Config::setValue(key, value);
+        }
+
+        return value;
+    }
+
+
     static QStringList unusedArguments();
     static QStringList arguments();
     static void init(int argc, char **argv);
