@@ -5,7 +5,6 @@
 #include "widgets.h"
 #include "config.h"
 #include "shortcutdialog.h"
-#include "controlpanel.h"
 #include <QDebug>
 #include "resizer.h"
 #include "skinselectiondialog.h"
@@ -214,8 +213,7 @@ Player::Player(QDBusInterface *interface, QWidget *parent)
         { QT_TRANSLATE_NOOP("Player", "Quit"), SLOT(close()), None, QKeySequence::Close },
         { QT_TRANSLATE_NOOP("Player", "Edit shortcuts"), SLOT(editShortcuts()), None, QKeySequence() },
         { QT_TRANSLATE_NOOP("Player", "Restore default size"), SLOT(restoreDefaultSize()), None, QKeySequence() },
-        { QT_TRANSLATE_NOOP("Player", "Skin selector"), SLOT(openSkin()), None, QKeySequence(Qt::ControlModifier + Qt::Key_S) },
-        { QT_TRANSLATE_NOOP("Player", "Control panel"), SLOT(openControlPanel()), None, QKeySequence(Qt::ControlModifier + Qt::Key_K) },
+        { QT_TRANSLATE_NOOP("Player", "OpenSkin"), SLOT(openSkin()), None, QKeySequence(Qt::ControlModifier + Qt::Key_S) },
 #ifdef QT_DEBUG
         { QT_TRANSLATE_NOOP("Player", "Toggle debug geometry"), SLOT(toggleDebugGeometry(bool)),
           (Config::isEnabled("debuggeometry") ? Checked|Checkable : Checkable),
@@ -521,11 +519,6 @@ void Player::openSkin()
     }
     break;
     }
-}
-
-void Player::openControlPanel()
-{
-    ControlPanel::instance(this)->show();
 }
 
 void Player::reloadSettings()
